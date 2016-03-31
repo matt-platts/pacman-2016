@@ -1,4 +1,5 @@
 2016 update of my Javascript Pacman game from 1999 (also on github).
+See www.mattplatts.com/pacman-2016, or www.mattplatts.com/pacman for the original.
 
 The original version was built for IE4 and Netscape 4, and was updated to support Netscape 6 in 2001, Chrome and Firefox in 2009, and I decided to look at it again in 2016 to see how it could be improved.
 
