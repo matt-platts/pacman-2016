@@ -1,0 +1,21 @@
+2016 update of my Javascript Pacman game from 1999 (also on github).
+
+The original version was built for IE4 and Netscape 4, and was updated to support Netscape 6 in 2001, Chrome and Firefox in 2009, and I decided to look at it again in 2016 to see how it could be improved.
+
+Improvements so far have been:
+
+1. Generate the mazes from far simpler data - mainly 0s and 1s - and use this data to draw the maze in css as opposed to a graphic, as well as use it for the basis of game calculations. 
+2. CSs animated pacman - the original gif did not play when it moved across the screen.
+3. Removal of frameset in order to store data between different levels in a hidden frame, in favour of local storage and dynamic loading of maze data.
+4. Re-implementation of ghost algorithms. The original version had randomly moving ghosts which could only detect if you were in their direct line of sight and act accordingly. New implementation features scatter, chase and random modes which are switched depending on various variables. They can now home in on you from afar if they so choose.   
+5. New logic allowing modifications to the speed of pacman on the fly.
+6. Delay ghosts leaving home base incrementally (as per original game).
+7. Tidying up of code and commenting.  
+
+Future improvements will be
+
+1. The code architecture is old and based on tweaking the original 1999 code. A proper OO architecture would be beneficial if any more logic is to go in now, modification of global variables from all over the place is getting very confusing, I'm actually surprised it's stood up so far.
+2. Create your own maze feature - now everything is generated from a simple data format, it would be easy to allow people to create their own.
+3. Random maze generation algorithm
+4. Selections for different logic and modes of play. I've found lots of things that work interestingly. It's facinating to see how small changes change the feel of the game greatly as well.
+5. Some wild and crazy features going beyond a pacman clone :)
