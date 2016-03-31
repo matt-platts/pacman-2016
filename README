@@ -8,16 +8,17 @@ Improvements so far have been:
 1. Generate the mazes from far simpler data - mainly 0s and 1s - and use this data to draw the maze in css as opposed to a graphic, as well as use it for the basis of game calculations. 
 2. CSs animated pacman - the original gif did not play when it moved across the screen.
 3. Removal of frameset in order to store data between different levels in a hidden frame, in favour of local storage and dynamic loading of maze data.
-4. Re-implementation of ghost algorithms. The original version had randomly moving ghosts which could only detect if you were in their direct line of sight and act accordingly. New implementation features scatter, chase and random modes which are switched depending on various variables. They can now home in on you from afar if they so choose. 
-5. New logic allowing modifications to the speed of pacman on the fly, consequently better collision detection too.
+4. Re-implementation of ghost algorithms. The original version had randomly moving ghosts which could only detect if you were in their direct line of sight and act accordingly. New implementation features scatter, chase and random modes which are switched depending on various variables. They can now home in on you from afar if they so choose. I am still working on the exact timings of these modes. 
+5. New logic allowing modifications to the speed of pacman on the fly, consequently have had to adjust collision detection too which is now much better - previously there was an issue when going round corners anyway.
 6. Delay ghosts leaving home base incrementally (as per original game).
 7. Tidying up of code and commenting (ongoing, I will get onto those eval's one day..). 
 
 Future improvements will be
 
 1. The code architecture is old and based on tweaking the original 1999 code. A proper OO architecture would be beneficial if any more logic is to go in now, modification of global variables from all over the place is getting very confusing, I'm actually surprised it's stood up so far, but this is why bugs are creeping in sometimes, it's very hard to read. Commenting has been my first part of really understanding what I need to do.
+2. Spilt all the constants out into configuration/settings, more adjustments on these on various triggers as part of the gameplay in order to increase difficulty in a better way (currently it speeds up a little between levels).
 2. Create your own maze feature - now everything is generated from a simple data format, it would be easy to allow people to create their own.
-3. Random maze generation algorithm
+3. Random maze generation algorithm, based on a modification of the known recursive backtracker algorithm but to take the double walls into account (Recusrive backgracker deals with borders on all cells, not some cells blocked as walls).
 4. Selections for different logic and modes of play. I've found lots of things that work interestingly. It's facinating to see how small changes change the feel of the game greatly as well.
 5. Some wild and crazy features going beyond a pacman clone :)
 
