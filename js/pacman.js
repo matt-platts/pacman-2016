@@ -393,7 +393,7 @@ function ghosts(){
 		score -= 50
 		scoreform.forms[0].elements[0].value = score
 		lifeform.forms[0].elements[1].value -= 1
-		gameTime=5000
+		gameTime=sessionStorage.gameTime;
 		timeform.forms[0].elements[2].value=gameTime
 		alert ("OUT OF TIME! One life lost.")
 		if (lives==0) {
@@ -506,6 +506,7 @@ function move(){
 				won = true
 				onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
 				document.getElementById("pacman").style.display="none";
+				resetModeTime=gameTime;
 				levelEnd();
 
 			}
@@ -618,9 +619,10 @@ function generateGhostDir(who,howMany,possibilities){
 		currentTime = timeform.forms[0].elements[2].value;
 		if (onPath[who]){
 			ghostMode="homing";
-		} else 
-		if (ghostDelayRelease[who] < currentTime){
+		} else if (ghostDelayRelease[who] < currentTime){
 			ghostMode="sit";
+		} else if (powerpilon && !vulnerable[who]){
+			ghostMode="scatter";
 		} else {
 			ghostMode=mode;
 		}
