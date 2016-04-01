@@ -14,5 +14,4 @@ globals.basicVision = false; // set to 1 and the ghosts can see you if there is 
 
 for (x in globals){
 	sessionStorage.setItem(x,globals[x]);
-	console.log(x,globals[x]);
 }

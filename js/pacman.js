@@ -23,8 +23,8 @@ var ghostBlinkLifetime=25; // how long the ghosts blink for within the power pil
 var fruitLifetime=95; // how many iterations a piece of fruit stays on screen - hard is 80
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
-var scatterTime=100; // how long ghosts remain in scatter mode before switching to chase mode
-var chaseTime=100;
+var scatterTime=200; // how long ghosts remain in scatter mode before switching to chase mode
+var chaseTime=50;
 var mode = "scatter"
 var previousMode = "scatter";
 
@@ -319,8 +319,8 @@ function ghosts(){
 				ghostDelayRelease=Array(); // used to delay the release of each ghost
 				for (i=0;i<4;i++){
 					ghostDelayRelease[i] = ghostReleaseTime - i*15;
-					console.log("Ghost delay release after losing a life: ",ghostDelayRelease[i]);
-					console.log("Set mode to " + mode + " for scattertime " + scatterTime);
+					//console.log("Ghost delay release after losing a life: ",ghostDelayRelease[i]);
+					showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
 				}
 				divMessage.visibility='visible'
 				onPause=1;
@@ -577,17 +577,17 @@ function gameModes(){
 
 			currentTime = timeform.forms[0].elements[2].value;
 			if (currentTime < parseInt(resetModeTime) - parseInt(scatterTime)){
-				console.log("MODE SWITCH from " + mode + " AT !" + currentTime);
+				showmode("MODE SWITCH from " + mode + " AT !" + currentTime);
 			
 				if (mode=="scatter"){
 					resetModeTime = currentTime - chaseTime;
 					mode="chase";
-					console.log("Set mode to chase");
+					showmode("Set mode to chase");
 				} else if (mode=="chase"){
-					resetModeTime = currentTime - scattertime;
+					resetModeTime = currentTime - scatterTime;
 					scatterTime = scatterTime - 10; 
 					mode="scatter";
-					console.log("Set mode to scatter");
+					showmode("Set mode to scatter");
 				} else {
 					if (previousMode != "random"){
 						mode=previousMode;
@@ -605,7 +605,7 @@ function gameModes(){
 			mode=previousMode;
 		}
 
-console.log("MODE: " + mode + " next change at " , parseInt(resetModeTime) -parseInt(scatterTime));
+showmode("MODE: " + mode + " next change at " , parseInt(resetModeTime) -parseInt(scatterTime));
 
 }
 
@@ -742,7 +742,7 @@ function headFor(who,where){
 				} else {
 					home = "R";
 				}
-				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
+				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
 			} else  if (ghostDir[who]=="D" || ghostDir[who]=="U"){
 				if (currentCell.charAt(2)=="L"){ 
 					home = "L";
@@ -753,7 +753,7 @@ function headFor(who,where){
 				} else {
 					home="D";
 				}
-				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
+				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
 			} 
 		}
 	}
@@ -763,7 +763,7 @@ function headFor(who,where){
 			istr = istr + " to " + where[0] + "," + where[1];
 			istr = istr + " from " 
 			istr = istr + leftG[who] + "," + topG[who] + " in mode " + mode; 
-			console.log(istr);
+			showmode(istr);
 			home = ghostDir[who];
 	}
 	return home;
@@ -1095,7 +1095,7 @@ function start(){
 	ghostDelayRelease=Array(); // used to delay the release of each ghost
 	for (i=0;i<4;i++){
 		ghostDelayRelease[i] = ghostReleaseTime - i*47;
-		console.log("START GHOST DELAY RELEASE",ghostDelayRelease[i]);
+		//console.log("START GHOST DELAY RELEASE",ghostDelayRelease[i]);
 	}
 	onPause=0;
 	document.getElementById("levelIndicator").innerHTML = "Level " + sessionStorage.level;
@@ -1145,3 +1145,7 @@ function oo_start(){
 	make_ghosts();
 }
 
+function showmode(input){
+	return;
+	console.log(input);
+}
