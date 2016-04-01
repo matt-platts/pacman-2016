@@ -23,7 +23,10 @@ var ghostBlinkLifetime=25; // how long the ghosts blink for within the power pil
 var fruitLifetime=95; // how many iterations a piece of fruit stays on screen - hard is 80
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
-var scatterTime=300; // how long ghosts remain in scatter mode before switching to chase mode
+var scatterTime=100; // how long ghosts remain in scatter mode before switching to chase mode
+var chaseTime=100;
+var mode = "scatter"
+var previousMode = "scatter";
 
 // localise session storage vars
 var lives = parseInt(sessionStorage.lives)
@@ -188,6 +191,8 @@ function init(){
  * 
 */
 function ghosts(){
+
+	gameModes(); // these adjust on a timer
 
 	// The movement functions are run four times in a loop - once for each ghost
 	for (wg=0;wg<4;wg++){
@@ -358,6 +363,7 @@ function ghosts(){
 	// Return ghost to normal when powerpill wears off.
 	if (ppTimer == "0" && powerpilon) {
 		powerpilon=false
+		mode=previousMode;
 		ghostspeed=speed;
 		movespeed=speed;
 		for(i=0;i<4;i++){
@@ -562,6 +568,46 @@ function showFruit() {
 	divFruit.visibility='visible'
 }
 
+function gameModes(){
+
+		if (powerpilon){
+			if (previousMode != "random") { previousMode=mode;}
+			mode="random";
+		} else {
+
+			currentTime = timeform.forms[0].elements[2].value;
+			if (currentTime < parseInt(resetModeTime) - parseInt(scatterTime)){
+				console.log("MODE SWITCH from " + mode + " AT !" + currentTime);
+			
+				if (mode=="scatter"){
+					resetModeTime = currentTime - chaseTime;
+					mode="chase";
+					console.log("Set mode to chase");
+				} else if (mode=="chase"){
+					resetModeTime = currentTime - scattertime;
+					scatterTime = scatterTime - 10; 
+					mode="scatter";
+					console.log("Set mode to scatter");
+				} else {
+					if (previousMode != "random"){
+						mode=previousMode;
+					} else {
+						mode="scatter";
+						previousMode="scatter";
+					}
+				}
+
+	
+
+			}
+		}
+		if (mode=="random" && !powerpilon){
+			mode=previousMode;
+		}
+
+console.log("MODE: " + mode + " next change at " , parseInt(resetModeTime) -parseInt(scatterTime));
+
+}
 
 /*
  * Function: generateGhostDir
@@ -570,19 +616,9 @@ function showFruit() {
 function generateGhostDir(who,howMany,possibilities){
 
 		currentTime = timeform.forms[0].elements[2].value;
-
-		if (powerpilon){
-			mode="random";
-		} else if (onPath[who]){
-			mode="homing";
-		} else {
-			if (currentTime < resetModeTime-scatterTime){// means we have just switched to scatter time. as this runs for each ghost, use a quarter of what we want 
-				if (mode != "chase"){ scatterTime = scatterTime - 3; }
-				mode="chase";
-			} else {
-				mode="scatter";
-			}
-		}
+		if (onPath[who]){
+			ghostMode="homing";
+		} else 
 		if (ghostDelayRelease[who] < currentTime){
 			ghostMode="sit";
 		} else {
@@ -706,7 +742,7 @@ function headFor(who,where){
 				} else {
 					home = "R";
 				}
-				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home);
+				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
 			} else  if (ghostDir[who]=="D" || ghostDir[who]=="U"){
 				if (currentCell.charAt(2)=="L"){ 
 					home = "L";
@@ -717,7 +753,7 @@ function headFor(who,where){
 				} else {
 					home="D";
 				}
-				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home);
+				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
 			} 
 		}
 	}
@@ -726,7 +762,7 @@ function headFor(who,where){
 			istr = "nowhere to go for " + who + " heading " + ghostDir[who] + " in mode of " + mode;
 			istr = istr + " to " + where[0] + "," + where[1];
 			istr = istr + " from " 
-			istr = istr + leftG[who] + "," + topG[who] + ""; 
+			istr = istr + leftG[who] + "," + topG[who] + " in mode " + mode; 
 			console.log(istr);
 			home = ghostDir[who];
 	}
