@@ -72,8 +72,9 @@
 <script language="JavaScript">
 <!-- 
 
+var levelOptions;
+
 function loadScript(url, callback){
-    // Adding the script tag to the head as suggested before
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
     script.type = 'text/javascript';
@@ -89,6 +90,11 @@ function loadScript(url, callback){
 }
 
 var keepLoading = function (){
+	if (levelOptions){
+		if (levelOptions.pacStartTop){
+			pacStartTop = levelOptions.pacStartTop;
+		}
+	}
 	loadScript("js/maze.js",loadMain);
 }
 var kickOff = function(){

@@ -27,6 +27,7 @@ var scatterTime=200; // how long ghosts remain in scatter mode before switching 
 var chaseTime=50;
 var mode = "scatter"
 var previousMode = "scatter";
+var levelOptions;
 
 // localise session storage vars
 var lives = parseInt(sessionStorage.lives)
@@ -76,7 +77,7 @@ var won = false // true if won the game
 var keycount=0 // number of keys currently depressed
 var newdatabit = 0 // ??! 
 var onPause = 0 // game paused by the 'p' key or when displaying messages (eg. lost life)
-var ifpil = 0 // bool - is there a pill in the current cell?
+var pillType = 0 // bool - is there a pill in the current cell?
 var pilcount = 0 // number of pills eaten
 var ppTimer = "0" //counts down from 80 back to 0 when a powerpill is eaten
 var powerpilon = false // set to true when powerpill is eaten, back to false when it wears off
@@ -91,7 +92,11 @@ var ghostspeed=speed; // set to the basic speed to start
 var resetModeTime=gameTime; // the time the mode was last reset to the default (scatter). It starts as the game starts, so at gameTime;.
 
 // start positions - still needs to be calculated from the maze data in time 
-var pacStartTop=265
+if (!pacStartTop){
+	var pacStartTop=265
+} else {
+	document.getElementById("pacman").style.top=pacStartTop // for now just adjust it on the page
+}
 var pacStartLeft=305
 var ghostStartTop=195
 var ghostStartLeft=305
@@ -461,44 +466,37 @@ function move(){
 		if (movekey==r) {divPacman.left=(pacLeft+10); pacLeft=pacLeft+10}
 
 
-		//newleftamt = "left" + pacLeft
 		//console.log("Top: " + pacTop + " Left: " + pacLeft);
 		//console.log(mazedata);
 		//console.log(mazedata[pacTop][pacLeft]);
 
 		// 6. The var newLocationData is the data for the cell we've just moved into. We may need to process a pill being eaten..
 		newLocationData = mazedata[pacTop][pacLeft];
-		if (newLocationData.length>=5) { ifpil = newLocationData.charAt(4)} else {ifpil = 0}
-		if (ifpil=="1" || ifpil=="2") {
-			pb0 = newLocationData.charAt(0)
-			pb1 = newLocationData.charAt(1)
-			pb2 = newLocationData.charAt(2)
-			pb3 = newLocationData.charAt(3)
-			pb4 = "0"
-			if (newLocationData.length==6) {
-				pb5=newLocationData.charAt(5)
-				putback = eval ("pb0+pb1+pb2+pb3+pb4+pb5")
-				} else {
-				putback = eval ("pb0+pb1+pb2+pb3+pb4")
-				}
-			//eval ("mazedata[pacTop]." + newleftamt + "= putback")
-			mazedata[pacTop][pacLeft] = putback
-			newLocationData = putback;
+		if (newLocationData.length>=5){// position 4 is a pill, may or may not be there 
+			pillType = newLocationData.charAt(4);
+		} else {
+			pillType = 0;
+		}
+
+		if (pillType == "1" || pillType == "2"){
+			newLocationData = newLocationData.substring(0,4); 
+			mazedata[pacTop][pacLeft] = newLocationData; 
 			if (ns) pilsrc = eval("document.p" + pacLeft + pacTop + ".document")
 			eval("pilsrc.images.pil_" + pacLeft + pacTop + ".src = blank.src")
 
-			if (ifpil==2){
+			if (pillType==2){
 				ppTimer = powerPillLifetime 
 				ghostscore=50
 				movespeed = speed-10;
 				powerpilon = true
 				for(i=0;i<4;i++){
-					eval ("ghost" + i + "src.src=ghimg5.src")
-					vulnerable[i]=true
+					if (!onPath[i]){
+						eval ("ghost" + i + "src.src=ghimg5.src")
+						vulnerable[i]=true
+					}
 				}
 			}
 
-			ifpil=0;
 			pilcount++
 			score += 10;
 			scoreform.forms[0].elements[0].value = score
@@ -506,7 +504,6 @@ function move(){
 				won = true
 				onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
 				document.getElementById("pacman").style.display="none";
-				resetModeTime=gameTime;
 				levelEnd();
 
 			}
@@ -536,7 +533,8 @@ function move(){
 			divFruit.visibility='hidden'
 		}
 
-		// For the tunnels off the side of the mazes, many need to update location of pacman 
+		// For the tunnels off the side of the mazes, may need to update location of pacman 
+		// NB: The tunnel is denoted in the data by a capital O in the movement bit of the data.
 		if (newLocationData.charAt(2)=="O" || newLocationData.charAt(3)=="O"){
 			if (pacLeft==35){ pacLeft=555; divPacman.left=pacLeft; }
 			if (pacLeft==575){ pacLeft=55; divPacman.left=pacLeft; }
@@ -569,6 +567,10 @@ function showFruit() {
 	divFruit.visibility='visible'
 }
 
+/* 
+ * Function gameModes
+ * Meta: This is run at the beginning of the ghosts function to both get, and set, the game mode on a timer.
+*/
 function gameModes(){
 
 		if (powerpilon){
@@ -597,16 +599,13 @@ function gameModes(){
 						previousMode="scatter";
 					}
 				}
-
-	
-
 			}
 		}
 		if (mode=="random" && !powerpilon){
 			mode=previousMode;
 		}
 
-showmode("MODE: " + mode + " next change at " , parseInt(resetModeTime) -parseInt(scatterTime));
+		showmode("MODE: " + mode + " next change at " , parseInt(resetModeTime) -parseInt(scatterTime));
 
 }
 
@@ -700,7 +699,7 @@ function excludeOppositeDirection(who,possibilities){
  * Function: headFor
  * Param who (string) - index of which ghost we are sending somewhere
  * Param where (array) - 2 item aray of L and R co-ordinates of the cell we are sending the ghost toi
- * Return home (string) - the direction that can be direcly set for that ghost
+ * Return dir (string) - the direction that can be direcly set for that ghost
 */
 function headFor(who,where){
 	currentCell = mazedata[parseInt([topG[who]])][parseInt(leftG[who])]
@@ -708,67 +707,75 @@ function headFor(who,where){
 		alert ("NO CURRENT CELL!");
 	}
 	//console.log(currentCell);
-	home=null;
+	var dir=null;
 
 	if (leftG[who] > where[0] && currentCell.charAt(2)=="L" && ghostDir[who] != "R" && ghostDir[who] != null){
-		home = "L";
-		//console.log("Going" + home);	
+		dir= "L";
+		//console.log("Going" + dir);	
 	} else if (leftG[who] <= where[0] && currentCell.charAt(3)=="R" && ghostDir[who] != "L" && ghostDir[who] != null){
-		home = "R";
-		//console.log("Going" + home);	
+		dir= "R";
+		//console.log("Going" + dir);	
 	}
 
 	if (topG[who] > where[1] && currentCell.charAt(0)=="U" && ghostDir[who] != "D" && ghostDir[who] != null){
-		home="U";
-		//console.log("Going" + home);	
+		dir="U";
+		//console.log("Going" + dir);	
 	} else if (topG[who] <= where[1] && currentCell.charAt(1)=="D" && ghostDir[who] != "U" && ghostDir[who] != null){
-		home="D";
-		//console.log("Going" + home);	
+		dir="D";
+		//console.log("Going" + dir);	
 	}
-	if (currentCell.charAt(4)=="3"){ home="U";} // for when ghosts are in the pound
+	if (currentCell.charAt(4)=="3"){ dir="U";} // for when ghosts are in the pound
 	
 
-	//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],home);
-	if (!home) { 
+	//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],dir);
+
+	// not got a direction? Hmm this is annoying me, I will write something more sensible in due course as I'm still getting sticking at dead ends 
+	if (!dir) { 
 		
 		possibilities=currentCell.substr(0,4).replace(/X/g,"");
 
 		if (possibilities.length==2){
 			if (ghostDir[who]=="R" || ghostDir[who]=="L"){
 				if (currentCell.charAt(0)=="U"){ 
-					home = "U";
+					dir= "U";
 				 } else if (currentCell.charAt(1)=="D"){
-					home = "D";
+					dir= "D";
 				} else if (currentCell.charAt(2)=="L"){
-					home = "L";
+					dir= "L";
 				} else {
-					home = "R";
+					dir= "R";
 				}
-				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
+				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,dir,"in mode:" + mode);
 			} else  if (ghostDir[who]=="D" || ghostDir[who]=="U"){
 				if (currentCell.charAt(2)=="L"){ 
-					home = "L";
+					dir= "L";
 				 } else if (currentCell.charAt(3)=="R"){
-					home = "R";
+					dir= "R";
 				 } else if (currentCell.charAt(0)=="U"){
-					home = "U";
+					dir= "U";
 				} else {
-					home="D";
+					dir="D";
 				}
-				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home,"in mode:" + mode);
+				//console.log("FORCE DIRECTION UP OR DOWN",currentCell,who,dir,"in mode:" + mode);
 			} 
 		}
 	}
 
-	if (!home) {
-			istr = "nowhere to go for " + who + " heading " + ghostDir[who] + " in mode of " + mode;
-			istr = istr + " to " + where[0] + "," + where[1];
-			istr = istr + " from " 
-			istr = istr + leftG[who] + "," + topG[who] + " in mode " + mode; 
-			showmode(istr);
-			home = ghostDir[who];
+	if (!dir) {
+		if (possibilities.charAt(0)=="U"){ dir = "U"; }
+		if (possibilities.charAt(1)=="D"){ dir = "D"; }
+		if (possibilities.charAt(2)=="L"){ dir = "L"; }
+		if (possibilities.charAt(3)=="R"){ dir = "R"; }
+		dir = ghostDir[who];
 	}
-	return home;
+	if (!dir){
+		istr = "Nowhere to go for " + who + " heading " + ghostDir[who] + " in mode of " + mode;
+		istr = istr + " to " + where[0] + "," + where[1];
+		istr = istr + " from " 
+		istr = istr + leftG[who] + "," + topG[who] + " in mode " + mode; 
+		showmode(istr);
+	}
+	return dir;
 }
 
 /*
@@ -991,7 +998,7 @@ function checkBasicVision(g){
 	}// for i
 
 	//status bar for de-buging
-	//status = pacLeft + "-" + pacTop + ":" + ifpil + "~~~" + pilcount + "^^^^" + topG[0] + "-" + topG[1] + "-" + topG[2] + "-" + topG[3] + ":::" + newdatabit.length + "****" + keycount
+	//status = pacLeft + "-" + pacTop + ":" + pillType + "~~~" + pilcount + "^^^^" + topG[0] + "-" + topG[1] + "-" + topG[2] + "-" + topG[3] + ":::" + newdatabit.length + "****" + keycount
 }
 
 /*
@@ -1001,19 +1008,33 @@ function checkBasicVision(g){
 function levelEnd(){
 
 	pilcount=0;
+	resetModeTime=gameTime;
+	sessionStorage.score=score
+	sessionStorage.lives = lives
+	sessionStorage.level++
+	if (sessionStorage.level==12){
+		sessionStorage.level=1
+		if (sessionStorage.speed>=5){sessionStorage.speed=sessionStorage.speed-5;}
+	}
 
+	// flash maze
 	if (mazeNo==2) mazeNo=0
 	mazeCells = document.getElementsByClassName("wallCell");
 	wallCells = document.getElementsByClassName("mazeCell");
 	if (mazeNo==0){
 		for(var i = 0; i < mazeCells.length; i++) {
 		    mazeCells[i].style.borderColor = 'white';
-		    wallCells[i].style.borderColor = 'white';
+		}
+		for (var i=0; i < wallCells.length; i++){
+			    wallCells[i].style.borderColor = 'white';
+
 		}
 		document.getElementById("mazeinner").style.borderColor="white";
 	} else {
 		for(var i = 0; i < mazeCells.length; i++) {
 		    mazeCells[i].style.borderColor = 'blue';
+		}
+		for (var i=0; i < wallCells.length; i++){
 		    wallCells[i].style.borderColor = 'blue';
 		}
 		document.getElementById("mazeinner").style.borderColor="blue";
@@ -1023,14 +1044,7 @@ function levelEnd(){
 	if (mazecount<12) {
 		mazeFlashTimer=setTimeout ("levelEnd()",300)
 	} else {
-		sessionStorage.score=score
-		sessionStorage.lives = lives
-		sessionStorage.level++
 		mazecount=0;
-		if (sessionStorage.level==10){
-			sessionStorage.level=1
-			if (sessionStorage.speed>=5){sessionStorage.speed=sessionStorage.speed-5;}
-		}
 		loadLevel(sessionStorage.level);
 	}
 }
@@ -1062,6 +1076,11 @@ function dynLoader(url, callback){
 */
 var startNewLevel = function (){
 	mazedata = renderGrid();
+	if (levelOptions != undefined){
+		if (levelOptions.pacStartTop){
+			pacStartTop=levelOptions.pacStartTop;
+		}
+	}
 	onPause=1;
 	timeform.forms[0].elements[2].value=gameTime
 	reset();
@@ -1107,49 +1126,83 @@ function start(){
 	gameTimer = setTimeout('divStart.visibility=\'hidden\'; move(); ghosts();',messageLifetime) 
 }
 
-/* Below is simply thiknking about proper OO version and not currently used*/
+/* Temnporary function for debugging and adjusting mode timers  
+ * -  lots of console logs seems to slow things down so I can turn it on and off here
+*/
+function showmode(input){
+	return;
+	console.log(input);
+}
 
-var ghosts_names = new Array("Blinky","Pinky","Inky","Clyde");
-var all_ghosts = new Array();
-var total_ghosts;
+/* Below is simply thiknking about proper OO version and not currently used */
 
 // pacman object constructor
-var make_pacman = function(){
-	this.left=305;
-	this.top=265;
+var class_pacman = function(startLeft,startTop){
+	this.left=startLeft;
+	this.top=startTop;
 	this.direction = "R";
 	this.lives = sessionStorage.lives;
 	this.speed = sessionStorage.speed;
+
+	function move(){}
+	function eat(){}
+	function powerUp(){}
+	function powerDown(){}
+	
 }
 
 // ghost constructor
-var ghost = function(name){
+var class_ghost = function(name){
 	this.name = name;
 	// src - the source image can be named after the name
 	this.left=305;
 	this.top = 195;
 	this.alive=1; // gets rid of the onPath global
-	this.mode="scatter"; // mode (chase, scatter, frightened)
+	this.mode="scatter"; // mode (chase, scatter, frightened, sit, homing)
 	this.leftBase=0;
 	this.direction = "U";
 	this.speed = sessionStorage.speed;
 	console.log(this.name);
+
+	function move(){}
+
+	// modes
+	function chase(){}
+	function scatter(){}
+	function sit(){}
+	function homing(){}
+	function frightened(){}
+
+	function eaten(){}
+	
+}
+
+var class_maze = function(mazedata){
+
+	function populate(){}
+	function removePill(){}
+}
+
+var class_level = function(){
+	
+	function load(){} // load a new level
+	function start(){} // start the level off
+	function reset(){} // reset all sprites
 }
 
 // make four ghosts to start
 function makeGhosts(){
+	var ghosts_names = new Array("Blinky","Pinky","Inky","Clyde");
 	for (i=0;i<ghosts_names.length;i++){
-		all_ghosts[i] = new ghost(ghosts_names[i]);	
+		all_ghosts[i] = new class_ghost(ghosts_names[i]);	
 	}
-	total_ghosts = ghosts_names.length;
+	return all_ghosts;
 }
 
 function oo_start(){
-	var pacman = new make_pacman();
-	make_ghosts();
-}
-
-function showmode(input){
-	return;
-	console.log(input);
+	var pacman = new class_pacman(pacStartLeft,pacStartTop);
+	var all_ghosts = make_ghosts();
+	var total_ghosts = ghosts_names.length;
+	var level = new level(level);
+	
 }
