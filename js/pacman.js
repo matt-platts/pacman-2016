@@ -783,6 +783,8 @@ function headFor(who,where){
 */
 function kd(e){
 
+	e.preventDefault();
+
 	if (onPause){
 		//onPause=0;
 		if (pacTimer){ clearTimeout(pacTimer);}
