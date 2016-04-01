@@ -5,29 +5,48 @@
 */
 
 
-// NOTES: 
+// NOTES TO SELF: 
 // Look for the text HACK2016 in the code - this means I changed something without fully understanding the implications (it's old code)
 // Specifically - checking that possG[wg] exists before trying to read a charAt. I *think* it is because the maze data isn't populated with zeros and the ghost path information isn't in the maze data, so this hack should be removed when the data set is completed.
 
 
 // pacman.js
-// by Matt Platts, 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2006. Updated 2016. 
+// by Matt Platts, 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated 2016, and in progress.. 
 
+/* 
+ * SECTION 1 - set up variables, and init function to initialise the game. 
+*/
 
 // initial settings. these should be increased at around 10000 points?
 var powerPillLifetime=200; // how many iterations the powerpill lasts for - hard is 120
 var ghostBlinkLifetime=25; // how long the ghosts blink for within the power pill. Hard is 15.
 var fruitLifetime=95; // how many iterations a piece of fruit stays on screen - hard is 80
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
-var basicVision = sessionStorage.basicVision; 
+var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
+var scatterTime=300; // how long ghosts remain in scatter mode before switching to chase mode
 
+// localise session storage vars
+var lives = parseInt(sessionStorage.lives)
+var score = parseInt(sessionStorage.score)
+var exlife1 = sessionStorage.exlife1;
+var exlife2 = sessionStorage.exlife;
+var speed = sessionStorage.speed;
+var gameTime = sessionStorage.gameTime;
+var level = sessionStorage.level;
+
+// Define timers
 var pacTimer;
 var ghostsTimer;
-var scatterTime=300; // how long ghosts remain in scatter mode
 
-// set main variables / images
+// define vars for game end routine 
 var mazecount=0
 var mazeNo=0
+
+// scores
+var ghostscore=50
+var nextfruitscore=score+600
+
+// set up images sources
 ghimg0 = new Image
 ghimg0.src = 'graphics/ghost_red.gif'
 ghimg1 = new Image
@@ -48,55 +67,40 @@ berry0 = new Image
 berry0.src = 'graphics/cherry.gif'
 berry1 = new Image
 berry1.src = 'graphics/strawberry.gif'
+
+// Initialise global vars. (have so many global vars.. time for OO!)
 var won = false // true if won the game
 var keycount=0 // number of keys currently depressed
-var newdatabit = 0 
-var onPause = 0
-var ifpil = 0
+var newdatabit = 0 // ??! 
+var onPause = 0 // game paused by the 'p' key or when displaying messages (eg. lost life)
+var ifpil = 0 // bool - is there a pill in the current cell?
 var pilcount = 0 // number of pills eaten
 var ppTimer = "0" //counts down from 80 back to 0 when a powerpill is eaten
 var powerpilon = false // set to true when powerpill is eaten, back to false when it wears off
-var lives = parseInt(sessionStorage.lives)
-var score = parseInt(sessionStorage.score)
-var exlife1 = sessionStorage.exlife1;
-var exlife2 = sessionStorage.exlife;
 var moving = false
 var newkey = "R" // key just pressed
-var lastkey = "D" // key previously pressed
-var movekey = "D" // active key
-var engage2 = false
+var lastkey = "D" // key previously pressed (I have no idea why it is set to D)
+var movekey = "D" // active key (as above)
 var fruitOn=false
-var fruitTimer=0
-var speed=sessionStorage.speed;
-var movespeed=speed;
-var ghostspeed=speed; 
-var gameTime=sessionStorage.gameTime;
-var level = sessionStorage.level;
-var resetModeTime=gameTime;
+var fruitTimer=0 // decrements when a fruit is on screen
+var movespeed=speed; // set to the basic speed to start
+var ghostspeed=speed; // set to the basic speed to start 
+var resetModeTime=gameTime; // the time the mode was last reset to the default (scatter). It starts as the game starts, so at gameTime;.
 
-// start positions for levels 1,3,4,5
+// start positions - still needs to be calculated from the maze data in time 
 var pacStartTop=265
 var pacStartLeft=305
 var ghostStartTop=195
 var ghostStartLeft=305
-
 if (sessionStorage && sessionStorage.level==2) {
 	pacStartTop=265
 	pacStartLeft=305
 	ghostStartTop=195
 	ghostStartLeft=305
 }
-var ghostscore=50
-var nextfruitscore=score+600
 var thisfruit=0
 var fruitArray = new Array(true,true)
-if (sessionStorage){
-	if (sessionStorage.level==1) offScreen=1
-	if (sessionStorage.level==2 || sessionStorage.level==5) offScreen=2
-	if (sessionStorage.level==3 || sessionStorage.level==4) offScreen=3
-} else {
-	offScreen=1;
-}
+
 /* Function: init
  * Meta: init() was originally called from the body onLoad, now it is called after the dynamically loaded javascript maze for the first level. 
  *       init() sets up cross-browser pointer variables, defines several arrays for later use, then calls start function to kick off the level itself. 
@@ -172,6 +176,10 @@ function init(){
 	}
 	start();
 }
+
+/* 
+ * SECTION 2 - The two main loop functions - ghosts and move
+*/
 
 /* 
  * Function: ghosts
@@ -299,12 +307,16 @@ function ghosts(){
 				scoreform.forms[0].elements[0].value = score
 				lifeform.forms[0].elements[1].value -= 1
 				resetModeTime = timeform.forms[0].elements[2].value;
-		ghostReleaseTime = timeform.forms[0].elements[2].value;
-		ghostDelayRelease=Array(); // used to delay the release of each ghost
-		for (i=0;i<4;i++){
-			ghostDelayRelease[i] = ghostReleaseTime - i*15;
-			console.log(ghostDelayRelease[i]);
-		}
+				
+				// reset ghost release time and mode
+				mode="scatter";
+				ghostReleaseTime = timeform.forms[0].elements[2].value;
+				ghostDelayRelease=Array(); // used to delay the release of each ghost
+				for (i=0;i<4;i++){
+					ghostDelayRelease[i] = ghostReleaseTime - i*15;
+					console.log("Ghost delay release after losing a life: ",ghostDelayRelease[i]);
+					console.log("Set mode to " + mode + " for scattertime " + scatterTime);
+				}
 				divMessage.visibility='visible'
 				onPause=1;
 				setTimeout('divMessage.visibility=\'hidden\'; onPause=0; pacTimer = setTimeout("move()",movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
@@ -388,101 +400,6 @@ function ghosts(){
 
 	// And finally, call the function again if the game isn't paused
 	if (!onPause){ ghostsTimer = setTimeout("ghosts()",ghostspeed);}
-}
-
-/* Function: kd
- * Meta: keydown = invoked if key pressed. 
- *       if the game is paused and P has been pressed again to unpause, the unpause happens here by kicking off the game timers.
- *       for any other key logic is more complex and it is passed to keyLogic
-*/
-function kd(e){
-
-	if (onPause){
-		//onPause=0;
-		if (pacTimer){ clearTimeout(pacTimer);}
-		if (ghostsTimer){ clearTimeout(ghostsTimer);}
-		if (gameTimer){ clearTimeout(gameTimer);}
-
-		if (document.all && !document.getElementById){key = window.event.keyCode}
-		if (document.getElementById){ key = e.keyCode}
-		if (key == "80" || key == "112"){
-			onPause=0;
-			move(); ghosts();
-		}
-
-	} else {
-		if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) move()}
-		if (document.all && !document.getElementById){key = window.event.keyCode}
-		if (document.getElementById){ key = e.keyCode}
-		keyLogic(key);
-	}
-}
-
-// netscape version of above.
-function kdns(evt){
-	if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) move()}
-	key = evt.which
-	//status = key
-	keyLogic(key);
-}
-	
-/*
- * Function: keyLogic
- * Meta: First works out which key it is, and translates it to a direction (or performs the pause or reset action). 
- *       Four flags are present here - key, newkey, lastkey & movekey.
- *		key - this contains the key that has just been pressed resulting in this funciton being called, which 
- * 		is immediately translated to upper case ASCII via it's ord value
- * 		movekey - this is the key which generated the current movement. The movement has the same upper case ASCII
- *  			  char value as the key pressed so it is easily compared.
- * 		newkey - If the key which has been pressed is a movement key but NOT the same direction as pacman is 
- * 			 currently heading, newkey is set to the incoming key, and keycount is incremented. This new key
- * 			 *will be* the next direction that pacman takes assuming the move is possible - it is stored for 
- * 			 if that occasion arises. 
- * 			 No action is taken if it is the same key as the current movement - ther eis no need.
- * 		lastkey - this is the last key to be used which changed the direction of pacman, and consequently indicates 
- *			  the direction in which he is currently traelling (which possibly makes this var redundant!
- *
- * 	 All of this data is picked up by the continually looping move function which contains inline explanations of what
- *	 is going on.
- *
- * 	 Some kind of explanation at deciphering my 17 year old logic follows:
- *       If the key that is pressed (key) is not the same as the previously pressed key (newkey - it *was* last time round!), 
- *       then that previously pressed key is stored in lastkey. This signifies that a new movement is waiting to happen when it can.
- * 	 Movekey is the current movement, and if it's not the same as the key just pressed (key) the value is stored in newkey, 
- * 	 and the move function is called if a flag 'moving' is false. move() itself is on a timer, but we don't wna to wait. 
- * 	 The keycount variable is also incremented. 
- * 	 Hmm no that didn't really help either did it..
-*/
-function keyLogic(key){
-
-	// movement kreys (aznm or cursor keys)
-	if (key=="65" || key=="97" || key == "38") {key="U"}
-	if (key=="90" || key=="122" || key == "40") {key="D"}
-	if (key=="78" || key=="110" || key == "37") {key="L"}
-	if (key=="77" || key=="109" || key == "39") {key="R"}
-
-	// game reset key (r)
-	if (key=="82" || key=="114"){ top.location.reload();} // r = reset
-	
-	// game pause key (p)
-	if (key=="80" || key=="112"){
-			onPause=1; 
-			if (pacTimer){ clearTimeout(pacTimer);}
-			if (ghostsTimer){ clearTimeout(ghostsTimer);}
-			if (gameTimer){ clearTimeout(gameTimer);}
-		
-	} else {
-		if (movekey != key) {newkey = key; if (!moving) move(); keycount++}
-	}
-
-}
-
-/* 
- * Function : ku
- * Meta: decreases keycount by one as a key goes up
-*/
-function ku(e){
-	keycount--;
 }
 
 /*
@@ -626,6 +543,11 @@ function move(){
 }
 
 /*
+ * SECTION 3
+ * Logic to deal with which direction ghosts move in
+*/
+
+/*
  * Function: showFruit
  * Meta: displays a piece of fruit to the screen, sets fruitOn flag and sets up the criterea for the next one appearing
 */
@@ -654,8 +576,8 @@ function generateGhostDir(who,howMany,possibilities){
 		} else if (onPath[who]){
 			mode="homing";
 		} else {
-			if (currentTime < resetModeTime-scatterTime){ 
-				if (mode != "chase"){ scatterTime = scatterTime - 50; }
+			if (currentTime < resetModeTime-scatterTime){// means we have just switched to scatter time. as this runs for each ghost, use a quarter of what we want 
+				if (mode != "chase"){ scatterTime = scatterTime - 3; }
 				mode="chase";
 			} else {
 				mode="scatter";
@@ -714,9 +636,6 @@ function generateGhostDir(who,howMany,possibilities){
 			direction=Math.round(Math.random() * 1);
 			if (direction==0){ ghostDir[who]=possibilities.charAt(2); } else { ghostDir[who]=possibilities.charAt(3);}
 			ghostDir[who] = headFor(who,ghostHomeBase);
-		}
-		if (who==3){
-		console.log(ghostDir[who]);
 		}
 }
 
@@ -778,7 +697,6 @@ function headFor(who,where){
 
 		if (possibilities.length==2){
 			if (ghostDir[who]=="R" || ghostDir[who]=="L"){
-			console.log("LEFT OR RIGHT",currentCell);
 				if (currentCell.charAt(0)=="U"){ 
 					home = "U";
 				 } else if (currentCell.charAt(1)=="D"){
@@ -788,8 +706,8 @@ function headFor(who,where){
 				} else {
 					home = "R";
 				}
+				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home);
 			} else  if (ghostDir[who]=="D" || ghostDir[who]=="U"){
-				console.log("UP POR DOWN");
 				if (currentCell.charAt(2)=="L"){ 
 					home = "L";
 				 } else if (currentCell.charAt(3)=="R"){
@@ -799,6 +717,7 @@ function headFor(who,where){
 				} else {
 					home="D";
 				}
+				console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,home);
 			} 
 		}
 	}
@@ -812,6 +731,106 @@ function headFor(who,where){
 			home = ghostDir[who];
 	}
 	return home;
+}
+
+/*
+ * SECTION 4
+ * Key functions to deal with all the key press logic
+*/
+
+/* Function: kd
+ * Meta: keydown = invoked if key pressed. 
+ *       if the game is paused and P has been pressed again to unpause, the unpause happens here by kicking off the game timers.
+ *       for any other key logic is more complex and it is passed to keyLogic
+*/
+function kd(e){
+
+	if (onPause){
+		//onPause=0;
+		if (pacTimer){ clearTimeout(pacTimer);}
+		if (ghostsTimer){ clearTimeout(ghostsTimer);}
+		if (gameTimer){ clearTimeout(gameTimer);}
+
+		if (document.all && !document.getElementById){key = window.event.keyCode}
+		if (document.getElementById){ key = e.keyCode}
+		if (key == "80" || key == "112"){
+			onPause=0;
+			move(); ghosts();
+		}
+
+	} else {
+		if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) move()}
+		if (document.all && !document.getElementById){key = window.event.keyCode}
+		if (document.getElementById){ key = e.keyCode}
+		keyLogic(key);
+	}
+}
+
+// netscape 4 version of kd.
+function kdns(evt){
+	if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) move()}
+	key = evt.which
+	//status = key
+	keyLogic(key);
+}
+	
+/*
+ * Function: keyLogic
+ * Meta: First works out which key it is, and translates it to a direction (or performs the pause or reset action). 
+ *       Four flags are present here - key, newkey, lastkey & movekey.
+ *		key - this contains the key that has just been pressed resulting in this funciton being called, which 
+ * 		is immediately translated to upper case ASCII via it's ord value
+ * 		movekey - this is the key which generated the current movement. The movement has the same upper case ASCII
+ *  			  char value as the key pressed so it is easily compared.
+ * 		newkey - If the key which has been pressed is a movement key but NOT the same direction as pacman is 
+ * 			 currently heading, newkey is set to the incoming key, and keycount is incremented. This new key
+ * 			 *will be* the next direction that pacman takes assuming the move is possible - it is stored for 
+ * 			 if that occasion arises. 
+ * 			 No action is taken if it is the same key as the current movement - ther eis no need.
+ * 		lastkey - this is the last key to be used which changed the direction of pacman, and consequently indicates 
+ *			  the direction in which he is currently traelling (which possibly makes this var redundant!
+ *
+ * 	 All of this data is picked up by the continually looping move function which contains inline explanations of what
+ *	 is going on.
+ *
+ * 	 Some kind of explanation at deciphering my 17 year old logic follows:
+ *       If the key that is pressed (key) is not the same as the previously pressed key (newkey - it *was* last time round!), 
+ *       then that previously pressed key is stored in lastkey. This signifies that a new movement is waiting to happen when it can.
+ * 	 Movekey is the current movement, and if it's not the same as the key just pressed (key) the value is stored in newkey, 
+ * 	 and the move function is called if a flag 'moving' is false. move() itself is on a timer, but we don't wna to wait. 
+ * 	 The keycount variable is also incremented. 
+ * 	 Hmm no that didn't really help either did it..
+*/
+function keyLogic(key){
+
+	// movement kreys (aznm or cursor keys)
+	if (key=="65" || key=="97" || key == "38") {key="U"}
+	if (key=="90" || key=="122" || key == "40") {key="D"}
+	if (key=="78" || key=="110" || key == "37") {key="L"}
+	if (key=="77" || key=="109" || key == "39") {key="R"}
+
+	// game reset key (r)
+	if (key=="82" || key=="114"){ top.location.reload();} // r = reset
+	
+	// game pause key (p)
+	if (key=="80" || key=="112"){
+			onPause=1; 
+			if (pacTimer){ clearTimeout(pacTimer);}
+			if (ghostsTimer){ clearTimeout(ghostsTimer);}
+			if (gameTimer){ clearTimeout(gameTimer);}
+		
+	} else {
+		if (movekey != key) {newkey = key; if (!moving) move(); keycount++}
+	}
+
+}
+
+/* 
+ * Function : ku
+ * Meta: decreases keycount by one as a key goes up
+*/
+function ku(e){
+	keycount--;
 }
 
 
@@ -830,6 +849,11 @@ function getBasicVisionDir(who,not){
 	if (ghostDir[wg] == "3") {ghostDir[wg] = "R"}
 	if (ghostDir[wg] == not) {getBasicVisionDir(wg,not)}
 }
+
+/*
+ * SECTION 5
+ * Game resets
+*/
 
 /*
  * Function: reset
@@ -866,6 +890,7 @@ function reset(){
 	newkey = "R"
 	ppTimer="0"
 	ghostscore=50
+	mode="scatter";
 }
 
 /* 
@@ -1034,7 +1059,7 @@ function start(){
 	ghostDelayRelease=Array(); // used to delay the release of each ghost
 	for (i=0;i<4;i++){
 		ghostDelayRelease[i] = ghostReleaseTime - i*47;
-		console.log(ghostDelayRelease[i]);
+		console.log("START GHOST DELAY RELEASE",ghostDelayRelease[i]);
 	}
 	onPause=0;
 	document.getElementById("levelIndicator").innerHTML = "Level " + sessionStorage.level;
