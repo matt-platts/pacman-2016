@@ -2,14 +2,18 @@
 <html>
 <head>
 <title>Pacman</title>
+<script>
+</script>
 </head>
 <body style="background-color:#000; margin:0px auto; text-align:center;">
 <img src="graphics/logoB.jpg">
 <br />
 <iframe name="innerFrame" id="innerFrame" src="intropage.html" style="margin:0px auto; width:640px; height:580px; overflow:hidden; border=0; outline=0; frameBorder=0;" frameBorder="0"></iframe>
-i
 <script>
-document.getElementsByName("innerFrame")[0].contentWindow.document.body.focus();
+document.getElementById("innerFrame").contentWindow.focus();
+window.onclick = function() {
+document.getElementById("innerFrame").contentWindow.focus();
+}
 </script>
 </body>
 </html>
