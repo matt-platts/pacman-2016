@@ -11,7 +11,7 @@ Improvements so far have been:
 4. Re-implementation of ghost algorithms. The original version had randomly moving ghosts which could only detect if you were in their direct line of sight and act accordingly. New implementation features scatter, chase and random modes which are switched depending on various variables. They can now home in on you from afar if they so choose. I am still working on the exact timings of these modes. 
 5. New logic allowing modifications to the speed of pacman on the fly, consequently have had to adjust collision detection too which is now much better - previously there was an issue when going round corners anyway.
 6. Delay ghosts leaving home base incrementally (as per original game).
-7. Tidying up of code and commenting (ongoing, I will get onto those eval's one day..). 
+7. Tidying up of code and commenting (ongoing, I am getting onto those eval's..). 
 
 Future improvements will be
 
@@ -21,7 +21,11 @@ Future improvements will be
 3. Random maze generation algorithm, based on a modification of the known recursive backtracker algorithm but to take the double walls into account (Recusrive backgracker deals with borders on all cells, not some cells blocked as walls).
 4. Selections for different logic and modes of play. I've found lots of things that work interestingly. It's facinating to see how small changes change the feel of the game greatly as well.
 5. Some wild and crazy features going beyond a pacman clone :)
+6. (In progress in 'binary' branch) - Using binary data for the mazes and movement lookups, using bitwise maths for the calculations.
 
 Currently known bugs
 1. Chase mode seems to persist when you go into the next level.
-2. Just noticed game speed selector is not working any more.
+2. Just noticed game speed selector is not working any more (sessionStorage issue?)
+3. Ghosts eaten at the top of the maze (and I think the right column) disappear off screen and reappear in the base. This behaviour should only be for dev, adjust settings in this if block.. 
+4. Firefox testing didn't go well (Chrome and IE seemed fine)
+
