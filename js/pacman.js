@@ -658,12 +658,13 @@ function generateGhostDir(who,howMany,possibilities){
 				if (mazedata[topG[who]][leftG[who]] == "3" && !onPath(who)){// ghosts can only re-enter the home base when on a path to regenerate 
 					possibilities=possibilities.replace(/5/g,"");
 				}
-				if (howMany>2){
+				if (howMany>2){ // NB: having howmany>2 gives more chances for the ghosts to backtrack on themsleves, making them easier to catch.
 					possibilities=excludeOppositeDirection(who,possibilities);
 					howMany--;
 				}
 				if (!onPath[who]) {
-					direction = eval("Math.round(Math.random() *" + howMany + ")");
+					//direction = eval("Math.round(Math.random() *" + howMany + ")");
+					direction = Math.floor(Math.random() *(howMany));
 					ghostDir[who] = possibilities.charAt(direction);
 				} else {
 					ghostDir[who] = headFor(who,ghostHomeBase);
@@ -889,7 +890,8 @@ function ku(e){
  * Although not programatically brilliant, it worked for the game in an 'off label' kind of way, so it got left. 
 */
 function getBasicVisionDir(who,not){
-	ghostDir[wg] = Math.round(Math.random() *3)
+	ghostDir[wg] = Math.floor(Math.random() *3); 
+	
 	if (ghostDir[wg] == "0") {ghostDir[wg] = "U"}
 	if (ghostDir[wg] == "1") {ghostDir[wg] = "D"}
 	if (ghostDir[wg] == "2") {ghostDir[wg] = "L"}
@@ -1205,4 +1207,93 @@ function oo_start(){
 	var total_ghosts = ghosts_names.length;
 	var level = new level(level);
 	
+}
+
+// BELOW IS FIRST THOUGHTS ON USING BINARY DATA FOR THE MAZE DATA AND LOOKUPS 
+
+/*
+ * Function binary_lookup
+ * Neta; just experimenting
+*/
+function binary_lookup(direction,data) {
+
+	// assume our movements UDLR are 8,4,2,1 
+	// would give us the foolowing
+	var moves = Array ();
+	moves[0] = 0;
+	moves[1] = "R"; // Right only
+	moves[2] = "L"; // Left only
+	moves[3] = "LR"; // Left and right 
+	moves[4] = "D"; // Left only
+	moves[5] = "DR"  // Down and right
+	moves[6] = "DL"; // Down and left 
+	moves[7] = "DLR"; // Down, left, right 
+	moves[8] = "U"; // Up only 
+	moves[9] = "UR"; // Up and right 
+	moves[10] = "UL"; // Up and left
+	moves[11] = "ULR"; // Up, left and right
+	moves[12] = "UD" ; // Up and down
+	moves[13] = "UDR"; // UP down right
+	moves[14] = "UDL"; // UP down loeft
+	moves[15] = "UDLR"; // All directions
+
+	// by storing the possible positions instead of as UDLR but as a key of the array, can & the current direction to the number to work out if the move is possible
+
+	// example input 1,12 (wher 1 is Right and 12 is the value stored in the data
+	// 12 & 1 = 0 - move not possible
+	// example input 1,13
+	// 13 & 1 = 1 - move possible
+	// should mean less bytes to store and quicker lookup
+
+	// convert dec to bin: (15 >>> 0).toString(2); // gives 1111
+	// convert bin to dec: parseInt(1111,2); // gives 15
+
+	// to get random direction for all possible directions
+	// 1 << Math.floor(Math.random() * 4) // returns 1,2,4 or 8
+
+	// get random direction for pre-existing set x
+	// 1 << Math.floor(Math.random() * moves[x].length) // returns 1,2,4 or 8 (which are R,L,D U)
+
+	// to remove the reverse direction from the existing set (we don't want to go backwards)
+	// reverse = current == 1 ? 2 : current==2 ? 1 : current==4 ? 8 : 4;
+	// possibles = x & ~reverse 
+
+	// thus to generate a new direction but not the way we have come would be:
+	// 1 << Math.floor(Math.random() * (x ^ current).toString().length) 
+
+	x = 13; // "UDR"
+	current = 8; // right
+	console.log("Current:",current,moves[current]);
+
+	reverse = current == 1 ? 2 : current==2 ? 1 : current==4 ? 8 : 4;
+	console.log("Reverse direction is:",reverse,moves[reverse]);
+	console.log("X:",x,moves[x]);
+
+	removed = x & ~reverse; // we are bitwise anding the nibble with a bitwise not on the reverse direction - moves[removed] gives the new data, removed the index.
+	console.log("Possible directions with the reverse removed:", removed, (removed >>> 0).toString(2), moves[removed]);
+
+	// 3 ways of getting the length
+	console.log("no_of_bits:",qtyBits((removed>>>0).toString(2)));
+	qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4);
+	console.log("lookup len: ", qty_bits_lookup[removed]);
+	len = moves[removed].toString().length;
+	console.log("len:",len);
+
+	random = Math.floor(Math.random() * len);
+	result = 1 << random; 
+	//result = 1 << Math.floor(Math.random() * (x & ~ reverse).toString().length) 
+	console.log("RESULT:", result, moves[removed] & result, moves[removed].charAt(result-1), " FROM RAND " + random);
+
+}
+
+/* 
+ * Function: qtyBits
+ * Meta: returns the numbers of set bits in a byte - ie number of directions
+*/
+function qtyBits(bin){
+	count = 0;
+	for(i = 0; i < bin.length; i++) { // would use map but creating arrays on the fly is LONG in javascript
+		count += (bin >> i) & 0x01;
+	}
+	    return count;
 }
