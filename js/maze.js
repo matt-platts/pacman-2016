@@ -53,41 +53,46 @@ function convert(maze){
 */
 function renderGrid(){
 	var interim_maze = convert(maze);
-	var mazedata = Array()
+	var mazedata = Array();
+	var bindata = Array();
+	var binpills = Array();
 	var x=0;
 	v_offset=25; // start 25px down
 	innerStr="";
-	for (i=0;i<interim_maze.length;i++){
+	for (y=0;y<interim_maze.length;y++){
 		var lineMoves = Array();
 		h_offset=35; // start a new line 35px in
 		mazedata[v_offset] = Array();
+		bindata[v_offset] = Array();
 		for (x=0;x<19;x++){
 		
-			bit = interim_maze[i][x];
+			bit = interim_maze[y][x];
+			binbit = 0;
 			var movestring=""; // empty var to take the possible directions
+
 			// populate movestring by scanning the binary array left, right, up and down for more 1's
-			if (interim_maze[i-1] && interim_maze[i-1][x] != "0"){
-				 movestring="U" } else { movestring="X";}
+			if (interim_maze[y-1] && interim_maze[y-1][x] != "0"){
+				 movestring="U"; binbit=8;} else { movestring="X";}
 
-			if (interim_maze[i+1] && interim_maze[i+1][x] != "0"){
-				 movestring += "D" } else { movestring += "X";}
+			if (interim_maze[y+1] && interim_maze[y+1][x] != "0"){
+				 movestring += "D"; binbit += 4; } else { movestring += "X";}
 
-			if (interim_maze[i][x-1] && interim_maze[i][x-1] != "0"){
-				 movestring += "L" } else { movestring += "X";}
+			if (interim_maze[y][x-1] && interim_maze[y][x-1] != "0"){
+				 movestring += "L"; binbit += 2;} else { movestring += "X";}
 
-			if (interim_maze[i][x+1] && interim_maze[i][x+1] != "0"){
-				 movestring += "R" } else { movestring += "X";}
+			if (interim_maze[y][x+1] && interim_maze[y][x+1] != "0"){
+				 movestring += "R"; binbit += 1; } else { movestring += "X";}
 
-			movestring += bit;
+			movestring += bit; // this adds the pill
 			lineMoves.push(movestring); // ADD to an array of the whole line
 
 			// This section draws the inner wall of the outer double wall (where x and y are the perimiters).
 			// The CSS for the mazecells is no longer used, but anticipating I may again in the future, I'm manually altering it here.
-			if (i==0 || x==0 || i==14 || x==18 ){
+			if (y==0 || x==0 || y==14 || x==18 ){
 
 				styles=movestring.substring(0,4); // we add the 4 move positions to a css class in order to draw the correct borders for the maze
 
-				if (i==0){ 
+				if (y==0){ 
 					if (x != 0 && x!=18){
 						 styles = styles.replace("XXL","XDL");	
 						 styles = styles.replace("XXX","XDL");	
@@ -95,7 +100,7 @@ function renderGrid(){
 						 styles = styles.replace("XDLX","XDLR");	
 					}
 				}
-				if (i==14){
+				if (y==14){
 					styles = styles.replace("XXXR","UXXR");
 					styles = styles.replace("XXLR","UXLR");
 				}
@@ -113,11 +118,11 @@ function renderGrid(){
 				if (bit==4 && i!=0){
 						styles = "UDLR";
 				}
-				if (bit==4 && i==0){
+				if (bit==4 && y==0){
 					styles=styles.replace("XXLX","XDLR");
 					styles=styles.replace("XXXR","XDLR");
 				}
-				if (x==18 && i == 14){
+				if (x==18 && y == 14){
 					styles = "UXLX";
 				}
 			
@@ -177,6 +182,9 @@ function renderGrid(){
 				str='<div id="cell-' + h_offset + '-' + v_offset + '" style="position:absolute; top:' + v_offset + 'px; left:' + h_offset + 'px;" class="mazeCell ' + styles + '">' + cellInnerHTML + '</div>';
 				innerStr += str;
 				mazedata[v_offset][h_offset] = movestring; 
+				binbit = (binbit>>>0).toString(2);
+				binbit="0000".substr(binbit.length)+binbit;
+				bindata[v_offset][h_offset] = binbit;
 
 				// Cells and sprites are 30x30px and pacman moves in 10px increments. 
 				// If you can go right from this cell, populate the next two elements in the lookup array (these are on screen positions) with left and right options. 
@@ -188,9 +196,11 @@ function renderGrid(){
 				if (movestring.charAt(1)=="D"){ // and the same for down. Not we may need to initialise the arrays when going down.
 					if (typeof(mazedata[v_offset+10]) != "object"){
 						mazedata[v_offset+10] = Array();
+						bindata[v_offset+10] = Array();
 					}
 					if (typeof(mazedata[v_offset+20]) != "object"){
 						mazedata[v_offset+20] = Array();
+						bindata[v_offset+20] = Array();
 					}
 					mazedata[v_offset+10][h_offset] = "UDXX";
 					mazedata[v_offset+20][h_offset] = "UDXX";
@@ -215,5 +225,6 @@ function renderGrid(){
 	//console.log(innerStr);
 	//console.log(mazedata);
 	document.getElementById('mazeinner').innerHTML=innerStr;
+	console.log(bindata);
 	return mazedata;
 }
