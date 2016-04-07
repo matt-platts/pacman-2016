@@ -182,8 +182,7 @@ function renderGrid(){
 				str='<div id="cell-' + h_offset + '-' + v_offset + '" style="position:absolute; top:' + v_offset + 'px; left:' + h_offset + 'px;" class="mazeCell ' + styles + '">' + cellInnerHTML + '</div>';
 				innerStr += str;
 				mazedata[v_offset][h_offset] = movestring; 
-				binbit = (binbit>>>0).toString(2);
-				binbit="0000".substr(binbit.length)+binbit;
+				//binbit = (binbit>>>0).toString(2); // only use this to store in binary notation
 				bindata[v_offset][h_offset] = binbit;
 
 				// Cells and sprites are 30x30px and pacman moves in 10px increments. 
@@ -226,5 +225,5 @@ function renderGrid(){
 	//console.log(mazedata);
 	document.getElementById('mazeinner').innerHTML=innerStr;
 	console.log(bindata);
-	return mazedata;
+	return Array(mazedata,bindata);
 }

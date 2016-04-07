@@ -82,9 +82,9 @@ var pilcount = 0 // number of pills eaten
 var ppTimer = "0" //counts down from 80 back to 0 when a powerpill is eaten
 var powerpilon = false // set to true when powerpill is eaten, back to false when it wears off
 var moving = false
-var newkey = "R" // key just pressed
-var lastkey = "D" // key previously pressed (I have no idea why it is set to D)
-var movekey = "D" // active key (as above)
+var newkey = 1 // key just pressed
+var lastkey = 4 // key previously pressed (I have no idea why it is set to D)
+var movekey = 4 // active key (as above)
 var fruitOn=false
 var fruitTimer=0 // decrements when a fruit is on screen
 var movespeed=speed; // set to the basic speed to start
@@ -422,48 +422,45 @@ function ghosts(){
 function move(){
 
 	// 1. Look up the possible moves from the current position
-	possibilities = mazedata[pacTop][pacLeft];
-	u = possibilities.charAt(0)
-	d = possibilities.charAt(1)
-	l = possibilities.charAt(2)
-	r = possibilities.charAt(3)
+	possibilities = bindata[pacTop][pacLeft];
+	binposs = possibilities; // lost the extra
+	
 
 	// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
-	if (newkey==u || newkey==d || newkey ==l || newkey == r) {
+	if (binposs && (binposs & newkey)) {
 
 		engage=true; movekey = newkey; lastkey = newkey // lastkey set to stop constant repetition of last 2 moves without the user touching anything.. see later on.
 
-	} else {
+	} else if (binposs && (binposs & lastkey)){
 
 		// 2.1 If previously pressed key generated a character that exists in the possible moves array then we can use that to continue in that direction
-		if (lastkey==u || lastkey==d || lastkey==l || lastkey==r) {
 			engage = true
 			movekey = lastkey
 
 		// 2.2 The latest and last key presses do not match a possible direction - therefore pacman stops. 'engage' and 'moving' set to false
-		} else {
-			engage = false
-			moving = false
-		}
+	} else if (!binposs){
+		engage = true;
+	} else {
+		engage = false
+		moving = false
 	}
-
 	// 3. Engage is now set if a move can be made. This is either off the new key the previously pressed key, it doesn't matter as we make that move.
 	if (engage) {
 
 		if (movekey==newkey) { // 4. This means the latest key press and not the previous one generated this move, so we update the icon to point the right way
 			newClass = "pacman_" + newkey;
-			document.getElementById("pacman").classList.remove("pacman_U");
-			document.getElementById("pacman").classList.remove("pacman_D");
-			document.getElementById("pacman").classList.remove("pacman_L");
-			document.getElementById("pacman").classList.remove("pacman_R");
+			document.getElementById("pacman").classList.remove("pacman_1");
+			document.getElementById("pacman").classList.remove("pacman_2");
+			document.getElementById("pacman").classList.remove("pacman_4");
+			document.getElementById("pacman").classList.remove("pacman_8");
 			document.getElementById("pacman").classList.add(newClass);
 		}
 
 		// 5. Move the sprite on screen to correspond to the direction
-		if (movekey==u) {divPacman.top=(pacTop-10); pacTop=pacTop-10}
-		if (movekey==d) {divPacman.top=(pacTop+10); pacTop=pacTop+10}
-		if (movekey==l) {divPacman.left=(pacLeft-10);pacLeft=pacLeft-10}
-		if (movekey==r) {divPacman.left=(pacLeft+10); pacLeft=pacLeft+10}
+		if (movekey==8) {divPacman.top=(pacTop-10); pacTop=pacTop-10}
+		if (movekey==4) {divPacman.top=(pacTop+10); pacTop=pacTop+10}
+		if (movekey==2) {divPacman.left=(pacLeft-10);pacLeft=pacLeft-10}
+		if (movekey==1) {divPacman.left=(pacLeft+10); pacLeft=pacLeft+10}
 
 
 		//console.log("Top: " + pacTop + " Left: " + pacLeft);
@@ -861,10 +858,10 @@ function kdns(evt){
 function keyLogic(key){
 
 	// movement kreys (aznm or cursor keys)
-	if (key=="65" || key=="97" || key == "38") {key="U"}
-	if (key=="90" || key=="122" || key == "40") {key="D"}
-	if (key=="78" || key=="110" || key == "37") {key="L"}
-	if (key=="77" || key=="109" || key == "39") {key="R"}
+	if (key=="65" || key=="97" || key == "38") {key=8}
+	if (key=="90" || key=="122" || key == "40") {key=4}
+	if (key=="78" || key=="110" || key == "37") {key=2}
+	if (key=="77" || key=="109" || key == "39") {key=1}
 
 	// game reset key (r)
 	if (key=="82" || key=="114"){ top.location.reload();} // r = reset
@@ -1081,7 +1078,9 @@ function dynLoader(url, callback){
  * Meta: Renders the new maze, resets the timer, resets the sprite positions and calls start (to show the next level message and kick off the timers) 
 */
 var startNewLevel = function (){
-	mazedata = renderGrid();
+	griddata= renderGrid();
+	mazedata=griddata[0];
+	bindata=griddata[1];
 	if (levelOptions != undefined){
 		if (levelOptions.pacStartTop){
 			pacStartTop=levelOptions.pacStartTop;
