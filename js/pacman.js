@@ -150,7 +150,7 @@ function init(){
 
 	scoreform  = (ns)? document.score.document:document
 	lifeform   = (ns)? document.score.document:document
-	timeform   = (ns)? document.score.document:document
+	timeform   = (ns)? document.score.document:document.forms[0].elements[2];
 	pilsrc     = (ns)? document:document
 
 	if (ns) {
@@ -297,7 +297,7 @@ function ghosts(){
 			}
 		}
 
-		// Collision detectoin
+		// Collision detection
 		// If so, either send the ghost home, or lose a life, depending whether a powerpill is currently active. 
 		if (ppTimer > 1){
 			closeness_allowed=20;
@@ -305,22 +305,23 @@ function ghosts(){
 			closeness_allowed=30;
 		}
 
+		// detect collision
 		if (pacLeft > leftG[wg]-20 && pacLeft < leftG[wg]+20 && pacTop > topG[wg]-20 && pacTop < topG[wg]+20 && 
-			(pacLeft == leftG[wg] || pacTop == topG[wg])) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. 
+			(pacLeft == leftG[wg] || pacTop == topG[wg] || vulnerable[wg])) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. If the ghost is vulnerable, i've decided to let this through though.. 
 			{
 
-			//if no Powerpill and game not won and ghost not on path, you've lost a life
-			//or pill is on but ghost is not vulnerable then same
+			// if no Powerpill and game not won and ghost not on path, you've lost a life
+			// or pill is on but ghost is not vulnerable then same
 			if ((ppTimer=="0" && !won && !onPath[wg]) || (ppTimer>="1" && !vulnerable[wg] && !onPath[wg])) {
 				lives = (lives-1)
 				score -= 50
 				scoreform.forms[0].elements[0].value = score
 				lifeform.forms[0].elements[1].value -= 1
-				resetModeTime = timeform.forms[0].elements[2].value;
+				resetModeTime = timeform.value;
 				
 				// reset ghost release time and mode
 				mode="scatter";
-				ghostReleaseTime = timeform.forms[0].elements[2].value;
+				ghostReleaseTime = timeform.value;
 				ghostDelayRelease=Array(); // used to delay the release of each ghost
 				for (i=0;i<4;i++){
 					ghostDelayRelease[i] = ghostReleaseTime - i*15;
@@ -334,7 +335,7 @@ function ghosts(){
 					 divMessEnd.visibility='visible'
 					 onPause=1;
 					 divMessage.display="none";
-					locStr = "intropage.html?score=" + score;
+					 locStr = "intropage.html?score=" + score;
 					 setTimeout('won=true; sessionStorage.score=score; location=locStr;',messageLifetime);
 				} else {
 					reset()
@@ -352,7 +353,7 @@ function ghosts(){
 	}
 
 	// Decrement the power pill timer, and change source of ghost images if powerpill nearly over.
-	if (ppTimer >="1") {
+	if (ppTimer >0) {
 		ppTimer=(ppTimer-1);
 	}
 
@@ -391,14 +392,14 @@ function ghosts(){
 
 	//checkBasicVision()
 	// Game timer on the screen.. 
-	timeform.forms[0].elements[2].value--
-	if (timeform.forms[0].elements[2].value==0){
+	if (!won){ timeform.value--;}
+	if (timeform.value==0){
 		lives = (lives-1)
 		score -= 50
 		scoreform.forms[0].elements[0].value = score
 		lifeform.forms[0].elements[1].value -= 1
 		gameTime=sessionStorage.gameTime;
-		timeform.forms[0].elements[2].value=gameTime
+		timeform.value=gameTime
 		alert ("OUT OF TIME! One life lost.")
 		if (lives==0) {
 			locStr = "intropage.html?score=" + score;
@@ -577,7 +578,7 @@ function gameModes(){
 			mode="random";
 		} else {
 
-			currentTime = timeform.forms[0].elements[2].value;
+			currentTime = timeform.value;
 			if (currentTime < parseInt(resetModeTime) - parseInt(scatterTime)){
 				showmode("MODE SWITCH from " + mode + " AT !" + currentTime);
 			
@@ -614,7 +615,7 @@ function gameModes(){
 */
 function generateGhostDir(who,howMany,possibilities){
 
-		currentTime = timeform.forms[0].elements[2].value;
+		currentTime = timeform.value;
 		if (onPath[who]){
 			ghostMode="homing";
 		} else if (ghostDelayRelease[who] < currentTime){
@@ -1076,7 +1077,7 @@ var startNewLevel = function (){
 		}
 	}
 	onPause=1;
-	timeform.forms[0].elements[2].value=gameTime
+	timeform.value=gameTime
 	reset();
 	start();
 }
@@ -1107,7 +1108,7 @@ function loadLevel(level){
 */
 function start(){
 	mode="scatter";
-	ghostReleaseTime = timeform.forms[0].elements[2].value;
+	ghostReleaseTime = timeform.value;
 	ghostDelayRelease=Array(); // used to delay the release of each ghost
 	for (i=0;i<4;i++){
 		ghostDelayRelease[i] = ghostReleaseTime - i*47;
