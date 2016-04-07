@@ -279,7 +279,7 @@ function ghosts(){
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
 		if (onPath[wg]){
-			if (topG[wg]>=446 || topG[wg] <=35 || leftG[wg]<=25 || leftG[wg] >=591) {
+			if (topG[wg]>445 || topG[wg] <25 || leftG[wg]<35 || leftG[wg] >575) {
 				eval ("divGhost" + wg + ".left = ghostStartLeft")
 				eval ("divGhost" + wg + ".top = ghostStartTop")
 				leftG[wg] = eval ("parseInt(divGhost" + wg + ".left)")
@@ -729,10 +729,13 @@ function headFor(who,where){
 
 	//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],dir);
 
-	// not got a direction? Hmm this is annoying me, I will write something more sensible in due course as I'm still getting sticking at dead ends 
+	// not got a direction? Means we can't head there directly, so lets make a decision 
+	// if there are only two possibilities, try and force a 90 degree angle turn, otherwise just go through some defaults.
+	// logic is: if its going R or L, force in this order: U,D,L,R 
+	// 	     if its going U or D, force in this order: L,R,U,D
 	if (!dir) { 
 		
-		possibilities=currentCell.substr(0,4).replace(/X/g,"");
+		possibilities=currentCell.substr(0,4).replace(/X/g,""); // remove the X's so we can get total number of directions available
 
 		if (possibilities.length==2){
 			if (ghostDir[who]=="R" || ghostDir[who]=="L"){
@@ -744,6 +747,7 @@ function headFor(who,where){
 					dir= "L";
 				} else {
 					dir= "R";
+					alert("This wont even happen");
 				}
 				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,dir,"in mode:" + mode);
 			} else  if (ghostDir[who]=="D" || ghostDir[who]=="U"){
@@ -755,26 +759,33 @@ function headFor(who,where){
 					dir= "U";
 				} else {
 					dir="D";
+					alert("This will never happen");
 				}
 				//console.log("FORCE DIRECTION UP OR DOWN",currentCell,who,dir,"in mode:" + mode);
 			} 
+		} else if (possibilities.length==1){
+
+				dir = possibilities;
+
+		} else if (possibilities.length==3 || possibilities.legnth==4){
+			// here for 1,3 or 4 possibilities
+			// for now, forcing in the order up, right, down, left
+
+			// just keep going? works well for 3 and 4 so far..
+			dir = ghostDir[who];
+		} else {
+			alert("WHy!!!!");
 		}
 	}
 
-	if (!dir) {
-		if (possibilities.charAt(0)=="U"){ dir = "U"; }
-		if (possibilities.charAt(1)=="D"){ dir = "D"; }
-		if (possibilities.charAt(2)=="L"){ dir = "L"; }
-		if (possibilities.charAt(3)=="R"){ dir = "R"; }
-		dir = ghostDir[who];
-	}
-	if (!dir){
+	/*if (!dir){
 		istr = "Nowhere to go for " + who + " heading " + ghostDir[who] + " in mode of " + mode;
 		istr = istr + " to " + where[0] + "," + where[1];
 		istr = istr + " from " 
 		istr = istr + leftG[who] + "," + topG[who] + " in mode " + mode; 
+		console.log(istr);
 		showmode(istr);
-	}
+	}*/
 	return dir;
 }
 
