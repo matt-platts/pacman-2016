@@ -23,8 +23,8 @@ var ghostBlinkLifetime=25; // how long the ghosts blink for within the power pil
 var fruitLifetime=95; // how many iterations a piece of fruit stays on screen - hard is 80
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
-var scatterTime=200; // how long ghosts remain in scatter mode before switching to chase mode
-var chaseTime=50;
+var scatterTime = 300; // how long ghosts remain in scatter mode before switching to chase mode
+var chaseTime = 50;
 var mode = "scatter"
 var previousMode = "scatter";
 var levelOptions;
@@ -33,7 +33,7 @@ var levelOptions;
 var lives = parseInt(sessionStorage.lives)
 var score = parseInt(sessionStorage.score)
 var exlife1 = sessionStorage.exlife1;
-var exlife2 = sessionStorage.exlife;
+var exlife2 = sessionStorage.exlife2;
 var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
@@ -324,8 +324,7 @@ function ghosts(){
 				ghostDelayRelease=Array(); // used to delay the release of each ghost
 				for (i=0;i<4;i++){
 					ghostDelayRelease[i] = ghostReleaseTime - i*15;
-					//console.log("Ghost delay release after losing a life: ",ghostDelayRelease[i]);
-					showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
+					//showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
 				}
 				divMessage.visibility='visible'
 				onPause=1;
@@ -515,7 +514,7 @@ function move(){
 			lives++; sessionStorage.lives = lives; scoreform.forms[0].elements[1].value = lives;
 		}
 		if (score>=10000 && score <10500 && exlife2) {
-			exlife2=0; sessionStorag.exlife=0;
+			exlife2=0; sessionStorag.exlife2=0;
 			lives++; sessionStorage.lives++; scoreform.forms[0].elements[1].value = lives;
 		} 
 
@@ -663,7 +662,6 @@ function generateGhostDir(who,howMany,possibilities){
 					howMany--;
 				}
 				if (!onPath[who]) {
-					//direction = eval("Math.round(Math.random() *" + howMany + ")");
 					direction = Math.floor(Math.random() *(howMany));
 					ghostDir[who] = possibilities.charAt(direction);
 				} else {
@@ -711,7 +709,7 @@ function headFor(who,where){
 	var dir=null;
 
 	if (leftG[who] > where[0] && currentCell.charAt(2)=="L" && ghostDir[who] != "R" && ghostDir[who] != null){
-		dir= "L";
+		dir = "L";
 		//console.log("Going" + dir);	
 	} else if (leftG[who] <= where[0] && currentCell.charAt(3)=="R" && ghostDir[who] != "L" && ghostDir[who] != null){
 		dir= "R";
@@ -794,7 +792,6 @@ function kd(e){
 	e.preventDefault();
 
 	if (onPause){
-		//onPause=0;
 		if (pacTimer){ clearTimeout(pacTimer);}
 		if (ghostsTimer){ clearTimeout(ghostsTimer);}
 		if (gameTimer){ clearTimeout(gameTimer);}
@@ -890,8 +887,7 @@ function ku(e){
  * Although not programatically brilliant, it worked for the game in an 'off label' kind of way, so it got left. 
 */
 function getBasicVisionDir(who,not){
-	ghostDir[wg] = Math.floor(Math.random() *3); 
-	
+	ghostDir[wg] = Math.floor(Math.random() *3);
 	if (ghostDir[wg] == "0") {ghostDir[wg] = "U"}
 	if (ghostDir[wg] == "1") {ghostDir[wg] = "D"}
 	if (ghostDir[wg] == "2") {ghostDir[wg] = "L"}
@@ -954,7 +950,6 @@ function checkBasicVision(g){
 		if (topG[wg] < pacTop) {// ghost < pac
 			changedir=true
 			for (v=topG[wg];v<pacTop;v=(v+10)){
-				//newdatabit = eval ("mazedata[" + v + "].left" + pacLeft)
 				newdatabit = mazedata[v][pacLeft];
 				//console.log(v,pacLeft);
 				//console.log(mazedata[v][pacLeft]);
@@ -967,7 +962,6 @@ function checkBasicVision(g){
 			if (topG[wg] > pacTop) {// ghost > pac
 				changedir=true
 				for (v=pacTop;v<topG[wg];v=(v+10)){
-				//newdatabit = eval ("mazedata[" + v + "].left" + pacLeft)
 				newdatabit = mazedata[v][pacLeft]
 				if (newdatabit && newdatabit.charAt(0) != "U") changedir=false
 				}//for j
@@ -980,7 +974,6 @@ function checkBasicVision(g){
 		if (leftG[wg] < pacLeft) {// if ghost < pac
 			changedir=true
 			for (v=leftG[wg];v<pacLeft;v=(v+10)){
-				//newdatabit = eval ("mazedata[pacTop].left" + v)
 				newdatabit = mazedata[pacTop][v]
 				if (newdatabit && newdatabit.charAt(3) != "R") changedir=false
 			}//for j
@@ -989,7 +982,6 @@ function checkBasicVision(g){
 			if (leftG[wg] > pacLeft) {// if ghost > pac
 			changedir=true
 			for (v=pacLeft;v<leftG[wg];v=(v+10)){
-				//newdatabit = eval ("mazedata[pacTop].left" + v)
 				newdatabit = mazedata[pacTop][v];
 				if (newdatabit && newdatabit.charAt(2) != "L") changedir=false
 			}//for j
@@ -1103,7 +1095,6 @@ var renderNewData = function() {
  * Meta: Loads the mazedata file from the server, and calls renderNewData as a callback
 */
 function loadLevel(level){
-	//eval ("location='pacman_" + sessionStorage.level + ".html'")
 	resetModeTime=2000;
 	moving = false;
 	dataFile = "js/data/mazedata" + level + ".js";
