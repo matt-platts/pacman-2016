@@ -28,6 +28,7 @@ var chaseTime = 50;
 var mode = "scatter"
 var previousMode = "scatter";
 var levelOptions;
+var total_ghosts=4;
 
 // localise session storage vars
 var lives = parseInt(sessionStorage.lives)
@@ -180,7 +181,7 @@ function init(){
 		leftG[i] = parseInt(leftG[i])
 		topG[i] = eval ("divGhost" + i +".top")
 		topG[i] = parseInt(topG[i])
-		ghostDir[i] = "U"
+		ghostDir[i] = 8;
 	}
 	start();
 }
@@ -200,13 +201,15 @@ function ghosts(){
 	gameModes(); // these adjust on a timer
 
 	// The movement functions are run four times in a loop - once for each ghost
-	for (wg=0;wg<4;wg++){
+	for (wg=0;wg<total_ghosts;wg++){
 		// 1. Load the possible moves from the mazedata array into the possG array. 
 		//   All the data for all the ghosts is used later (collision detection) hence the array. 
-		possG[wg] = mazedata[topG[wg]][parseInt(leftG[wg])];
+		possG[wg] = bindata[topG[wg]][parseInt(leftG[wg])];
 
 		// 2. Check possibile moves. The ghostData array contains info on which moves are possible. 
 		//    If more than 2 directions are present, or only 1 (ie backwards, so dead end) - a new direction must be generated...
+
+		/*
 		totalDirections=0 // counters for each ghost
 		for (n=0;n<4;n++){
 		ghostData[n]=0
@@ -216,6 +219,8 @@ function ghosts(){
 		} else {
 			ghostData[n] = n}
 		}
+		*/
+		totalDirections=qtyBits(possG[wg]);
 
 		// 3. Call function to get ghost direction where there are 1 or more than two directions
 		if (totalDirections>2 || totalDirections==1) generateGhostDir(wg,totalDirections,possG[wg])
@@ -224,27 +229,37 @@ function ghosts(){
 		// The '8' added above is used to ascertain if they are opposite directions (eg Left & Right) or not. 
 		// If they're opposite, obviously the previous direction will apply.
 		// If they're at right angles (No cases of 2 8's next to each other) a new direction must be generated.
+
+		/*
 		firstPair = false; secPair = false
 		if (totalDirections==2) {
 			if (ghostData[0] == ghostData[1]) firstPair = true
 			if (ghostData[2] == ghostData[3]) secPair = true
 			if (!firstPair && !secPair) { generateGhostDir(wg,totalDirections,possG[wg]);}  // don't have any pairs so it's right angles
 		}
+		*/
+		if (totalDirections==2) {
+			if (possG[wg] != 12 && possG[wg] != 3){ // 12 is Up and Down, 3 is Left and Right - no need to recalc
+				 generateGhostDir(wg,totalDirections,possG[wg]);  // don't have any pairs so it's right angles
+			}
+		}
 
 		// if basicVision is set, and ghost is not onPath to home, compare ghost positions to your position & if it can see you, adjust direction.
-		if (!onPath[wg] && basicVision === true) { checkBasicVision(wg) }
+		//if (!onPath[wg] && basicVision === true) { checkBasicVision(wg) }
 
 		// For each ghost, if ghostDir (current direction) is in the possG array (the move is possible) then a flag to engage the ghost (engGhost) is set to true. 
 		// Otherwise (move not possible) engGhost (engage ghost) is set to false. Thus, the ghost is only engaged if it can make the move. 
 		// NB: Ghost is also engaged if onPath is true, as it knows where it's going (onPath means the ghost has been eaten and is on a path to the base.. - this path is coded into the mazedata array)
 
 		//status = (wg + "--" + possG[wg]) //status bar for error checking
+		/*
 		if (!possG[wg]){ possG[wg]="0";} // HACK2016
 		if (ghostDir[wg] == possG[wg].charAt(0) || ghostDir[wg] == possG[wg].charAt(1) || ghostDir[wg] == possG[wg].charAt(2) || ghostDir[wg] == possG[wg].charAt(3) || onPath[wg]) {
 			engGhost[wg] = true;
 		} else {
 			engGhost[wg] = false
-		}
+		}o	*/
+		engGhost[wg] = true;
 
 		// if onPath is true for the particular ghost, and there's a path direction present in the array, change the ghost's direction to follow the path home...
 		// 2016 - think this is defunct now as path is calculated as part of getting the ghosts movement.
@@ -264,17 +279,19 @@ function ghosts(){
 		// We store ghost positions so can be compared to positions next time round. If same, generate new direction. 
 		// This is to over-ride when they stick if they're following you and you move out of the way, as there's nothing else to tell them to generate a new direction.
 		// update 2016 - this is NONSENSE! Need to generate a proper direction now I have the speed sorted!
+		/*
 		if (preGtop[wg] == topG[wg] && preGleft[wg] == leftG[wg]) generateGhostDir(wg,totalDirections,possG[wg])
 		preGtop[wg] = topG[wg]
 		preGleft[wg] = leftG[wg]
+		*/
 		
 
 		//if the ghost is engaged, update position variable, and then position
 		if (engGhost[wg] || onPath[wg]) {
-			if (ghostDir[wg] == "U") {topG[wg] = (topG[wg]-10); eval ("divGhost" + wg + ".top = topG[wg]")}
-			if (ghostDir[wg] == "D") {topG[wg] = (topG[wg]+10); eval ("divGhost" + wg + ".top = topG[wg]")}
-			if (ghostDir[wg] == "L") {leftG[wg] = (leftG[wg]-10); eval ("divGhost" + wg + ".left = leftG[wg]")}
-			if (ghostDir[wg] == "R") {leftG[wg] = (leftG[wg]+10); eval ("divGhost" + wg + ".left = leftG[wg]")}
+			if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-10); eval ("divGhost" + wg + ".top = topG[wg]")}
+			if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+10); eval ("divGhost" + wg + ".top = topG[wg]")}
+			if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-10); eval ("divGhost" + wg + ".left = leftG[wg]")}
+			if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+10); eval ("divGhost" + wg + ".left = leftG[wg]")}
 		}
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
@@ -285,7 +302,7 @@ function ghosts(){
 				leftG[wg] = eval ("parseInt(divGhost" + wg + ".left)")
 				topG[wg] = eval ("parseInt(divGhost" + wg + ".top)")
 				onPath[wg] = false
-				ghostDir[wg] = "U"
+				ghostDir[wg] = 8;
 				eval ("ghost" + wg + "src.src=ghimg" + wg + ".src")
 			}
 			// and if it's home, reset it to not vulnerable and back to correct image
@@ -293,7 +310,7 @@ function ghosts(){
 				if (!won){ onPath[wg] = false; }
 				vulnerable[wg] = false;
 				eval ("ghost" + wg + "src.src=ghimg" + wg + ".src")
-				ghostDir[wg] = "U"
+				ghostDir[wg] = 8;
 			}
 		}
 
@@ -323,7 +340,7 @@ function ghosts(){
 				mode="scatter";
 				ghostReleaseTime = timeform.value;
 				ghostDelayRelease=Array(); // used to delay the release of each ghost
-				for (i=0;i<4;i++){
+				for (i=0;i<total_ghosts;i++){
 					ghostDelayRelease[i] = ghostReleaseTime - i*15;
 					//showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
 				}
@@ -358,7 +375,7 @@ function ghosts(){
 	}
 
 	if (ppTimer == ghostBlinkLifetime) {
-		for(i=0;i<4;i++){
+		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
 				if (vulnerable[i]) eval ("ghost" + i + "src.src = ghimg6.src")
 			}
@@ -371,7 +388,7 @@ function ghosts(){
 		mode=previousMode;
 		ghostspeed=speed;
 		movespeed=speed;
-		for(i=0;i<4;i++){
+		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
 				eval ("ghost" + i + "src.src = ghimg" + i + ".src")
 				onPath[i]=false
@@ -382,11 +399,11 @@ function ghosts(){
 	}
 
 	// Check to see if a ghost has gone through the channel to the other side of the screen
-	for (i=0;i<4;i++){
+	for (i=0;i<total_ghosts;i++){
 		ghostPos = mazedata[topG[i]][parseInt(leftG[i])];
 		if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
-			if (leftG[i] <= 35 && ghostDir[i] =="L") {leftG[i] = 555; }
-			if (leftG[i] >= 565 && ghostDir[i] =="R") {leftG[i] = 35; }
+			if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
+			if (leftG[i] >= 565 && ghostDir[i] ==1) {leftG[i] = 35; }
 		}
 	}
 
@@ -422,23 +439,22 @@ function ghosts(){
 function move(){
 
 	// 1. Look up the possible moves from the current position
-	possibilities = bindata[pacTop][pacLeft];
-	binposs = possibilities; // lost the extra
+	pac_possibilities = bindata[pacTop][pacLeft];
 	
 
 	// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
-	if (binposs && (binposs & newkey)) {
+	if (pac_possibilities && (pac_possibilities & newkey)) {
 
 		engage=true; movekey = newkey; lastkey = newkey // lastkey set to stop constant repetition of last 2 moves without the user touching anything.. see later on.
 
-	} else if (binposs && (binposs & lastkey)){
+	} else if (pac_possibilities && (pac_possibilities & lastkey)){
 
 		// 2.1 If previously pressed key generated a character that exists in the possible moves array then we can use that to continue in that direction
 			engage = true
 			movekey = lastkey
 
 		// 2.2 The latest and last key presses do not match a possible direction - therefore pacman stops. 'engage' and 'moving' set to false
-	} else if (!binposs){
+	} else if (!pac_possibilities){
 		engage = true;
 	} else {
 		engage = false
@@ -486,7 +502,7 @@ function move(){
 				ghostscore=50
 				movespeed = speed-10;
 				powerpilon = true
-				for(i=0;i<4;i++){
+				for(i=0;i<total_ghosts;i++){
 					if (!onPath[i]){
 						eval ("ghost" + i + "src.src=ghimg5.src")
 						vulnerable[i]=true
@@ -651,7 +667,7 @@ function generateGhostDir(who,howMany,possibilities){
 
 		} else if (ghostMode=="random") { // random
 
-				possibilities=possibilities.replace(/X/g,"");
+				//possibilities=possibilities.replace(/X/g,"");
 				if (mazedata[topG[who]][leftG[who]] == "3" && !onPath(who)){// ghosts can only re-enter the home base when on a path to regenerate 
 					possibilities=possibilities.replace(/5/g,"");
 				}
@@ -660,15 +676,32 @@ function generateGhostDir(who,howMany,possibilities){
 					howMany--;
 				}
 				if (!onPath[who]) {
-					direction = Math.floor(Math.random() *(howMany));
-					ghostDir[who] = possibilities.charAt(direction);
+					direction = Math.floor(Math.random() *(howMany)) + 1;
+					poss_bin = (possibilities >>> 0).toString(2);
+					multiplier=1;
+					counter=0;
+					bit_counter=0;
+					for (ir=0;i<poss_bin.length;ir++){
+						console.log("Who: " + who,"ir: " +ir, "Counter:" + counter,"Mult: " + multiplier,"howmany: " + howMany, "Bin: " + poss_bin, "Rand: " + direction, "Ghost coords " + leftG[who],topG[who], bindata[topG[who]][leftG[who]]);
+						if (poss_bin.charAt(ir)==1){
+							bit_counter++;
+							if (bit_counter==direction){
+								ghostDir[who] = multiplier / 2;
+								console.log("Got one at bc " + bit_counter + " dir is " + ghostDir[who]);
+							}
+						}
+						multiplier = multiplier *2;
+						counter++;
+					}
+					console.log("ghostDir for "+who + " = " + ghostDir[who]);
 				} else {
 					ghostDir[who] = headFor(who,ghostHomeBase);
 				}
 
 		} else if (ghostMode=="sit"){
 			direction=Math.round(Math.random() * 1);
-			if (direction==0){ ghostDir[who]=possibilities.charAt(2); } else { ghostDir[who]=possibilities.charAt(3);}
+			if (direction==0){ direction==2;}
+			if (possibilities & direction){ ghostDir[who]=direction; } 
 			ghostDir[who] = headFor(who,ghostHomeBase);
 		}
 }
@@ -677,19 +710,22 @@ function generateGhostDir(who,howMany,possibilities){
  * Meta: Removes the opposite direction from the list of possible moves - no point in going back where we've just come fron - keeps them moving around 
 */
 function excludeOppositeDirection(who,possibilities){
-	if (ghostDir[who]=="R"){
-		possibilities=possibilities.replace(/L/,"");
+
+	possibilities=(possibilities >>> 0).toString(2); // binary conversion
+
+	if (ghostDir[who]=="1"){
+		xreturn = possibilities.substr(0, 2) + "0" +  possibilities.substr(3,4);
+	}	
+	if (ghostDir[who]=="2"){
+		xreturn = possibilities.substr(0, 3) + "0";
 	}
-	if (ghostDir[who]=="L"){
-		possibilities=possibilities.replace(/R/,"");
+	if (ghostDir[who]=="4"){
+		xreturn = "0" +  possibilities.substr(1,4);
 	}
-	if (ghostDir[who]=="D"){
-		possibilities=possibilities.replace(/U/,"");
+	if (ghostDir[who]=="8"){
+		xreturn = possibilities.substr(0, 1) + "0" +  possibilities.substr(2,4);
 	}
-	if (ghostDir[who]=="U"){
-		possibilities=possibilities.replace(/D/,"");
-	}
-	return possibilities;
+	return xreturn;
 }
 
 /* 
@@ -699,29 +735,43 @@ function excludeOppositeDirection(who,possibilities){
  * Return dir (string) - the direction that can be direcly set for that ghost
 */
 function headFor(who,where){
-	currentCell = mazedata[parseInt([topG[who]])][parseInt(leftG[who])]
+	currentCell = bindata[parseInt([topG[who]])][parseInt(leftG[who])]
 	if (!currentCell){
-		alert ("NO CURRENT CELL!");
+		return ghostDir[who];
 	}
-	//console.log(currentCell);
+	console.log(" --- HEADING FOR FOR " + who + "============",where, " FROM " + leftG[who] + "," + topG[who]);
+
 	var dir=null;
 
-	if (leftG[who] > where[0] && currentCell.charAt(2)=="L" && ghostDir[who] != "R" && ghostDir[who] != null){
-		dir = "L";
+	if (leftG[who] > where[0] && (currentCell & 2) && !(ghostDir[who] & 1) && ghostDir[who] != null){
+		dir = 2;
 		//console.log("Going" + dir);	
-	} else if (leftG[who] <= where[0] && currentCell.charAt(3)=="R" && ghostDir[who] != "L" && ghostDir[who] != null){
-		dir= "R";
-		//console.log("Going" + dir);	
-	}
-
-	if (topG[who] > where[1] && currentCell.charAt(0)=="U" && ghostDir[who] != "D" && ghostDir[who] != null){
-		dir="U";
-		//console.log("Going" + dir);	
-	} else if (topG[who] <= where[1] && currentCell.charAt(1)=="D" && ghostDir[who] != "U" && ghostDir[who] != null){
-		dir="D";
+	} else if (leftG[who] <= where[0] && (currentCell & 1) && !(ghostDir[who] & 2) && ghostDir[who] != null){
+		dir= 1;
 		//console.log("Going" + dir);	
 	}
-	if (currentCell.charAt(4)=="3"){ dir="U";} // for when ghosts are in the pound
+	console.log("Part 1 :", dir);
+	if (topG[who] > where[1] && (currentCell & 8) && !(ghostDir[who] & 4) && ghostDir[who] != null){
+		dir=8;
+		//console.log("Going" + dir);	
+	} else if (topG[who] <= where[1] && (currentCell & 4) && !(ghostDir[who] & 8) && ghostDir[who] != null){
+		// stop ghosts going back home
+		console.log("YES");
+		if ((topG[who]!=145 && leftG[who]!=305) || onPath[who]){
+			console.log("TOP SECTION - set to 4");
+			dir=4;
+		} else if (topG[who]==145 && leftG[who]==305){
+			// cant go back to ghost house
+			dir=1;
+		} else {
+			dir=4;
+		}
+		//console.log("Going" + dir);	
+	}
+	console.log("And after yes it's ",dir);
+	console.log("Part 2: ",dir);
+	// ALERT need a new one for this if (currentCell.charAt(4)=="3"){ dir="U";} // for when ghosts are in the pound
+	if (ghostMode=="sit" && topG[who]==ghostStartTop) { dir=8; }
 	
 
 	//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],dir);
@@ -732,46 +782,59 @@ function headFor(who,where){
 	// 	     if its going U or D, force in this order: L,R,U,D
 	if (!dir) { 
 		
-		possibilities=currentCell.substr(0,4).replace(/X/g,""); // remove the X's so we can get total number of directions available
-
-		if (possibilities.length==2){
-			if (ghostDir[who]=="R" || ghostDir[who]=="L"){
-				if (currentCell.charAt(0)=="U"){ 
-					dir= "U";
-				 } else if (currentCell.charAt(1)=="D"){
-					dir= "D";
-				} else if (currentCell.charAt(2)=="L"){
-					dir= "L";
+		qty_options = qtyBits(currentCell);
+		console.log("Have ",qty_options,"from ",currentCell);
+		if (qty_options==2 || qty_options==3 || qty_options==4){
+			if (ghostDir[who]==1 || ghostDir[who]==2){
+				if (currentCell & 8){ 
+					dir= 8;
+				 } else if (currentCell & 4){
+					dir= 4;
+					console.log("Second section = set ot 4");
+				} else if (currentCell & 2){
+					dir= 2;
 				} else {
-					dir= "R";
+					dir= 1;
 					alert("This wont even happen");
 				}
 				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,dir,"in mode:" + mode);
-			} else  if (ghostDir[who]=="D" || ghostDir[who]=="U"){
-				if (currentCell.charAt(2)=="L"){ 
-					dir= "L";
-				 } else if (currentCell.charAt(3)=="R"){
-					dir= "R";
-				 } else if (currentCell.charAt(0)=="U"){
-					dir= "U";
+			} else  if (ghostDir[who]==4 || ghostDir[who]==8){
+				if (currentCell & 2) {
+					dir= 2;
+				 } else if (currentCell & 1){
+					dir= 1;
+				 } else if (currentCell & 8){
+					dir= 8;
 				} else {
-					dir="D";
+					dir=4;
 					alert("This will never happen");
 				}
 				//console.log("FORCE DIRECTION UP OR DOWN",currentCell,who,dir,"in mode:" + mode);
 			} 
-		} else if (possibilities.length==1){
+		} else if (qty_options==1){
+				if (currentCell & 2) {
+					dir= 2;
+				 } else if (currentCell & 1){
+					dir= 1;
+				 } else if (currentCell & 8){
+					dir= 8;
+				} else {
+					dir=4;
+					console.log("Third section - set to 4");
+				}
 
-				dir = possibilities;
+				dir = currentCell;
 
-		} else if (possibilities.length==3 || possibilities.legnth==4){
+				
+		} else if ( qty_options==3 || qty_options ==4){
 			// here for 1,3 or 4 possibilities
 			// for now, forcing in the order up, right, down, left
 
 			// just keep going? works well for 3 and 4 so far..
 			dir = ghostDir[who];
+			console.log("Retainer - left at " + dir);
 		} else {
-			alert("WHy!!!!");
+			//alert("WHy!!!!");
 		}
 	}
 
@@ -783,6 +846,13 @@ function headFor(who,where){
 		console.log(istr);
 		showmode(istr);
 	}*/
+	console.log("Sending " + who + " to " + dir + " from data: " + currentCell + "      at top:" , topG[who], " left:", leftG[who], "Legal: ", currentCell & dir);
+	var legal = currentCell & dir;
+
+	if (!legal){
+		console.log("NOT LEGAL MOVE");
+		onPause=1;	
+	}
 	return dir;
 }
 
@@ -897,10 +967,10 @@ function ku(e){
 */
 function getBasicVisionDir(who,not){
 	ghostDir[wg] = Math.floor(Math.random() *3);
-	if (ghostDir[wg] == "0") {ghostDir[wg] = "U"}
-	if (ghostDir[wg] == "1") {ghostDir[wg] = "D"}
-	if (ghostDir[wg] == "2") {ghostDir[wg] = "L"}
-	if (ghostDir[wg] == "3") {ghostDir[wg] = "R"}
+	if (ghostDir[wg] == "0") {ghostDir[wg] = 8}
+	if (ghostDir[wg] == "1") {ghostDir[wg] = 4}
+	if (ghostDir[wg] == "2") {ghostDir[wg] = 2}
+	if (ghostDir[wg] == "3") {ghostDir[wg] = 1}
 	if (ghostDir[wg] == not) {getBasicVisionDir(wg,not)}
 }
 
@@ -923,10 +993,10 @@ function reset(){
 	divPacman.left=pacStartLeft
 
 	document.getElementById("pacman").style.display="block";
-	document.getElementById("pacman").classList.remove("pacman_U");
-	document.getElementById("pacman").classList.remove("pacman_D");
-	document.getElementById("pacman").classList.remove("pacman_L");
-	document.getElementById("pacman").classList.add("pacman_R");
+	document.getElementById("pacman").classList.remove("pacman_8");
+	document.getElementById("pacman").classList.remove("pacman_4");
+	document.getElementById("pacman").classList.remove("pacman_2");
+	document.getElementById("pacman").classList.add("pacman_1");
 
 	won=false;
 	pacLeft = parseInt(divPacman.left)
@@ -939,9 +1009,9 @@ function reset(){
 		topG[i] = eval ("parseInt(divGhost" + i + ".top)")
 		vulnerable[i] = true
 		eval ("ghost" + i + "src.src=ghimg" + i + ".src")
-		ghostDir[i]="U"
+		ghostDir[i]=8;
 	}
-	newkey = "R"
+	newkey = 1;
 	ppTimer="0"
 	ghostscore=50
 	mode="scatter";
@@ -953,56 +1023,6 @@ function reset(){
  *      this function will change their direction to move towards you, unless a powerpill is 
  *      active on them, in which case they go in any direction that is not towards you.  
 */
-function checkBasicVision(g){
-	//status=(wg + "-" + wg + "--" + pacTop)
-	if (leftG[wg] == pacLeft) {// if left is equal
-		if (topG[wg] < pacTop) {// ghost < pac
-			changedir=true
-			for (v=topG[wg];v<pacTop;v=(v+10)){
-				newdatabit = mazedata[v][pacLeft];
-				//console.log(v,pacLeft);
-				//console.log(mazedata[v][pacLeft]);
-				//console.log(newdatabit);
-				//console.log(mazedata);
-				if (!newdatabit || newdatabit.charAt(1) != "D") changedir=false
-			}//for j
-			if (changedir && ppTimer =="0"){ ghostDir[wg] = "D"} else if (changedir && ppTimer >="1" && vulnerable[wg]) {getBasicVisionDir(wg,"D")} else if (changedir && ppTimer >="1" && !vulnerable[wg]) { ghostDir[wg] = "D"}
-		} else {
-			if (topG[wg] > pacTop) {// ghost > pac
-				changedir=true
-				for (v=pacTop;v<topG[wg];v=(v+10)){
-				newdatabit = mazedata[v][pacLeft]
-				if (newdatabit && newdatabit.charAt(0) != "U") changedir=false
-				}//for j
-				if (changedir && ppTimer == "0"){ ghostDir[wg] = "U"} else if (changedir && ppTimer >="1" && vulnerable[wg]) {getBasicVisionDir(wg,"U")} else if (changedir && ppTimer >="1" && !vulnerable[wg]) { ghostDir[wg] = "U"}
-			}//if topG gtr than pacTop
-		}//if topG less than pacTop
-	}// if eq left
-
-	if (topG[wg] == pacTop) {// if vertical is equal
-		if (leftG[wg] < pacLeft) {// if ghost < pac
-			changedir=true
-			for (v=leftG[wg];v<pacLeft;v=(v+10)){
-				newdatabit = mazedata[pacTop][v]
-				if (newdatabit && newdatabit.charAt(3) != "R") changedir=false
-			}//for j
-			if (changedir && ppTimer == "0"){ ghostDir[wg] = "R" } else if (changedir && ppTimer >="1" && vulnerable[wg]) {getBasicVisionDir(wg,"R")} else if (changedir && ppTimer >="1" && !vulnerable[wg]) { ghostDir[wg] = "R"; }
-		} else {
-			if (leftG[wg] > pacLeft) {// if ghost > pac
-			changedir=true
-			for (v=pacLeft;v<leftG[wg];v=(v+10)){
-				newdatabit = mazedata[pacTop][v];
-				if (newdatabit && newdatabit.charAt(2) != "L") changedir=false
-			}//for j
-			if (changedir && ppTimer == "0"){ ghostDir[wg] = "L" } else if (changedir && ppTimer >="1" && vulnerable[wg]) {getBasicVisionDir(wg,"L")} else if (changedir && ppTimer >="1" && !vulnerable[wg]) { ghostDir[wg] = "L" }
-			}
-
-		}// if eq top
-	}// for i
-
-	//status bar for de-buging
-	//status = pacLeft + "-" + pacTop + ":" + pillType + "~~~" + pilcount + "^^^^" + topG[0] + "-" + topG[1] + "-" + topG[2] + "-" + topG[3] + ":::" + newdatabit.length + "****" + keycount
-}
 
 /*
  * Function: levelEnd
@@ -1164,7 +1184,7 @@ var class_ghost = function(name){
 	this.alive=1; // gets rid of the onPath global
 	this.mode="scatter"; // mode (chase, scatter, frightened, sit, homing)
 	this.leftBase=0;
-	this.direction = "U";
+	this.direction = 8;
 	this.speed = sessionStorage.speed;
 	console.log(this.name);
 
@@ -1292,10 +1312,14 @@ function binary_lookup(direction,data) {
  * Function: qtyBits
  * Meta: returns the numbers of set bits in a byte - ie number of directions
 */
+qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4);
 function qtyBits(bin){
+	/*
 	count = 0;
 	for(i = 0; i < bin.length; i++) { // would use map but creating arrays on the fly is LONG in javascript
 		count += (bin >> i) & 0x01;
 	}
 	    return count;
+	*/
+	return qty_bits_lookup[bin];
 }
