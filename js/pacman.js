@@ -148,8 +148,8 @@ function init(){
 	ghost3src = (ns)? divGhost3.document.images[0]:document.images.gst3
 	fruitsrc = (ns)? divFruit.document.images[0]:document.images.berry
 
-	scoreform  = (ns)? document.score.document:document
-	lifeform   = (ns)? document.score.document:document
+	scoreform  = (ns)? document.score.document:document.forms[0].elements[0];
+	lifeform   = (ns)? document.score.document:document.forms[0].elements[1];
 	timeform   = (ns)? document.score.document:document.forms[0].elements[2];
 	pilsrc     = (ns)? document:document
 
@@ -167,8 +167,8 @@ function init(){
 
 	if (sessionStorage){
 		if (sessionStorage.level>1){
-			scoreform.forms[0].elements[0].value = sessionStorage.score
-			lifeform.forms[0].elements[1].value = sessionStorage.lives
+			scoreform.value = sessionStorage.score
+			lifeform.value = sessionStorage.lives
 		}
 	}
 
@@ -315,8 +315,8 @@ function ghosts(){
 			if ((ppTimer=="0" && !won && !onPath[wg]) || (ppTimer>="1" && !vulnerable[wg] && !onPath[wg])) {
 				lives = (lives-1)
 				score -= 50
-				scoreform.forms[0].elements[0].value = score
-				lifeform.forms[0].elements[1].value -= 1
+				scoreform.value = score
+				lifeform.value -= 1
 				resetModeTime = timeform.value;
 				
 				// reset ghost release time and mode
@@ -347,7 +347,7 @@ function ghosts(){
 				onPath[wg] = true
 				score += ghostscore
 				ghostscore+=50
-				scoreform.forms[0].elements[0].value = score
+				scoreform.value = score
 		      } 
 		}
 	}
@@ -396,8 +396,8 @@ function ghosts(){
 	if (timeform.value==0){
 		lives = (lives-1)
 		score -= 50
-		scoreform.forms[0].elements[0].value = score
-		lifeform.forms[0].elements[1].value -= 1
+		scoreform.value = score
+		lifeform.value -= 1
 		gameTime=sessionStorage.gameTime;
 		timeform.value=gameTime
 		alert ("OUT OF TIME! One life lost.")
@@ -499,7 +499,7 @@ function move(){
 
 			pilcount++
 			score += 10;
-			scoreform.forms[0].elements[0].value = score
+			scoreform.value = score
 			if (pilcount>=pillNumber) {
 				won = true
 				onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
@@ -512,11 +512,11 @@ function move(){
 		// Give extra lives at 5000 and 1000 points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is left. 
 		if (score>=5000 && score <6000 && exlife1) {
 			exlife1=0; sessionStorage.exlife1 = 0;
-			lives++; sessionStorage.lives = lives; scoreform.forms[0].elements[1].value = lives;
+			lives++; sessionStorage.lives = lives; scoreform.value = lives;
 		}
 		if (score>=10000 && score <10500 && exlife2) {
 			exlife2=0; sessionStorag.exlife2=0;
-			lives++; sessionStorage.lives++; scoreform.forms[0].elements[1].value = lives;
+			lives++; sessionStorage.lives++; scoreform.value = lives;
 		} 
 
 		// show a piece of fruit at certain times - based on incrementing score with a length in a decrementing var called fruitTimer
@@ -528,7 +528,7 @@ function move(){
 		//status= parseInt(divFruit.left) + "-" + pacLeft + "--" + parseInt(divFruit.top) + "-" + pacTop
 
 		if (pacLeft==parseInt(divFruit.left) && pacTop == parseInt(divFruit.top) && fruitOn) {
-			score=score+250; scoreform.forms[0].elements[0].value=score
+			score=score+250; scoreform.value=score
 			fruitOn=false
 			divFruit.visibility='hidden'
 		}
