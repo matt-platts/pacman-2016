@@ -626,7 +626,7 @@ function gameModes(){
  * Function: generateGhostDir
  * Meta: Generates a new direction for a particular ghost 
 */
-function generateGhostDir(who,howMany,possibilities){
+function generateGhostDir(who,howMany,ghost_possibilities){
 
 		currentTime = timeform.value;
 		if (onPath[who]){
@@ -669,39 +669,30 @@ function generateGhostDir(who,howMany,possibilities){
 
 				//possibilities=possibilities.replace(/X/g,"");
 				if (mazedata[topG[who]][leftG[who]] == "3" && !onPath(who)){// ghosts can only re-enter the home base when on a path to regenerate 
-					possibilities=possibilities.replace(/5/g,"");
+					ghost_possibilities=ghost_possibilities.replace(/5/g,"");
 				}
 				if (howMany>2){ // NB: having howmany>2 gives more chances for the ghosts to backtrack on themsleves, making them easier to catch.
-					possibilities=excludeOppositeDirection(who,possibilities);
+					ghost_possibilities=excludeOppositeDirection(who,ghost_possibilities);
 					howMany--;
 				}
 				if (!onPath[who]) {
-					direction = Math.floor(Math.random() *(howMany)) + 1;
-					poss_bin = (possibilities >>> 0).toString(2);
-					multiplier=1;
-					counter=0;
-					bit_counter=0;
-					for (ir=0;i<poss_bin.length;ir++){
-						console.log("Who: " + who,"ir: " +ir, "Counter:" + counter,"Mult: " + multiplier,"howmany: " + howMany, "Bin: " + poss_bin, "Rand: " + direction, "Ghost coords " + leftG[who],topG[who], bindata[topG[who]][leftG[who]]);
-						if (poss_bin.charAt(ir)==1){
-							bit_counter++;
-							if (bit_counter==direction){
-								ghostDir[who] = multiplier / 2;
-								console.log("Got one at bc " + bit_counter + " dir is " + ghostDir[who]);
-							}
-						}
-						multiplier = multiplier *2;
-						counter++;
+					random_direction = Math.floor(Math.random() *(howMany)) + 1;
+					
+						ghostDir[who]=randomDir(ghost_possibilities,random_direction);	
+
+
+					//console.log("ghostDir for wg " +who + " = " + ghostDir[who] + " from " + ghost_possibilities + " with a rand of " + random_direction);
+					if (!ghost_possibilities & ghostDir[who]){
+						console.log("ILLEGAL DIRECTION GENERATED FOR !" + who);
 					}
-					console.log("ghostDir for "+who + " = " + ghostDir[who]);
 				} else {
 					ghostDir[who] = headFor(who,ghostHomeBase);
 				}
 
 		} else if (ghostMode=="sit"){
-			direction=Math.round(Math.random() * 1);
-			if (direction==0){ direction==2;}
-			if (possibilities & direction){ ghostDir[who]=direction; } 
+			sit_rand_direction=Math.round(Math.random() * 1);
+			if (sit_rand_direction==0){ sit_rand_direction==2;}
+			if (ghost_possibilities & sit_rand_direction){ ghostDir[who]=sit_rand_direction; } 
 			ghostDir[who] = headFor(who,ghostHomeBase);
 		}
 }
@@ -709,23 +700,23 @@ function generateGhostDir(who,howMany,possibilities){
 /* Function excludeOppositeDirection
  * Meta: Removes the opposite direction from the list of possible moves - no point in going back where we've just come fron - keeps them moving around 
 */
-function excludeOppositeDirection(who,possibilities){
+function excludeOppositeDirection(who,dirs){
 
-	possibilities=(possibilities >>> 0).toString(2); // binary conversion
+	dirs=(dirs >>> 0).toString(2); // binary conversion
 
 	if (ghostDir[who]=="1"){
-		xreturn = possibilities.substr(0, 2) + "0" +  possibilities.substr(3,4);
+		xreturn = dirs.substr(0, 2) + "0" +  dirs.substr(3,4);
 	}	
 	if (ghostDir[who]=="2"){
-		xreturn = possibilities.substr(0, 3) + "0";
+		xreturn = dirs.substr(0, 3) + "0";
 	}
 	if (ghostDir[who]=="4"){
-		xreturn = "0" +  possibilities.substr(1,4);
+		xreturn = "0" +  dirs.substr(1,4);
 	}
 	if (ghostDir[who]=="8"){
-		xreturn = possibilities.substr(0, 1) + "0" +  possibilities.substr(2,4);
+		xreturn = dirs.substr(0, 1) + "0" +  dirs.substr(2,4);
 	}
-	return xreturn;
+	return parseInt(xreturn,2);
 }
 
 /* 
@@ -739,26 +730,20 @@ function headFor(who,where){
 	if (!currentCell){
 		return ghostDir[who];
 	}
-	console.log(" --- HEADING FOR FOR " + who + "============",where, " FROM " + leftG[who] + "," + topG[who]);
 
 	var dir=null;
 
 	if (leftG[who] > where[0] && (currentCell & 2) && !(ghostDir[who] & 1) && ghostDir[who] != null){
 		dir = 2;
-		//console.log("Going" + dir);	
 	} else if (leftG[who] <= where[0] && (currentCell & 1) && !(ghostDir[who] & 2) && ghostDir[who] != null){
 		dir= 1;
-		//console.log("Going" + dir);	
 	}
-	console.log("Part 1 :", dir);
 	if (topG[who] > where[1] && (currentCell & 8) && !(ghostDir[who] & 4) && ghostDir[who] != null){
 		dir=8;
-		//console.log("Going" + dir);	
 	} else if (topG[who] <= where[1] && (currentCell & 4) && !(ghostDir[who] & 8) && ghostDir[who] != null){
 		// stop ghosts going back home
-		console.log("YES");
 		if ((topG[who]!=145 && leftG[who]!=305) || onPath[who]){
-			console.log("TOP SECTION - set to 4");
+			//console.log("TOP SECTION - set to 4");
 			dir=4;
 		} else if (topG[who]==145 && leftG[who]==305){
 			// cant go back to ghost house
@@ -766,10 +751,7 @@ function headFor(who,where){
 		} else {
 			dir=4;
 		}
-		//console.log("Going" + dir);	
 	}
-	console.log("And after yes it's ",dir);
-	console.log("Part 2: ",dir);
 	// ALERT need a new one for this if (currentCell.charAt(4)=="3"){ dir="U";} // for when ghosts are in the pound
 	if (ghostMode=="sit" && topG[who]==ghostStartTop) { dir=8; }
 	
@@ -783,21 +765,18 @@ function headFor(who,where){
 	if (!dir) { 
 		
 		qty_options = qtyBits(currentCell);
-		console.log("Have ",qty_options,"from ",currentCell);
 		if (qty_options==2 || qty_options==3 || qty_options==4){
 			if (ghostDir[who]==1 || ghostDir[who]==2){
 				if (currentCell & 8){ 
 					dir= 8;
 				 } else if (currentCell & 4){
 					dir= 4;
-					console.log("Second section = set ot 4");
 				} else if (currentCell & 2){
 					dir= 2;
 				} else {
 					dir= 1;
 					alert("This wont even happen");
 				}
-				//console.log("FORCE DIRECTION LEFT OR RIGHT",currentCell,who,dir,"in mode:" + mode);
 			} else  if (ghostDir[who]==4 || ghostDir[who]==8){
 				if (currentCell & 2) {
 					dir= 2;
@@ -809,9 +788,9 @@ function headFor(who,where){
 					dir=4;
 					alert("This will never happen");
 				}
-				//console.log("FORCE DIRECTION UP OR DOWN",currentCell,who,dir,"in mode:" + mode);
 			} 
 		} else if (qty_options==1){
+				/*
 				if (currentCell & 2) {
 					dir= 2;
 				 } else if (currentCell & 1){
@@ -820,8 +799,8 @@ function headFor(who,where){
 					dir= 8;
 				} else {
 					dir=4;
-					console.log("Third section - set to 4");
 				}
+				*/
 
 				dir = currentCell;
 
@@ -832,7 +811,6 @@ function headFor(who,where){
 
 			// just keep going? works well for 3 and 4 so far..
 			dir = ghostDir[who];
-			console.log("Retainer - left at " + dir);
 		} else {
 			//alert("WHy!!!!");
 		}
@@ -846,7 +824,7 @@ function headFor(who,where){
 		console.log(istr);
 		showmode(istr);
 	}*/
-	console.log("Sending " + who + " to " + dir + " from data: " + currentCell + "      at top:" , topG[who], " left:", leftG[who], "Legal: ", currentCell & dir);
+	//console.log("Sending " + who + " to " + dir + " from data: " + currentCell + "      at top:" , topG[who], " left:", leftG[who], "Legal: ", currentCell & dir);
 	var legal = currentCell & dir;
 
 	if (!legal){
@@ -1323,3 +1301,19 @@ function qtyBits(bin){
 	*/
 	return qty_bits_lookup[bin];
 }
+
+function randomDir(x,n){
+	var sum = 0;
+	var random_direction = 1;
+	for (i=0;i<4;i++){
+		sum += (x >> i) & 1;
+		if (i>0){
+			random_direction = random_direction *2;
+		}
+		if (sum == n){ 
+			return random_direction; 
+		}
+	}
+	return -1;
+}
+
