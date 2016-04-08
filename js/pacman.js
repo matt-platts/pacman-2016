@@ -1,17 +1,49 @@
 /* 
  * File: pacman.js
- * Meta: game logic
- * Note: development very much in progress - rewrite imminent.
+ * Meta: all game logic - only the maze rendering is in an external file
+ * Author: Matt Platts
+ * History: Written 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated 2016, and in progress.. 
 */
 
+/* Index of functions
 
-// NOTES TO SELF: 
-// Look for the text HACK2016 in the code - this means I changed something without fully understanding the implications (it's old code)
-// Specifically - checking that possG[wg] exists before trying to read a charAt. I *think* it is because the maze data isn't populated with zeros and the ghost path information isn't in the maze data, so this hack should be removed when the data set is completed.
+ * Section1 - set up
+ * set up variables - these are not in a function and run automatically on script load. No point in waiting so as much that we can set up immediately is done here
+ * init() - further declaring of variables, these are dependent on the page being rendered which differs them from the above, hence they are in a function. Largely cross browser vars..
 
+ * Section 2 - Game loop functions - there are two loops continually running on timeouts - the reason for two being they must be able to run at different speeds to each other.
+ * 	       NB: Most functionality is in ghosts() - this is the standard loop that runs at a consistent speed throughout the game, including dealing with the timings of switching
+ * 	       modes, collision detection and stopping/starting the game after pacman is eaten, as well as switching ghost directions (which is itself related to the game modes) 
+ * ghosts()
+ * move()
 
-// pacman.js
-// by Matt Platts, 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated 2016, and in progress.. 
+ * Section 3 - Functions required by the game loops above. All of these relate to ghosts() bar showFruit which reltes to move()
+ * gameModes()
+ * generateGhostDir()
+ * excludeOppositeDirection()
+ * headFor()
+ * getBasicVisionDir()
+ * showFruit()
+ *
+ * Section 4 - Key down/up Functions - capturing multiple keypresses and converting them to move codes which are read by the move() function
+ * kd()
+ * kdns()
+ * keyLogic()
+ * ku() - I am no longer sure if this is required
+
+ * Section 5 - game resets, level loaders and interstetials / messages
+ * reset()
+ * levelEnd()
+ * dynLoader()
+ * startNewLevel() 
+ * renderNewData()
+ * loadLevel()
+ * start()  
+
+ * Section 6 - Temporary or functions unused in normal play for debugging
+ * showmode()
+ */
+
 
 /* 
  * SECTION 1 - set up variables, and init function to initialise the game. 
@@ -24,13 +56,13 @@ var fruitLifetime=95; // how many iterations a piece of fruit stays on screen - 
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
 var scatterTime = 300; // how long ghosts remain in scatter mode before switching to chase mode
-var chaseTime = 50;
-var mode = "scatter"
-var previousMode = "scatter";
-var levelOptions;
-var total_ghosts=4;
+var chaseTime = 50; // how long the ghosts remain in chase mode
+var mode = "scatter" // the initial mode for starting the game
+var previousMode = "scatter"; // simply ensures it is set to avoid error if there is no previous mode yet..
+var levelOptions; // may contain an array set in each mazedata js file, or may be undefined. This ensures it exists..
+var total_ghosts=4; // editable and only really used for debugging - ie set to 1 and read the console logs for one ghost as its easier than deciphering 4..
 
-// localise session storage vars
+// pull in session storage vars - these are (to be) all settable from the settins page - the game will be entirely configurable and come in 'flavours' eventually...
 var lives = parseInt(sessionStorage.lives)
 var score = parseInt(sessionStorage.score)
 var exlife1 = sessionStorage.exlife1;
@@ -41,12 +73,12 @@ var level = sessionStorage.level;
 var fx = sessionStorage.fx
 
 // Define timers
-var pacTimer;
-var ghostsTimer;
+var pacTimer; // for the move() loop
+var ghostsTimer; // for the ghosts() loop
 
-// define vars for game end routine 
-var mazecount=0
-var mazeNo=0
+// define vars for flashing the maze as part of the game end routine 
+var mazecount=0;
+var mazeNo=0;
 
 // scores
 var ghostscore=50
@@ -73,24 +105,22 @@ berry0 = new Image
 berry0.src = 'graphics/cherry.gif'
 berry1 = new Image
 berry1.src = 'graphics/strawberry.gif'
-berry2 = new Image
-berry2.src = 'graphics/mushroom.png'
 
 // Initialise global vars. (have so many global vars.. time for OO!)
 var won = false // true if won the game
 var keycount=0 // number of keys currently depressed
-var newdatabit = 0 // ??! 
+var newdatabit = 0 // simply avoiding undefined errors - think this was in debugging only.. 
 var onPause = 0 // game paused by the 'p' key or when displaying messages (eg. lost life)
 var pillType = 0 // bool - is there a pill in the current cell?
 var pilcount = 0 // number of pills eaten
-var ppTimer = "0" //counts down from 80 back to 0 when a powerpill is eaten
+var ppTimer = "0" // counts down from 80 back to 0 when a powerpill is eaten
 var powerpilon = false // set to true when powerpill is eaten, back to false when it wears off
-var moving = false
+var moving = false // set to true when the movement loop is being repeatedly called. It does stop at times (need to investigate why and if this is still the best way of doing things)
 var newkey = 1 // key just pressed
-var lastkey = 4 // key previously pressed (I have no idea why it is set to D)
+var lastkey = 4 // key previously pressed (I have no idea why it is set to D - again just to avoid undefined errors I think if it is not set)
 var movekey = 4 // active key (as above)
-var fruitOn=false
-var fruitTimer=0 // decrements when a fruit is on screen
+var fruitOn=false // bool telling if a fruit is currently displaying - could simply use css lookups actually..
+var fruitTimer=0 // decrements from the int in fruitLifetime when a fruit is on screen, fruit disappears when it reaches 1
 var movespeed=speed; // set to the basic speed to start
 var ghostspeed=speed; // set to the basic speed to start 
 var resetModeTime=gameTime; // the time the mode was last reset to the default (scatter). It starts as the game starts, so at gameTime;.
@@ -115,7 +145,7 @@ var fruitArray = new Array(true,true)
 
 /* Function: init
  * Meta: init() was originally called from the body onLoad, now it is called after the dynamically loaded javascript maze for the first level. 
- *       init() sets up cross-browser pointer variables, defines several arrays for later use, then calls start function to kick off the level itself. 
+ *       init() sets up cross-browser pointer variables, defines several vars arrays for later use, then calls start function to kick off the level itself. 
  *       This is only required for the first level of the game.
 */
 function init(){
@@ -165,8 +195,8 @@ function init(){
 
 	ghostData = new Array (6,7,9,10) // used later to test for if opposite directions are present
 	leftG = new Array; topG = new Array; possG = new Array; engGhost = new Array
-	vulnerable = new Array (true, true, true, true)
-	onPath = new Array (false, false, false, false)
+	vulnerable = new Array (true, true, true, true) // are the ghosts vulnerable at this point in time? Set to false when eaten and homing..
+	onPath = new Array (false, false, false, false) // array showing if ghost is on a path (onPath means a path to the home base after being eaten)
 
 	if (sessionStorage){
 		if (sessionStorage.level>1){
@@ -175,7 +205,7 @@ function init(){
 		}
 	}
 
-	ghostDir = new Array
+	ghostDir = new Array // Array contains directions for each ghost
 	pacLeft = parseInt(divPacman.left)
 	pacTop = parseInt(divPacman.top)
 	for(i=0;i<4;i++){
@@ -183,9 +213,9 @@ function init(){
 		leftG[i] = parseInt(leftG[i])
 		topG[i] = eval ("divGhost" + i +".top")
 		topG[i] = parseInt(topG[i])
-		ghostDir[i] = 8;
+		ghostDir[i] = 8; // Set to 8 (up) to start the game..
 	}
-	start();
+	start(); // kick off the game timers. This needs to be called for each level and hence is not part of init()
 }
 
 /* 
@@ -195,7 +225,7 @@ function init(){
 /* 
  * Function: ghosts
  * Meta: Deals with the ghosts movements on a recurring timer as one of the main game loops. 
- *       Collision detection is also a part of this loop and not a part of move.
+ *       Collision detection is also a part of this loop and not a part of the 'move' loop..
  * 
 */
 function ghosts(){
@@ -524,21 +554,6 @@ function move(){
  * Logic to deal with which direction ghosts move in
 */
 
-/*
- * Function: showFruit
- * Meta: displays a piece of fruit to the screen, sets fruitOn flag and sets up the criterea for the next one appearing
-*/
-function showFruit() {
-	nextfruitscore+=600
-	thisfruit++
-	fruitArray[thisfruit]=true
-	whichFruit = Math.round(Math.random() *1)
-	fruitTimer=fruitLifetime
-	if (!fruitOn) eval ("fruitsrc.src=berry" + whichFruit + ".src")
-	fruitOn=true
-	divFruit.visibility='visible'
-}
-
 /* 
  * Function gameModes
  * Meta: This is run at the beginning of the ghosts function to both get, and set, the game mode on a timer.
@@ -805,6 +820,39 @@ function headFor(who,where){
 }
 
 /*
+ * Function: getBasicVisionDir
+ * Meta: Get a direction based on the basic vision feature, used in the checkBasicVision function
+ * NB: The lack of checking whether or not the direction can be made is actually what slows down the ghosts when a pill is on and they are in your line of sight
+ * Although not programatically brilliant, it worked for the game in an 'off label' kind of way, so it got left. 
+*/
+function getBasicVisionDir(who,not){
+	ghostDir[wg] = Math.floor(Math.random() *3);
+	if (ghostDir[wg] == "0") {ghostDir[wg] = 8}
+	if (ghostDir[wg] == "1") {ghostDir[wg] = 4}
+	if (ghostDir[wg] == "2") {ghostDir[wg] = 2}
+	if (ghostDir[wg] == "3") {ghostDir[wg] = 1}
+	if (ghostDir[wg] == not) {getBasicVisionDir(wg,not)}
+}
+
+/*
+ * Function: showFruit
+ * Meta: displays a piece of fruit to the screen, sets fruitOn flag and sets up the criterea for the next one appearing
+ * 	 NB: This is not called from the ghosts loop but rather the pacman move loop
+*/
+function showFruit() {
+	nextfruitscore+=600
+	thisfruit++
+	fruitArray[thisfruit]=true
+	whichFruit = Math.round(Math.random() *1)
+	fruitTimer=fruitLifetime
+	if (!fruitOn) eval ("fruitsrc.src=berry" + whichFruit + ".src")
+	fruitOn=true
+	divFruit.visibility='visible'
+}
+
+
+
+/*
  * SECTION 4
  * Key functions to deal with all the key press logic
 */
@@ -905,22 +953,6 @@ function ku(e){
 	keycount--;
 }
 
-
-
-/*
- * Function: getBasicVisionDir
- * Meta: Get a direction based on the basic vision feature, used in the checkBasicVision function
- * NB: The lack of checking whether or not the direction can be made is actually what slows down the ghosts when a pill is on and they are in your line of sight
- * Although not programatically brilliant, it worked for the game in an 'off label' kind of way, so it got left. 
-*/
-function getBasicVisionDir(who,not){
-	ghostDir[wg] = Math.floor(Math.random() *3);
-	if (ghostDir[wg] == "0") {ghostDir[wg] = 8}
-	if (ghostDir[wg] == "1") {ghostDir[wg] = 4}
-	if (ghostDir[wg] == "2") {ghostDir[wg] = 2}
-	if (ghostDir[wg] == "3") {ghostDir[wg] = 1}
-	if (ghostDir[wg] == not) {getBasicVisionDir(wg,not)}
-}
 
 /*
  * SECTION 5
