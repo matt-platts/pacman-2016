@@ -1,13 +1,15 @@
 /* 
  * File: pacman.js
+ * Version: 2.0 beta 2
  * Meta: all game logic - only the maze rendering is in an external file
  * Author: Matt Platts
- * History: Written 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated 2016, and in progress.. 
+ * History: Written 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated massively in 2016, and remains in progress.. 
 */
 
 /* Index of functions
 
- * Section1 - set up
+ * Section1 - set up and initialise
+ * 
  * set up variables - these are not in a function and run automatically on script load. No point in waiting so as much that we can set up immediately is done here
  * init() - further declaring of variables, these are dependent on the page being rendered which differs them from the above, hence they are in a function. Largely cross browser vars..
 
@@ -18,29 +20,35 @@
  * move()
 
  * Section 3 - Functions required by the game loops above. All of these relate to ghosts() bar showFruit which reltes to move()
- * gameModes()
- * generateGhostDir()
- * excludeOppositeDirection()
- * headFor()
- * getBasicVisionDir()
- * showFruit()
+ * 
+ * gameModes() - shifts the mode of the game at various points (between scatter, chase, random etc)
+ * generateGhostDir() - generates the next direction for a ghost who is at a junction or a dead end
+ * excludeOppositeDirection() - because we want to keep them moving and not going back and forth
+ * qtyBits() - how many bits are set in a value? Used for checking how many directions we can choose from
+ * randomDir() - converts a random number into a legal direction
+ * headFor() - send a ghost to some specific co-ordinates
+ * getBasicVisionDir() - the basic vision function is currently down, however this is used to move a ghost towards you if it can see you in *any* game mode
+ * showFruit() - when fruit need to be shown
  *
  * Section 4 - Key down/up Functions - capturing multiple keypresses and converting them to move codes which are read by the move() function
- * kd()
- * kdns()
- * keyLogic()
- * ku() - I am no longer sure if this is required
+ *
+ * kd() - capture a key down event
+ * kdns() - netscape 4 version of the above
+ * keyLogic() - translate key press into a direction, storing the previous key press along the way for smooth action
+ * ku() - I am no longer sure if this is required - fires when a key goes up
 
  * Section 5 - game resets, level loaders and interstetials / messages
- * reset()
- * levelEnd()
- * dynLoader()
- * startNewLevel() 
- * renderNewData()
- * loadLevel()
- * start()  
+ *
+ * reset() - reset the sprites to their start positions before kicking the game off on a timer again. Used after losing a life.
+ * levelEnd() - called when you've completed a level.
+ * dynLoader() - function for dynamically loading a new mazedata file.
+ * startNewLevel() - when kicking off a new level you've just loaded for the first time 
+ * renderNewData() - render new maze data on screen - ie draw maze, place pills.
+ * loadLevel() - load a new level
+ * start() - kick off the game or a new level 
 
- * Section 6 - Temporary or functions unused in normal play for debugging
+ * Section 6 - Temporary functions unused in normal play and for debugging. These should simply just return in beta production, can eventually be removed.
+ *
  * showmode()
  */
 
@@ -142,6 +150,7 @@ if (sessionStorage && sessionStorage.level==2) {
 }
 var thisfruit=0
 var fruitArray = new Array(true,true)
+var qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4); // how many directions are there for each junction? Quick lokup table to avoid calculating number of possible directions at a junction
 
 /* Function: init
  * Meta: init() was originally called from the body onLoad, now it is called after the dynamically loaded javascript maze for the first level. 
@@ -703,6 +712,43 @@ function excludeOppositeDirection(who,dirs){
 }
 
 /* 
+ * Function: qtyBits
+ * Meta: returns the numbers of set bits in a byte - in this case the number of directions - used at each junction
+*/
+function qtyBits(bin){
+	/*
+	count = 0;
+	for(i = 0; i < bin.length; i++) { // would use map but creating arrays on the fly is LONG in javascript
+		count += (bin >> i) & 0x01;
+	}
+	    return count;
+	*/
+	return qty_bits_lookup[bin];
+}
+
+/* 
+ * Function : randomDir
+ * Meta: generates a random direction for a ghost by bitshifting the data to find the direction corresponding to the nth set bit
+ * Param x - data from the bindata array
+ * Param y - take our random number and use the nth set bit from the right of the x (cell in bindata)
+*/
+function randomDir(x,n){
+	var sum = 0;
+	var random_direction = 1;
+	for (var i=0;i<4;i++){
+		sum += (x >> i) & 1;
+		if (i>0){
+			random_direction = random_direction *2;
+		}
+		if (sum == n){ 
+			return random_direction; 
+		}
+	}
+	return -1;
+}
+
+
+/* 
  * Function: headFor
  * Param who (string) - index of which ghost we are sending somewhere
  * Param where (array) - 2 item aray of L and R co-ordinates of the cell we are sending the ghost toi
@@ -725,21 +771,17 @@ function headFor(who,where){
 	if (topG[who] > where[1] && (currentCell & 8) && !(ghostDir[who] & 4) && ghostDir[who] != null){
 		dir=8;
 	} else if (topG[who] <= where[1] && (currentCell & 4) && !(ghostDir[who] & 8) && ghostDir[who] != null){
-		// stop ghosts going back home
-		if ((topG[who]!=145 && leftG[who]!=305) || onPath[who]){
-			//console.log("TOP SECTION - set to 4");
-			dir=4;
-		} else if (topG[who]==145 && leftG[who]==305){
-			// cant go back to ghost house
+		if (topG[who]==145 && leftG[who]==305){
+			// cant go back to ghost house - just send them right, whatever..
 			dir=1;
 		} else {
 			dir=4;
 		}
 	}
 	// ALERT need a new one for this if (currentCell.charAt(4)=="3"){ dir="U";} // for when ghosts are in the pound
-	if (ghostMode=="sit" && topG[who]==ghostStartTop && leftG[who]==ghostStartLeft) { dir=8; }
-	if (ghostMode=="sit" && topG[who]==ghostStartTop-30 && leftG[who]==ghostStartLeft) { dir=4; }
-	
+	// now catered for separately in "sit" mode
+	//if (ghostMode=="sit" && topG[who]==ghostStartTop && leftG[who]==ghostStartLeft) { dir=8; }
+	//if (ghostMode=="sit" && topG[who]==ghostStartTop-30 && leftG[who]==ghostStartLeft) { dir=4; }
 
 	//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],dir);
 
@@ -775,29 +817,13 @@ function headFor(who,where){
 				}
 			} 
 		} else if (qty_options==1){
-				/*
-				if (currentCell & 2) {
-					dir= 2;
-				 } else if (currentCell & 1){
-					dir= 1;
-				 } else if (currentCell & 8){
-					dir= 8;
-				} else {
-					dir=4;
-				}
-				*/
 
-				dir = currentCell;
+				dir = currentCell; // simple - theres only one direction set - the only way we can go!
 
 				
 		} else if ( qty_options==3 || qty_options ==4){
-			// here for 1,3 or 4 possibilities
-			// for now, forcing in the order up, right, down, left
-
-			// just keep going? works well for 3 and 4 so far..
+			// just keep going. This really helps when heading somewhere. I may come back to this for some more complex mazes in the future
 			dir = ghostDir[who];
-		} else {
-			//alert("WHy!!!!");
 		}
 	}
 
@@ -813,7 +839,7 @@ function headFor(who,where){
 	var legal = currentCell & dir;
 
 	if (!legal){
-		console.log("NOT LEGAL MOVE");
+		console.log("PROGRAM GENERATED AN ILLEGAL MOVE"); // one very useful error message when developing!
 		onPause=1;	
 	}
 	return dir;
@@ -823,7 +849,7 @@ function headFor(who,where){
  * Function: getBasicVisionDir
  * Meta: Get a direction based on the basic vision feature, used in the checkBasicVision function
  * NB: The lack of checking whether or not the direction can be made is actually what slows down the ghosts when a pill is on and they are in your line of sight
- * Although not programatically brilliant, it worked for the game in an 'off label' kind of way, so it got left. 
+ * Although not programatically brilliant, it worked for the game in an 'off label' kind of way, so it got left in the original in 1999! 
 */
 function getBasicVisionDir(who,not){
 	ghostDir[wg] = Math.floor(Math.random() *3);
@@ -1003,6 +1029,8 @@ function reset(){
  *      this function will change their direction to move towards you, unless a powerpill is 
  *      active on them, in which case they go in any direction that is not towards you.  
 */
+
+ /*    ************** This feature has been removed as it still needs converting to bitwise *************       */
 
 /*
  * Function: levelEnd
@@ -1292,41 +1320,3 @@ function binary_lookup(direction,data) {
 	console.log("RESULT:", result, moves[removed] & result, moves[removed].charAt(result-1), " FROM RAND " + random);
 
 }
-
-/* 
- * Function: qtyBits
- * Meta: returns the numbers of set bits in a byte - ie number of directions
-*/
-qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4);
-function qtyBits(bin){
-	/*
-	count = 0;
-	for(i = 0; i < bin.length; i++) { // would use map but creating arrays on the fly is LONG in javascript
-		count += (bin >> i) & 0x01;
-	}
-	    return count;
-	*/
-	return qty_bits_lookup[bin];
-}
-
-/* 
- * Function : randomDir
- * Meta: generates a random direction for a ghost by bitshifting the data to find the direction corresponding to the nth set bit
- * Param x - data from the bindata array
- * Param y - take our random number and use the nth set bit from the right of the x (cell in bindata)
-*/
-function randomDir(x,n){
-	var sum = 0;
-	var random_direction = 1;
-	for (var i=0;i<4;i++){
-		sum += (x >> i) & 1;
-		if (i>0){
-			random_direction = random_direction *2;
-		}
-		if (sum == n){ 
-			return random_direction; 
-		}
-	}
-	return -1;
-}
-
