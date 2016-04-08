@@ -162,7 +162,6 @@ function init(){
 
 	ghostData = new Array (6,7,9,10) // used later to test for if opposite directions are present
 	leftG = new Array; topG = new Array; possG = new Array; engGhost = new Array
-	preGtop = new Array; preGleft = new Array
 	vulnerable = new Array (true, true, true, true)
 	onPath = new Array (false, false, false, false)
 
@@ -202,97 +201,37 @@ function ghosts(){
 
 	// The movement functions are run four times in a loop - once for each ghost
 	for (wg=0;wg<total_ghosts;wg++){
+
 		// 1. Load the possible moves from the mazedata array into the possG array. 
 		//   All the data for all the ghosts is used later (collision detection) hence the array. 
 		possG[wg] = bindata[topG[wg]][parseInt(leftG[wg])];
 
 		// 2. Check possibile moves. The ghostData array contains info on which moves are possible. 
 		//    If more than 2 directions are present, or only 1 (ie backwards, so dead end) - a new direction must be generated...
-
-		/*
-		totalDirections=0 // counters for each ghost
-		for (n=0;n<4;n++){
-		ghostData[n]=0
-		if (possG[wg] && possG[wg].charAt(n) != "X") { // HACK2016
-			ghostData[n] = "8" // the 8 is a random otherwise unused character, just need something for checking in section 4 below
-			totalDirections++;
-		} else {
-			ghostData[n] = n}
-		}
-		*/
 		totalDirections=qtyBits(possG[wg]);
-
-		// 3. Call function to get ghost direction where there are 1 or more than two directions
 		if (totalDirections>2 || totalDirections==1) generateGhostDir(wg,totalDirections,possG[wg])
 
-		// 4. if there's 2 directions only, need to ascertain if they are 180 or 90 degrees. 
-		// The '8' added above is used to ascertain if they are opposite directions (eg Left & Right) or not. 
-		// If they're opposite, obviously the previous direction will apply.
-		// If they're at right angles (No cases of 2 8's next to each other) a new direction must be generated.
-
-		/*
-		firstPair = false; secPair = false
-		if (totalDirections==2) {
-			if (ghostData[0] == ghostData[1]) firstPair = true
-			if (ghostData[2] == ghostData[3]) secPair = true
-			if (!firstPair && !secPair) { generateGhostDir(wg,totalDirections,possG[wg]);}  // don't have any pairs so it's right angles
-		}
-		*/
+		// 3. if there's 2 directions only, need to ascertain if they are 180 or 90 degrees. 
 		if (totalDirections==2) {
 			if (possG[wg] != 12 && possG[wg] != 3){ // 12 is Up and Down, 3 is Left and Right - no need to recalc
 				 generateGhostDir(wg,totalDirections,possG[wg]);  // don't have any pairs so it's right angles
 			}
 		}
 
-		// if basicVision is set, and ghost is not onPath to home, compare ghost positions to your position & if it can see you, adjust direction.
-		//if (!onPath[wg] && basicVision === true) { checkBasicVision(wg) }
+		// 4. if basicVision is set, and ghost is not onPath to home, compare ghost positions to your position & if it can see you, adjust direction.
+		if (!onPath[wg] && basicVision === true) { checkBasicVision(wg) }
 
 		// For each ghost, if ghostDir (current direction) is in the possG array (the move is possible) then a flag to engage the ghost (engGhost) is set to true. 
 		// Otherwise (move not possible) engGhost (engage ghost) is set to false. Thus, the ghost is only engaged if it can make the move. 
 		// NB: Ghost is also engaged if onPath is true, as it knows where it's going (onPath means the ghost has been eaten and is on a path to the base.. - this path is coded into the mazedata array)
 
-		//status = (wg + "--" + possG[wg]) //status bar for error checking
-		/*
-		if (!possG[wg]){ possG[wg]="0";} // HACK2016
-		if (ghostDir[wg] == possG[wg].charAt(0) || ghostDir[wg] == possG[wg].charAt(1) || ghostDir[wg] == possG[wg].charAt(2) || ghostDir[wg] == possG[wg].charAt(3) || onPath[wg]) {
-			engGhost[wg] = true;
-		} else {
-			engGhost[wg] = false
-		}o	*/
 		engGhost[wg] = true;
 
-		// if onPath is true for the particular ghost, and there's a path direction present in the array, change the ghost's direction to follow the path home...
-		// 2016 - think this is defunct now as path is calculated as part of getting the ghosts movement.
-		/*
-		if (onPath[wg] && possG[wg].length=='6') {
-			ghostDir[wg] = possG[wg].charAt(5)
-			//alert("Ghost" + i + " told to go " + ghostDir[i])
-		} else if (onPath[wg]){
-			//console.log("ON A PATH");
-		
-		}
-		*/
-
-		//status bar stuff for checking variables..
-		//status = possG[0] + ":" + possG[1] + ":" + possG[2] + ":" + possG[3] + "-- " + ghostDir[0] + " " + ghostDir[1] + " " + ghostDir[2] + " " + ghostDir[3] + "**** " + secondGhost[1] + "^^" + engGhost[0] + engGhost[1] + engGhost[2] + engGhost[3]
-
-		// We store ghost positions so can be compared to positions next time round. If same, generate new direction. 
-		// This is to over-ride when they stick if they're following you and you move out of the way, as there's nothing else to tell them to generate a new direction.
-		// update 2016 - this is NONSENSE! Need to generate a proper direction now I have the speed sorted!
-		/*
-		if (preGtop[wg] == topG[wg] && preGleft[wg] == leftG[wg]) generateGhostDir(wg,totalDirections,possG[wg])
-		preGtop[wg] = topG[wg]
-		preGleft[wg] = leftG[wg]
-		*/
-		
-
-		//if the ghost is engaged, update position variable, and then position
-		if (engGhost[wg] || onPath[wg]) {
-			if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-10); eval ("divGhost" + wg + ".top = topG[wg]")}
-			if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+10); eval ("divGhost" + wg + ".top = topG[wg]")}
-			if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-10); eval ("divGhost" + wg + ".left = leftG[wg]")}
-			if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+10); eval ("divGhost" + wg + ".left = leftG[wg]")}
-		}
+		// update position variable, and then position
+		if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-10); eval ("divGhost" + wg + ".top = topG[wg]")}
+		if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+10); eval ("divGhost" + wg + ".top = topG[wg]")}
+		if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-10); eval ("divGhost" + wg + ".left = leftG[wg]")}
+		if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+10); eval ("divGhost" + wg + ".left = leftG[wg]")}
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
 		if (onPath[wg]){
@@ -342,11 +281,14 @@ function ghosts(){
 				ghostDelayRelease=Array(); // used to delay the release of each ghost
 				for (i=0;i<total_ghosts;i++){
 					ghostDelayRelease[i] = ghostReleaseTime - i*15;
+					document.getElementById("ghost" + i).classList.add("spin");
 					//showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
 				}
 				divMessage.visibility='visible'
+				document.getElementById("pacman").classList.add("spin");
 				onPause=1;
-				setTimeout('divMessage.visibility=\'hidden\'; onPause=0; pacTimer = setTimeout("move()",movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
+				setTimeout('divMessage.visibility=\'hidden\'; onPause=0;   document.getElementById("pacman").classList.remove("spin"); for (i=0;i<total_ghosts;i++){ document.getElementById("ghost" + i).classList.remove("spin"); } pacTimer = setTimeout("move()",movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
+				
 					
 				 if (lives==0) {
 					 divMessEnd.visibility='visible'
@@ -378,8 +320,10 @@ function ghosts(){
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
 				if (vulnerable[i]) eval ("ghost" + i + "src.src = ghimg6.src")
+				eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
 			}
 		}
+		document.getElementById("maze").classList.add("negspin");
 	}
 
 	// Return ghost to normal when powerpill wears off.
@@ -388,10 +332,13 @@ function ghosts(){
 		mode=previousMode;
 		ghostspeed=speed;
 		movespeed=speed;
+		document.getElementById("maze").classList.remove("spin");
+		document.getElementById("maze").classList.remove("negspin");
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
 				eval ("ghost" + i + "src.src = ghimg" + i + ".src")
 				onPath[i]=false
+				eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
 				vulnerable[i] = true
 				ghostscore=50
 			}
@@ -502,9 +449,11 @@ function move(){
 				ghostscore=50
 				movespeed = speed-10;
 				powerpilon = true
+				//document.getElementById("maze").classList.add("spin"); // mushrooms 
 				for(i=0;i<total_ghosts;i++){
 					if (!onPath[i]){
 						eval ("ghost" + i + "src.src=ghimg5.src")
+						//eval ("document.getElementById('ghost" + i + "').classList.add('spin')"); // mushrooms 
 						vulnerable[i]=true
 					}
 				}
@@ -1053,6 +1002,7 @@ function levelEnd(){
 		mazeFlashTimer=setTimeout ("levelEnd()",300)
 	} else {
 		mazecount=0;
+		document.getElementById("maze").classList.add("spin");
 		loadLevel(sessionStorage.level);
 	}
 }
@@ -1132,7 +1082,7 @@ function start(){
 	onPause=0;
 	document.getElementById("levelIndicator").innerHTML = "Level " + sessionStorage.level;
 	divStart.visibility="visible";
-	gameTimer = setTimeout('divStart.visibility=\'hidden\'; move(); ghosts();',messageLifetime) 
+	gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; move(); ghosts();',messageLifetime) 
 }
 
 /* Temnporary function for debugging and adjusting mode timers  
@@ -1309,10 +1259,16 @@ function qtyBits(bin){
 	return qty_bits_lookup[bin];
 }
 
+/* 
+ * Function : randomDir
+ * Meta: generates a random direction for a ghost by bitshifting the data to find the direction corresponding to the nth set bit
+ * Param x - data from the bindata array
+ * Param y - take our random number and use the nth set bit from the right
+*/
 function randomDir(x,n){
 	var sum = 0;
 	var random_direction = 1;
-	for (i=0;i<4;i++){
+	for (var i=0;i<4;i++){
 		sum += (x >> i) & 1;
 		if (i>0){
 			random_direction = random_direction *2;
