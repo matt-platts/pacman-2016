@@ -21,7 +21,7 @@ Future improvements will be
 3. Random maze generation algorithm, based on a modification of the known recursive backtracker algorithm but to take the double walls into account (Recusrive backgracker deals with borders on all cells, not some cells blocked as walls).
 4. Selections for different logic and modes of play. I've found lots of things that work interestingly. It's facinating to see how small changes change the feel of the game greatly as well.
 5. Some wild and crazy features going beyond a pacman clone :)
-6. (In progress in 'binary' branch) - Using binary data for the mazes and movement lookups, using bitwise maths for the calculations.
+6. (In progress in 'binary3' branch - *almost there*) - Using binary data for the mazes and movement lookups, using bitwise maths for the calculations.
 
 Currently known bugs
 1. Chase mode seems to persist when you go into the next level.
