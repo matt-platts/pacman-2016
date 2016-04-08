@@ -102,12 +102,12 @@ if (!pacStartTop){
 	document.getElementById("pacman").style.top=pacStartTop // for now just adjust it on the page
 }
 var pacStartLeft=305
-var ghostStartTop=195
+var ghostStartTop=205
 var ghostStartLeft=305
 if (sessionStorage && sessionStorage.level==2) {
 	pacStartTop=265
 	pacStartLeft=305
-	ghostStartTop=195
+	ghostStartTop=205
 	ghostStartLeft=305
 }
 var thisfruit=0
@@ -645,10 +645,13 @@ function generateGhostDir(who,howMany,ghost_possibilities){
 				}
 
 		} else if (ghostMode=="sit"){
-			sit_rand_direction=Math.round(Math.random() * 1);
-			if (sit_rand_direction==0){ sit_rand_direction==2;}
-			if (ghost_possibilities & sit_rand_direction){ ghostDir[who]=sit_rand_direction; } 
-			ghostDir[who] = headFor(who,ghostHomeBase);
+			//sit_rand_direction=Math.round(Math.random() * 1);
+			//if (sit_rand_direction==0){ sit_rand_direction==2;}
+			//if (ghost_possibilities & sit_rand_direction){ ghostDir[who]=sit_rand_direction; } 
+			//ghostDir[who] = headFor(who,ghostHomeBase);
+			if (topG[who]==ghostStartTop && leftG[who]==ghostStartLeft) { ghostDir[who]=8; }
+			else if (topG[who]==ghostStartTop-60 && leftG[who]==ghostStartLeft) { ghostDir[who]=4; }
+			else { ghostDir[who] = headFor(who,ghostHomeBase); }
 		}
 }
 
@@ -716,7 +719,8 @@ function headFor(who,where){
 		}
 	}
 	// ALERT need a new one for this if (currentCell.charAt(4)=="3"){ dir="U";} // for when ghosts are in the pound
-	if (ghostMode=="sit" && topG[who]==ghostStartTop) { dir=8; }
+	if (ghostMode=="sit" && topG[who]==ghostStartTop && leftG[who]==ghostStartLeft) { dir=8; }
+	if (ghostMode=="sit" && topG[who]==ghostStartTop-30 && leftG[who]==ghostStartLeft) { dir=4; }
 	
 
 	//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],dir);
@@ -725,7 +729,7 @@ function headFor(who,where){
 	// if there are only two possibilities, try and force a 90 degree angle turn, otherwise just go through some defaults.
 	// logic is: if its going R or L, force in this order: U,D,L,R 
 	// 	     if its going U or D, force in this order: L,R,U,D
-	if (!dir) { 
+	if (!dir) {
 		
 		qty_options = qtyBits(currentCell);
 		if (qty_options==2){
@@ -1084,7 +1088,7 @@ function start(){
 	mode="scatter";
 	ghostReleaseTime = timeform.value;
 	ghostDelayRelease=Array(); // used to delay the release of each ghost
-	for (i=0;i<4;i++){
+	for (var i=0;i<total_ghosts;i++){
 		ghostDelayRelease[i] = ghostReleaseTime - i*47;
 		//console.log("START GHOST DELAY RELEASE",ghostDelayRelease[i]);
 	}

@@ -83,6 +83,8 @@ function renderGrid(){
 			if (interim_maze[y][x+1] && interim_maze[y][x+1] != "0"){
 				 movestring += "R"; binbit += 1; } else { movestring += "X";}
 
+			if (interim_maze[y][x-1] =="3" && interim_maze[y][x+1]=="3"){ binbit = 8;} // stop ghosts L and R in home base
+
 			movestring += bit; // this adds the pill
 			lineMoves.push(movestring); // ADD to an array of the whole line
 
