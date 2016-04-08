@@ -131,11 +131,11 @@ var lastkey = 4 // key previously pressed (I have no idea why it is set to D - a
 var movekey = 4 // active key (as above)
 var fruitOn=false // bool telling if a fruit is currently displaying - could simply use css lookups actually..
 var fruitTimer=0 // decrements from the int in fruitLifetime when a fruit is on screen, fruit disappears when it reaches 1
-var effectTimer=0;
-var effect_mushrooms=0;
 var movespeed=speed; // set to the basic speed to start
 var ghostspeed=speed; // set to the basic speed to start 
 var resetModeTime=gameTime; // the time the mode was last reset to the default (scatter). It starts as the game starts, so at gameTime;.
+var effectTimer=0;
+var invincibility = 0;// new feature
 
 // start positions - still needs to be calculated from the maze data in time 
 if (!pacStartTop){
@@ -317,7 +317,7 @@ function ghosts(){
 
 			// if no Powerpill and game not won and ghost not on path, you've lost a life
 			// or pill is on but ghost is not vulnerable then same
-			if ((ppTimer=="0" && !won && !onPath[wg]) || (ppTimer>="1" && !vulnerable[wg] && !onPath[wg])) {
+			if ((ppTimer=="0" && !won && !onPath[wg] && !invincibility) || (ppTimer>="1" && !vulnerable[wg] && !onPath[wg] && !invincibility)) {
 				lives = (lives-1)
 				score -= 50
 				scoreform.value = score
@@ -370,20 +370,20 @@ function ghosts(){
 	}
 	if (effectTimer > 0){
 		effectTimer--;
-		if (effectTimer==50){
-			eval ("document.getElementById('maze').classList.remove('spin')"); 
+		if (effectTimer==40){
+			if (effect="effect_long_spin"){
+				effect_long_spin_warn();
+			} else {
+				effect_quick_spin_warn();
+			}
 		}
 	}
 	if (effectTimer==1){
-		effect_mushrooms=0;
-		wallColour("#3300ff");
-		eval ("document.getElementById('pacman').classList.remove('spin')"); 
-		eval ("document.getElementById('maze').classList.add('spin')"); 
-		for(i=0;i<total_ghosts;i++){
-			eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+		if (effect="effect_long_spin"){
+			effect_long_spin_end();
+		} else {
+			effect_quick_spin_end();
 		}
-		movespeed=speed;
-		ghostspeed=speed;
 	}
 
 	if (ppTimer == ghostBlinkLifetime) {
@@ -565,15 +565,15 @@ function move(){
 			divFruit.visibility='hidden'
 			srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
 			if (srcname == "mushroom.png"){
-				movespeed = speed-20;
-				ghostspeed = speed-20;
-				effect_mushrooms=1;
-				effectTimer=100;
-				wallColour("#6600ff");
-				eval ("document.getElementById('pacman').classList.add('spin')"); 
-				eval ("document.getElementById('maze').classList.add('spin')"); 
-				for (i=0;i<total_ghosts;i++){
-					eval ("document.getElementById('ghost" + i + "').classList.add('spin')"); 
+				var effect_no = Math.floor(Math.random() * 2);
+				var effect;
+				if (effect_no == 1) { effect = "effect_long_spin"; }
+				if (effect_no ==2) { effect = "effect_quick_spin"; }
+
+				if (effect=="effect_long_spin"){
+					effect_long_spin();
+				} else {
+					effect_quick_spin();
 				}
 			}
 		}
@@ -1355,6 +1355,10 @@ function binary_lookup(direction,data) {
 
 }
 
+/*
+ * Function wallColour
+ * Meta: allows recolouring of the walls of the maze to a colour of your choosing
+*/
 function wallColour(col){
 
 		mazeCells = document.getElementsByClassName("wallCell");
