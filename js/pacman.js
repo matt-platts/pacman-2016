@@ -675,11 +675,10 @@ function generateGhostDir(who,howMany,ghost_possibilities){
 					ghost_possibilities=excludeOppositeDirection(who,ghost_possibilities);
 					howMany--;
 				}
-				if (!onPath[who]) {
-					random_direction = Math.floor(Math.random() *(howMany)) + 1;
-					
-						ghostDir[who]=randomDir(ghost_possibilities,random_direction);	
+				if (!onPath[who]){
 
+					random_direction = Math.floor(Math.random() *(howMany)) + 1;
+					ghostDir[who]=randomDir(ghost_possibilities,random_direction);	
 
 					//console.log("ghostDir for wg " +who + " = " + ghostDir[who] + " from " + ghost_possibilities + " with a rand of " + random_direction);
 					if (!ghost_possibilities & ghostDir[who]){
@@ -702,21 +701,28 @@ function generateGhostDir(who,howMany,ghost_possibilities){
 */
 function excludeOppositeDirection(who,dirs){
 
+	if (ghostDir[who]==1){ return  dirs & ~2;}
+	if (ghostDir[who]==2){ return  dirs & ~1;}
+	if (ghostDir[who]==4){ return  dirs & ~8;}
+	if (ghostDir[who]==8){ return  dirs & ~4;}
+
+	/*
 	dirs=(dirs >>> 0).toString(2); // binary conversion
 
-	if (ghostDir[who]=="1"){
+	if (ghostDir[who]==1){
 		xreturn = dirs.substr(0, 2) + "0" +  dirs.substr(3,4);
 	}	
-	if (ghostDir[who]=="2"){
+	if (ghostDir[who]==2){
 		xreturn = dirs.substr(0, 3) + "0";
 	}
-	if (ghostDir[who]=="4"){
+	if (ghostDir[who]==4){
 		xreturn = "0" +  dirs.substr(1,4);
 	}
-	if (ghostDir[who]=="8"){
+	if (ghostDir[who]==8){
 		xreturn = dirs.substr(0, 1) + "0" +  dirs.substr(2,4);
 	}
 	return parseInt(xreturn,2);
+*/
 }
 
 /* 
@@ -728,7 +734,7 @@ function excludeOppositeDirection(who,dirs){
 function headFor(who,where){
 	currentCell = bindata[parseInt([topG[who]])][parseInt(leftG[who])]
 	if (!currentCell){
-		return ghostDir[who];
+		//return ghostDir[who]; // Doesnt look like i need to do this...
 	}
 
 	var dir=null;
@@ -738,6 +744,7 @@ function headFor(who,where){
 	} else if (leftG[who] <= where[0] && (currentCell & 1) && !(ghostDir[who] & 2) && ghostDir[who] != null){
 		dir= 1;
 	}
+
 	if (topG[who] > where[1] && (currentCell & 8) && !(ghostDir[who] & 4) && ghostDir[who] != null){
 		dir=8;
 	} else if (topG[who] <= where[1] && (currentCell & 4) && !(ghostDir[who] & 8) && ghostDir[who] != null){
@@ -765,7 +772,7 @@ function headFor(who,where){
 	if (!dir) { 
 		
 		qty_options = qtyBits(currentCell);
-		if (qty_options==2 || qty_options==3 || qty_options==4){
+		if (qty_options==2){
 			if (ghostDir[who]==1 || ghostDir[who]==2){
 				if (currentCell & 8){ 
 					dir= 8;
