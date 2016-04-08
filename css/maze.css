@@ -252,3 +252,20 @@
 		border-top-right-radius:5px;
 	}
 
+	.spin {
+	        transform: rotate(360deg);
+            	transform-origin: center center;
+		transition: all .5s;
+	}
+
+	.negspin {
+	        transform: rotate(-360deg);
+            	transform-origin: center center;
+		transition: all .5s;
+	}
+
+	.halfspin {
+	        transform: rotate(180deg);
+            	transform-origin: center center;
+		transition: all .5s;
+	}

@@ -83,6 +83,8 @@ function renderGrid(){
 			if (interim_maze[y][x+1] && interim_maze[y][x+1] != "0"){
 				 movestring += "R"; binbit += 1; } else { movestring += "X";}
 
+			if (interim_maze[y][x-1] =="3" && interim_maze[y][x+1]=="3"){ binbit = 8;} // stop ghosts L and R in home base
+
 			movestring += bit; // this adds the pill
 			lineMoves.push(movestring); // ADD to an array of the whole line
 
@@ -182,8 +184,7 @@ function renderGrid(){
 				str='<div id="cell-' + h_offset + '-' + v_offset + '" style="position:absolute; top:' + v_offset + 'px; left:' + h_offset + 'px;" class="mazeCell ' + styles + '">' + cellInnerHTML + '</div>';
 				innerStr += str;
 				mazedata[v_offset][h_offset] = movestring; 
-				binbit = (binbit>>>0).toString(2);
-				binbit="0000".substr(binbit.length)+binbit;
+				//binbit = (binbit>>>0).toString(2); // only use this to store in binary notation
 				bindata[v_offset][h_offset] = binbit;
 
 				// Cells and sprites are 30x30px and pacman moves in 10px increments. 
@@ -226,5 +227,5 @@ function renderGrid(){
 	//console.log(mazedata);
 	document.getElementById('mazeinner').innerHTML=innerStr;
 	console.log(bindata);
-	return mazedata;
+	return Array(mazedata,bindata);
 }
