@@ -771,7 +771,7 @@ function headFor(who,where){
 	if (topG[who] > where[1] && (currentCell & 8) && !(ghostDir[who] & 4) && ghostDir[who] != null){
 		dir=8;
 	} else if (topG[who] <= where[1] && (currentCell & 4) && !(ghostDir[who] & 8) && ghostDir[who] != null){
-		if (topG[who]==145 && leftG[who]==305){
+		if (topG[who]==145 && leftG[who]==305 && !onPath[who]){
 			// cant go back to ghost house - just send them right, whatever..
 			dir=1;
 		} else {
