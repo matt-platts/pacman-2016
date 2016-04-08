@@ -255,7 +255,7 @@
 	.spin {
 	        transform: rotate(360deg);
             	transform-origin: center center;
-		transition: all .5s;
+		transition: all 2s;
 	}
 
 	.negspin {

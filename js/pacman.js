@@ -113,6 +113,8 @@ berry0 = new Image
 berry0.src = 'graphics/cherry.gif'
 berry1 = new Image
 berry1.src = 'graphics/strawberry.gif'
+berry2 = new Image
+berry2.src = 'graphics/mushroom.png'
 
 // Initialise global vars. (have so many global vars.. time for OO!)
 var won = false // true if won the game
@@ -129,6 +131,8 @@ var lastkey = 4 // key previously pressed (I have no idea why it is set to D - a
 var movekey = 4 // active key (as above)
 var fruitOn=false // bool telling if a fruit is currently displaying - could simply use css lookups actually..
 var fruitTimer=0 // decrements from the int in fruitLifetime when a fruit is on screen, fruit disappears when it reaches 1
+var effectTimer=0;
+var effect_mushrooms=0;
 var movespeed=speed; // set to the basic speed to start
 var ghostspeed=speed; // set to the basic speed to start 
 var resetModeTime=gameTime; // the time the mode was last reset to the default (scatter). It starts as the game starts, so at gameTime;.
@@ -149,7 +153,7 @@ if (sessionStorage && sessionStorage.level==2) {
 	ghostStartLeft=305
 }
 var thisfruit=0
-var fruitArray = new Array(true,true)
+var fruitArray = new Array(true,true,true);
 var qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4); // how many directions are there for each junction? Quick lokup table to avoid calculating number of possible directions at a junction
 
 /* Function: init
@@ -364,6 +368,23 @@ function ghosts(){
 	if (ppTimer >0) {
 		ppTimer=(ppTimer-1);
 	}
+	if (effectTimer > 0){
+		effectTimer--;
+		if (effectTimer==50){
+			eval ("document.getElementById('maze').classList.remove('spin')"); 
+		}
+	}
+	if (effectTimer==1){
+		effect_mushrooms=0;
+		wallColour("#3300ff");
+		eval ("document.getElementById('pacman').classList.remove('spin')"); 
+		eval ("document.getElementById('maze').classList.add('spin')"); 
+		for(i=0;i<total_ghosts;i++){
+			eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+		}
+		movespeed=speed;
+		ghostspeed=speed;
+	}
 
 	if (ppTimer == ghostBlinkLifetime) {
 		for(i=0;i<total_ghosts;i++){
@@ -542,6 +563,19 @@ function move(){
 			score=score+250; scoreform.value=score
 			fruitOn=false
 			divFruit.visibility='hidden'
+			srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
+			if (srcname == "mushroom.png"){
+				movespeed = speed-20;
+				ghostspeed = speed-20;
+				effect_mushrooms=1;
+				effectTimer=100;
+				wallColour("#6600ff");
+				eval ("document.getElementById('pacman').classList.add('spin')"); 
+				eval ("document.getElementById('maze').classList.add('spin')"); 
+				for (i=0;i<total_ghosts;i++){
+					eval ("document.getElementById('ghost" + i + "').classList.add('spin')"); 
+				}
+			}
 		}
 
 		// For the tunnels off the side of the mazes, may need to update location of pacman 
@@ -869,7 +903,7 @@ function showFruit() {
 	nextfruitscore+=600
 	thisfruit++
 	fruitArray[thisfruit]=true
-	whichFruit = Math.round(Math.random() *1)
+	whichFruit = Math.round(Math.random() *2)
 	fruitTimer=fruitLifetime
 	if (!fruitOn) eval ("fruitsrc.src=berry" + whichFruit + ".src")
 	fruitOn=true
@@ -1319,4 +1353,17 @@ function binary_lookup(direction,data) {
 	//result = 1 << Math.floor(Math.random() * (x & ~ reverse).toString().length) 
 	console.log("RESULT:", result, moves[removed] & result, moves[removed].charAt(result-1), " FROM RAND " + random);
 
+}
+
+function wallColour(col){
+
+		mazeCells = document.getElementsByClassName("wallCell");
+		wallCells = document.getElementsByClassName("mazeCell");
+		for(var i = 0; i < mazeCells.length; i++) {
+		    mazeCells[i].style.borderColor = col;
+		}
+		for (var i=0; i < wallCells.length; i++){
+		    wallCells[i].style.borderColor = col;
+		}
+		document.getElementById("mazeinner").style.borderColor=col;
 }
