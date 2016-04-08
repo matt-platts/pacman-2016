@@ -38,6 +38,7 @@ var exlife2 = sessionStorage.exlife2;
 var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
+var fx = sessionStorage.fx
 
 // Define timers
 var pacTimer;
@@ -72,6 +73,8 @@ berry0 = new Image
 berry0.src = 'graphics/cherry.gif'
 berry1 = new Image
 berry1.src = 'graphics/strawberry.gif'
+berry2 = new Image
+berry2.src = 'graphics/mushroom.png'
 
 // Initialise global vars. (have so many global vars.. time for OO!)
 var won = false // true if won the game
@@ -281,11 +284,15 @@ function ghosts(){
 				ghostDelayRelease=Array(); // used to delay the release of each ghost
 				for (i=0;i<total_ghosts;i++){
 					ghostDelayRelease[i] = ghostReleaseTime - i*15;
-					document.getElementById("ghost" + i).classList.add("spin");
+					if (fx){
+						document.getElementById("ghost" + i).classList.add("spin");
+					}
 					//showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
 				}
 				divMessage.visibility='visible'
-				document.getElementById("pacman").classList.add("spin");
+				if (fx){
+					document.getElementById("pacman").classList.add("spin");
+				}
 				onPause=1;
 				setTimeout('divMessage.visibility=\'hidden\'; onPause=0;   document.getElementById("pacman").classList.remove("spin"); for (i=0;i<total_ghosts;i++){ document.getElementById("ghost" + i).classList.remove("spin"); } pacTimer = setTimeout("move()",movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
 				
@@ -320,10 +327,11 @@ function ghosts(){
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
 				if (vulnerable[i]) eval ("ghost" + i + "src.src = ghimg6.src")
-				eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+				if (fx){
+					eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+				}
 			}
 		}
-		document.getElementById("maze").classList.add("negspin");
 	}
 
 	// Return ghost to normal when powerpill wears off.
@@ -333,7 +341,6 @@ function ghosts(){
 		ghostspeed=speed;
 		movespeed=speed;
 		document.getElementById("maze").classList.remove("spin");
-		document.getElementById("maze").classList.remove("negspin");
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
 				eval ("ghost" + i + "src.src = ghimg" + i + ".src")
@@ -1002,7 +1009,9 @@ function levelEnd(){
 		mazeFlashTimer=setTimeout ("levelEnd()",300)
 	} else {
 		mazecount=0;
-		document.getElementById("maze").classList.add("spin");
+		if (fx){
+			document.getElementById("maze").classList.add("spin");
+		}
 		loadLevel(sessionStorage.level);
 	}
 }
