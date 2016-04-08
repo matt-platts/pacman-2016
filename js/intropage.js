@@ -2,15 +2,15 @@ function getSpeed(){
 	document.forms[0].elements[0].value=sessionStorage.speed
 }
 
-function setSpeed(){
-	sessionStorage.speed = document.forms[0].elements[0].value
+function setSpeed(to){
+	sessionStorage.speed = to; 
 }
 
 function kd(e){
 	if (document.all && !document.getElementById){key = window.event.keyCode}
 	if (document.getElementById){ key = e.keyCode}
 	if (key=="90" || key=="122"){
-		location='pacman_1.html'
+		location='pacman.html'
 	}
 	if (key=="88" || key=="120"){
 		location="settings.html";
@@ -31,12 +31,12 @@ function init(){
 function kdns(evt){
 	key=evt.which
 	if (key=="90" || key=="122") {
-	location='pacman_1.html'
+		location='pacman.html'
 	}
 	if (key=="89" || key=="121") {
-	location='pacman_1_fast.html'
+		location='pacman_1_fast.html'
 	}
 	if (key=="88" || key=="120"){
-	location="settings.html";
+		location="settings.html";
 	}
 }

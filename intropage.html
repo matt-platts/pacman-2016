@@ -29,7 +29,7 @@
 	<center>
 	<font face="verdana, arial, helvetica" size="2" color="lime"><blink>
 		<script language="Javascript">
-		if (location.search){
+		if (location.search && location.search.substr(1,5)=="score"){
 			document.write("<p style='font-weight:bold'>Your final " + location.search.substr(1,5) + ": " + location.search.substr(7) + " points</p>");
 		}
 	</script>

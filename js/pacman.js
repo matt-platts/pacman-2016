@@ -239,6 +239,8 @@ function ghosts(){
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
 		if (onPath[wg]){
 			if (topG[wg]>445 || topG[wg] <25 || leftG[wg]<35 || leftG[wg] >575) {
+			/*
+			alert("ERROR IN DATA");
 				eval ("divGhost" + wg + ".left = ghostStartLeft")
 				eval ("divGhost" + wg + ".top = ghostStartTop")
 				leftG[wg] = eval ("parseInt(divGhost" + wg + ".left)")
@@ -246,6 +248,7 @@ function ghosts(){
 				onPath[wg] = false
 				ghostDir[wg] = 8;
 				eval ("ghost" + wg + "src.src=ghimg" + wg + ".src")
+			*/
 			}
 			// and if it's home, reset it to not vulnerable and back to correct image
 			if (leftG[wg] == ghostHomeBase[0] && topG[wg] == ghostHomeBase[1]){
@@ -484,7 +487,7 @@ function move(){
 			lives++; sessionStorage.lives = lives; scoreform.value = lives;
 		}
 		if (score>=10000 && score <10500 && exlife2) {
-			exlife2=0; sessionStorag.exlife2=0;
+			exlife2=0; sessionStorage.exlife2=0;
 			lives++; sessionStorage.lives++; scoreform.value = lives;
 		} 
 
@@ -1110,6 +1113,7 @@ function showmode(input){
 
 // pacman object constructor
 var class_pacman = function(startLeft,startTop){
+
 	this.left=startLeft;
 	this.top=startTop;
 	this.direction = "R";
@@ -1125,10 +1129,11 @@ var class_pacman = function(startLeft,startTop){
 
 // ghost constructor
 var class_ghost = function(name){
+
 	this.name = name;
 	// src - the source image can be named after the name
 	this.left=305;
-	this.top = 195;
+	this.top = 205;
 	this.alive=1; // gets rid of the onPath global
 	this.mode="scatter"; // mode (chase, scatter, frightened, sit, homing)
 	this.leftBase=0;
@@ -1276,7 +1281,7 @@ function qtyBits(bin){
  * Function : randomDir
  * Meta: generates a random direction for a ghost by bitshifting the data to find the direction corresponding to the nth set bit
  * Param x - data from the bindata array
- * Param y - take our random number and use the nth set bit from the right
+ * Param y - take our random number and use the nth set bit from the right of the x (cell in bindata)
 */
 function randomDir(x,n){
 	var sum = 0;

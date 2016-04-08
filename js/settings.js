@@ -12,7 +12,15 @@ globals.resetModeOnResetGame = true; // set to 1 to always start back in scatter
 globals.excludeReverseDirectionInRandomMode = true; // a better chance to catch them if they double back on themselves.
 globals.fx = true; // extra animation effects 
 
+if (location.search && location.search.substr(1,5)=="noset"){
+	//don't update settings
+} else {
 
 for (x in globals){
-	sessionStorage.setItem(x,globals[x]);
+	if (location.search && x=="speed"){
+		// dont set speed
+	} else {
+		sessionStorage.setItem(x,globals[x]);
+	}
+}
 }

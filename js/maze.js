@@ -226,6 +226,6 @@ function renderGrid(){
 	//console.log(innerStr);
 	//console.log(mazedata);
 	document.getElementById('mazeinner').innerHTML=innerStr;
-	console.log(bindata);
+	//console.log(bindata);
 	return Array(mazedata,bindata);
 }

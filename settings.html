@@ -3,6 +3,13 @@
 <head>
 	<title>Pacman - Settings</title>
 	<script language="JavaScript" src="js/intropage.js"></script>
+	<style type="text/css">
+	form span { display:inline-block;}
+	input[type='radio'] { 
+		float:left; clear:both;
+		margin-bottom:9px;
+	}
+	</style>
 </head>
 <body bgcolor="black" text="white" onLoad="getSpeed()" link="yellow" vlink="yellow" alink="red">
 <center>
@@ -19,14 +26,21 @@
 
 <center>
 <font face="verdana, arial, helvetica" size="2">
-<b>Edit game speed:</b></font><br><br>
+<b>Edit game settings:</b></font><br><br>
 </td></tr></table>
-<p>Higher number = slower game. Values between 40 and 80 are recommended.</p>
+<div style="width:200px; text-align:left;">
 <form>
-Game Speed: 
-<input type="text" size="3" value="" onBlur="setSpeed()">
-
+<p>Game Type: </p>
+<span> <input type="radio" name="speed" value="60" onClick="setSpeed(this.value)"> Beginner</span> <br />
+<span> <input type="radio" name="speed" value="50" onClick="setSpeed(this.value)"> Slow</span> <br />
+<span> <input type="radio" name="speed" value="42" checked="checked" onClick="setSpeed(this.value)"> Regular (recommended) </span> <br />
+<span> <input type="radio" name="speed" value="35" onClick="setSpeed(this.value)"> Fast </span> <br />
+<span> <input type="radio" name="speed" value="20" onClick="setSpeed(this.value)"> Silly</span> <br />
+<hr />
+<p style="font-weight:bold">Advanced Settings:</p>
+<p>Coming soon..</p>
+</div>
 </form>
-<a href="intropage.html">Return to game</a>
+<a href="intropage.html?noset">Return to game</a>
 </body>
 </html>
