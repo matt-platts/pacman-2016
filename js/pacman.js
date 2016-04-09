@@ -350,11 +350,12 @@ function ghosts(){
 					divMessage.display="none";
 					if (fx){
 						for (i=0;i<total_ghosts;i++){
-							document.getElementById("ghost" + i).classList.add("spin");
+							document.getElementById("ghost" + i).classList.add("negspin");
 						}
 					}
 					reset()
 					locStr = "intropage.html?score=" + score;
+					won=true
 					setTimeout('won=true; sessionStorage.score=score; location=locStr;',messageLifetime);
 				} else {
 					reset()
