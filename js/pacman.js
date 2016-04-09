@@ -78,7 +78,7 @@ var exlife2 = sessionStorage.exlife2;
 var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
-var fx = sessionStorage.fx
+var fx = sessionStorage.fx; // standard effects include spin in sprites if pacman is eaten, and maze spin between levels
 
 // Define timers
 var pacTimer; // for the move() loop
@@ -134,6 +134,7 @@ var fruitTimer=0 // decrements from the int in fruitLifetime when a fruit is on 
 var movespeed=speed; // set to the basic speed to start
 var ghostspeed=speed; // set to the basic speed to start 
 var resetModeTime=gameTime; // the time the mode was last reset to the default (scatter). It starts as the game starts, so at gameTime;.
+var effect;
 var effectTimer=0;
 var invincibility = 0;// new feature
 
@@ -326,6 +327,7 @@ function ghosts(){
 				
 				// reset ghost release time and mode
 				mode="scatter";
+				//showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
 				ghostReleaseTime = timeform.value;
 				ghostDelayRelease=Array(); // used to delay the release of each ghost
 				for (i=0;i<total_ghosts;i++){
@@ -333,7 +335,6 @@ function ghosts(){
 					if (fx){
 						document.getElementById("ghost" + i).classList.add("spin");
 					}
-					//showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
 				}
 				divMessage.visibility='visible'
 				if (fx){
@@ -344,11 +345,17 @@ function ghosts(){
 				
 					
 				 if (lives==0) {
-					 divMessEnd.visibility='visible'
-					 onPause=1;
-					 divMessage.display="none";
-					 locStr = "intropage.html?score=" + score;
-					 setTimeout('won=true; sessionStorage.score=score; location=locStr;',messageLifetime);
+					divMessEnd.visibility='visible'
+					onPause=1;
+					divMessage.display="none";
+					if (fx){
+						for (i=0;i<total_ghosts;i++){
+							document.getElementById("ghost" + i).classList.add("spin");
+						}
+					}
+					reset()
+					locStr = "intropage.html?score=" + score;
+					setTimeout('won=true; sessionStorage.score=score; location=locStr;',messageLifetime);
 				} else {
 					reset()
 				} 
@@ -368,21 +375,28 @@ function ghosts(){
 	if (ppTimer >0) {
 		ppTimer=(ppTimer-1);
 	}
+
+	// Random game effect - experimental feature
 	if (effectTimer > 0){
 		effectTimer--;
 		if (effectTimer==40){
-			if (effect="effect_long_spin"){
+			if (effect=="effect_long_spin"){
 				effect_long_spin_warn();
-			} else {
+			} else if (effect=="effect_quick_spin"){
 				effect_quick_spin_warn();
+			} else {
+			
+				effect_drugged_warn();
 			}
 		}
 	}
 	if (effectTimer==1){
-		if (effect="effect_long_spin"){
+		if (effect=="effect_long_spin"){
 			effect_long_spin_end();
-		} else {
+		} else if (effect=="effect_quick_spin"){
 			effect_quick_spin_end();
+		} else {
+			effect_drugged_end();
 		}
 	}
 
@@ -565,15 +579,17 @@ function move(){
 			divFruit.visibility='hidden'
 			srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
 			if (srcname == "mushroom.png"){
-				var effect_no = Math.floor(Math.random() * 2);
-				var effect;
+				var effect_no = Math.floor(Math.random() * 3);
 				if (effect_no == 1) { effect = "effect_long_spin"; }
-				if (effect_no ==2) { effect = "effect_quick_spin"; }
+				if (effect_no == 2) { effect = "effect_quick_spin"; }
+				if (effect_no == 3) { effect = "effect_drugged"; }
 
 				if (effect=="effect_long_spin"){
 					effect_long_spin();
-				} else {
+				} else if (effect=="effect_quick_spin"){
 					effect_quick_spin();
+				} else {
+					effect_drugged();
 				}
 			}
 		}
