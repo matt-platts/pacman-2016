@@ -76,7 +76,7 @@ function effect_long_spin_end(){
 	document.getElementById("pacman-bottom").style.background="yellow";
 }
 
-function effect_drugged(){
+function effect_mushrooms(){
 	movespeed = speed-20;
 	ghostspeed = speed-20;
 	effect_mushrooms=1;
@@ -92,7 +92,7 @@ function effect_drugged(){
 	}
 }
 
-function effect_drugged_warn(){
+function effect_mushrooms_warn(){
 	eval ("document.getElementById('maze').classList.remove('spin')"); 
 	eval ("document.getElementById('maze').classList.add('spin')"); 
 	eval ("document.getElementById('pacman').classList.remove('spin')"); 
@@ -103,7 +103,7 @@ function effect_drugged_warn(){
 	ghostspeed=speed;
 }
 
-function effect_drugged_end(){
+function effect_mushrooms_end(){
 	effect_mushrooms=0;
 	wallColour("#3300ff");
 	eval ("document.getElementById('pacman').classList.remove('spin')"); 

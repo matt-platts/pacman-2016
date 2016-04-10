@@ -79,6 +79,7 @@ var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
 var fx = sessionStorage.fx; // standard effects include spin in sprites if pacman is eaten, and maze spin between levels
+var extras = sessionStorage.extras; // experimental extra features 
 
 // Define timers
 var pacTimer; // for the move() loop
@@ -387,7 +388,7 @@ function ghosts(){
 				effect_quick_spin_warn();
 			} else {
 			
-				effect_drugged_warn();
+				effect_mushrooms_warn();
 			}
 		}
 	}
@@ -397,7 +398,7 @@ function ghosts(){
 		} else if (effect=="effect_quick_spin"){
 			effect_quick_spin_end();
 		} else {
-			effect_drugged_end();
+			effect_mushrooms_end();
 		}
 	}
 
@@ -582,15 +583,15 @@ function move(){
 			if (srcname == "mushroom.png"){
 				var effect_no = Math.floor(Math.random() * 3);
 				if (effect_no == 1) { effect = "effect_long_spin"; }
-				if (effect_no == 2) { effect = "effect_drugged"; }
-				if (effect_no == 3) { effect = "effect_drugged"; }
+				if (effect_no == 2) { effect = "effect_mushrooms"; }
+				if (effect_no == 3) { effect = "effect_mushrooms"; }
 
 				if (effect=="effect_long_spin"){
 					effect_long_spin();
 				} else if (effect=="effect_quick_spin"){
 					effect_quick_spin();
 				} else {
-					effect_drugged();
+					effect_mushrooms();
 				}
 			}
 		}
@@ -920,7 +921,8 @@ function showFruit() {
 	nextfruitscore+=600
 	thisfruit++
 	fruitArray[thisfruit]=true
-	whichFruit = Math.round(Math.random() *2)
+	if (extras=="true"){ var rand_no = 2;; } else { var rand_no = 1;}
+	whichFruit = Math.round(Math.random() * rand_no)
 	fruitTimer=fruitLifetime
 	if (!fruitOn) eval ("fruitsrc.src=berry" + whichFruit + ".src")
 	fruitOn=true
