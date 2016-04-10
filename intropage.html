@@ -11,31 +11,40 @@
 	<script type="text/javascript" src="js/intropage.js"></script>
 	
 	<style type="text/css">
-		body {border:0; margin: 0px auto; padding:0px;}
+		body {border:0; margin: 0px auto; padding:0px; font-family:verdana, arial, helvetica;}
 		#loading {position:relative; top:0; width:400; visibility:visible; background-color:green}
-		#maintext {position:relative; visibility:visible}
+		#maintext {position:relative;}
 		.dropdown {width:100px; height:19px; font-family:verdana, arial, helvetica; font-size:12px; color:orange; background-color:#660066}
+		.tablestyle tr td {font-size:12px;}
+		.scoretext {
+			font-weight:bold; color:yellow; 
+			font-size:14px; padding:7px; 
+			border:1px cyan solid; 
+			border-radius:8px; 
+			margin:0px auto; 
+			display:inline-block;
+			margin-bottom:20px;
+		}
 	</style>
 </head>
 
 
 <body bgcolor="000000" text="white" link="yellow" alink="yellow" vlink="yellow">
 	<center>
-	<font face="verdana, arial, helvetica" size="2">
 
 	<table width="600">
 	<tr><td colspan="3">
 
 	<center>
-	<font face="verdana, arial, helvetica" size="2" color="lime"><blink>
+	<blink>
 		<script language="Javascript">
 		if (location.search && location.search.substr(1,5)=="score"){
-			document.write("<p style='font-weight:bold'>Your final " + location.search.substr(1,5) + ": " + location.search.substr(7) + " points</p>");
+			document.write("<p class='scoretext'>Your final " + location.search.substr(1,5) + ": " + location.search.substr(7) + " points</p>");
 		}
-	</script>
-	</blink></font><font face="verdana, arial, helvetica" size="2">
+		</script>
+	</blink>
 
-	<div style="width:500px; font-family:courier; font-size:13px">
+	<div style="width:500px; font-size:13px">
 		Not a faithful reproduction, just a bit of fun with javascript. Enjoy :) 
 	<br />
 		<br />
@@ -44,14 +53,14 @@
 	<div id="maintext">
 	Keys:<br>
 	<table><tr><td>
-	<font size="3">
 <pre>
+	<font size="2" face="courier">
   A - UP
   Z - DOWN
   N - LEFT
   M - RIGHT
-</pre>
 </font>
+</pre>
 </td></tr></table>
 Or use the arrow keys
 <hr size="2" color="#6600ff" width="500">
@@ -64,7 +73,7 @@ Points are scored as follows:<br /><br />
 </tr>
 <tr>
 	<td align="center"><img src="graphics/ghost_red.gif" width=30 height=30 alt="" border="0"><img src="graphics/ghost_pink.gif" width=30 height=30 alt="" border="0"><img src="graphics/ghost_blue.gif" width=30 height=30 alt="" border="0"><img src="graphics/ghost_orange.gif" width=30 height=30 alt="" border="0"></td>
-	<td>50, 100, 150, 200</td>
+	<td style="font-size:12px">50, 100, 150, 200</td>
 </tr>
 <tr>
 	<td align="center"><img src="graphics/cherry.gif" width=23 height=23 alt="" border="0"> &nbsp;<sup>or</sup>&nbsp; <img src="graphics/strawberry.gif" width=23 height=23 alt="" border="0"></td>
@@ -92,12 +101,11 @@ Points are scored as follows:<br /><br />
 
 </font>
 <hr size="2" color="#6600ff" width="500">
-<font size="1">All code &copy Matt Platts 1999. Graphics and idea blatantly yet (respectfully) ripped off from Namco. <a href="mailto:mattplatts@gmail.com">mattplatts@gmail.com</a>
+<font size="1">All code &copy Matt Platts 1999 - 2016. Graphics and game idea blatantly but respectfully ripped off from Namco. <a href="mailto:mattplatts@gmail.com">mattplatts@gmail.com</a>
 <br>
 <hr size="2" color="#6600ff" width="500">
 </center>
 </div>
-</font>
 </center>
 </body>
 </html>

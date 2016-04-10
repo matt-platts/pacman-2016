@@ -582,7 +582,7 @@ function move(){
 			if (srcname == "mushroom.png"){
 				var effect_no = Math.floor(Math.random() * 3);
 				if (effect_no == 1) { effect = "effect_long_spin"; }
-				if (effect_no == 2) { effect = "effect_quick_spin"; }
+				if (effect_no == 2) { effect = "effect_drugged"; }
 				if (effect_no == 3) { effect = "effect_drugged"; }
 
 				if (effect=="effect_long_spin"){
