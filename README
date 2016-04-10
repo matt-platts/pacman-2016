@@ -1,7 +1,6 @@
-Branch 'binary' is using binary data for the maze data and direction encodings, and bitwise maths for the calculations.
-
 2016 update of my Javascript Pacman game from 1999 (also on github).
-See www.mattplatts.com/pacman-2016, or www.mattplatts.com/pacman for the original.
+
+See www.mattplatts.com/pacman/, or www.mattplatts.com/pacman-original for the 1999 original.
 
 The original version was built for IE4 and Netscape 4, and was updated to support Netscape 6 in 2001, Chrome and Firefox in 2009, and I decided to look at it again in 2016 to see how it could be improved.
 
@@ -25,6 +24,7 @@ Future improvements will be
 5. Selections for different logic and modes of play. I've found lots of things that work interestingly. It's facinating to see how small changes change the feel of the game greatly as well.
 6. Some wild and crazy features going beyond a pacman clone :)
 
-Currently known bugs
-4. Firefox testing didn't go well (Chrome and IE seemed fine, not tested IE for a while now though..)
+Currently known bugs / issues / thoughts
+1. Firefox testing didn't go well (Chrome and IE seemed fine)
+2. Not tested in Safari, Opera or any other browser.
 
