@@ -1098,7 +1098,7 @@ function levelEnd(){
 	sessionStorage.level++
 	if (sessionStorage.level==12){
 		sessionStorage.level=1
-		if (sessionStorage.speed>=5){sessionStorage.speed=sessionStorage.speed-5;}
+		if (speed>=5){speed=speed-5;}
 	}
 
 	// flash maze
