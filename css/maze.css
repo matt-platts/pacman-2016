@@ -281,3 +281,14 @@
             	transform-origin: center center;
 		transition: all 5s;
 	}
+
+	.fade {
+		opacity: 1;
+		transition: opacity .25s ease-in-out;
+		-moz-transition: opacity .25s ease-in-out;
+		-webkit-transition: opacity .25s ease-in-out;
+	}
+
+	.trans{
+		transition: all 2.5s;
+	}

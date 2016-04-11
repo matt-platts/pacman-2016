@@ -325,6 +325,7 @@ function ghosts(){
 				scoreform.value = score
 				lifeform.value -= 1
 				resetModeTime = timeform.value;
+
 				
 				// reset ghost release time and mode
 				mode="scatter";
@@ -366,9 +367,18 @@ function ghosts(){
 				eval ("ghost" + wg + "src.src = eyes.src")
 				vulnerable[wg] = false;
 				onPath[wg] = true
+				
+				document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghost" + wg).style.top));
+				document.getElementById("ghostscore" + wg).style.left=(parseInt(document.getElementById("ghost" + wg).style.left));
+				document.getElementById("ghostscore" + wg).innerHTML=ghostscore;
+				document.getElementById("ghostscore" + wg).classList.add("trans"); 
+				document.getElementById("ghostscore" + wg).style.opacity=0;
+				document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghostscore" + wg).style.top-30));
+
 				score += ghostscore
 				ghostscore+=50
 				scoreform.value = score
+
 		      } 
 		}
 	}
@@ -433,7 +443,7 @@ function ghosts(){
 
 	// Check to see if a ghost has gone through the channel to the other side of the screen
 	for (i=0;i<total_ghosts;i++){
-		ghostPos = mazedata[topG[i]][parseInt(leftG[i])];
+		ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
 		if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
 			if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
 			if (leftG[i] >= 565 && ghostDir[i] ==1) {leftG[i] = 35; }
@@ -531,6 +541,7 @@ function move(){
 			eval("pilsrc.images.pil_" + pacLeft + pacTop + ".src = blank.src")
 
 			if (pillType==2){
+				createGhostScores();
 				ppTimer = powerPillLifetime 
 				ghostscore=50
 				movespeed = speed-10;
@@ -560,11 +571,11 @@ function move(){
 		// Give extra lives at 5000 and 1000 points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is left. 
 		if (score>=5000 && score <6000 && exlife1) {
 			exlife1=0; sessionStorage.exlife1 = 0;
-			lives++; sessionStorage.lives = lives; scoreform.value = lives;
+			lives++; sessionStorage.lives = lives; lifeform.value = lives;
 		}
 		if (score>=10000 && score <10500 && exlife2) {
 			exlife2=0; sessionStorage.exlife2=0;
-			lives++; sessionStorage.lives++; scoreform.value = lives;
+			lives++; sessionStorage.lives++; lifeform.value = lives;
 		} 
 
 		// show a piece of fruit at certain times - based on incrementing score with a length in a decrementing var called fruitTimer
@@ -575,10 +586,16 @@ function move(){
 		}
 		//status= parseInt(divFruit.left) + "-" + pacLeft + "--" + parseInt(divFruit.top) + "-" + pacTop
 
-		if (pacLeft==parseInt(divFruit.left) && pacTop == parseInt(divFruit.top) && fruitOn) {
+		if (fruitOn && pacLeft==parseInt(divFruit.left) && pacTop == parseInt(divFruit.top)) {
 			score=score+250; scoreform.value=score
 			fruitOn=false
-			divFruit.visibility='hidden'
+			divFruit.visibility='hidden';
+
+			document.getElementById("fruits").style.top=(parseInt(document.getElementById("fruits").style.top)-30);
+			document.getElementById("fruits").innerHTML="250";
+			document.getElementById("fruits").classList.add("trans"); 
+			document.getElementById("fruits").style.opacity=0;
+				
 			srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
 			if (srcname == "mushroom.png"){
 				var effect_no = Math.floor(Math.random() * 3);
@@ -897,6 +914,11 @@ function headFor(who,where){
 	return dir;
 }
 
+function moveTo(what,where){
+	what.style.top=parseInt(what.style.top)+30;
+	what.style.left=parseInt(what.style.left)-30;
+}
+
 /*
  * Function: getBasicVisionDir
  * Meta: Get a direction based on the basic vision feature, used in the checkBasicVision function
@@ -927,8 +949,34 @@ function showFruit() {
 	if (!fruitOn) eval ("fruitsrc.src=berry" + whichFruit + ".src")
 	fruitOn=true
 	divFruit.visibility='visible'
+
+	if (document.getElementById("fruits")){
+		document.getElementById("maze").removeChild(document.getElementById("fruits"));
+	}
+
+	xScore=document.createElement("div");
+	t = document.createTextNode(" ");
+	xScore.appendChild(t);
+	xScore.setAttribute("style","opacity:1; display:block; position:absolute; top:265px; left:305px; font-weight:bold");
+	xScore.setAttribute("class","sprite multiColour ");
+	xScore.setAttribute("id","fruits");
+	document.getElementById("maze").appendChild(xScore);
 }
 
+function createGhostScores(){
+	for (var i=0;i<total_ghosts;i++){
+		if (document.getElementById("ghostscore"+i)){
+			document.getElementById("maze").removeChild(document.getElementById("ghostscore" + i));
+		}
+		xScore=document.createElement("div");
+		t = document.createTextNode(" ");
+		xScore.appendChild(t);
+		xScore.setAttribute("style","opacity:1; display:block; position:absolute; font-weight:bold; color:cyan");
+		xScore.setAttribute("class","sprite ");
+		xScore.setAttribute("id","ghostscore"+i);
+		document.getElementById("maze").appendChild(xScore);
+	}
+}
 
 
 /*
@@ -1098,7 +1146,7 @@ function levelEnd(){
 	sessionStorage.level++
 	if (sessionStorage.level==12){
 		sessionStorage.level=1
-		if (speed>=5){speed=speed-5;}
+		if (speed>=25){speed=speed-1;}
 	}
 
 	// flash maze
