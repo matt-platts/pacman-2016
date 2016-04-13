@@ -291,5 +291,5 @@
 
 	.trans{
 		transform: translateY(-30px);
-		transition: all 2.5s;
+		transition: all 1.5s;
 	}
