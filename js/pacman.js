@@ -75,6 +75,7 @@ var lives = parseInt(sessionStorage.lives)
 var score = parseInt(sessionStorage.score)
 var exlife1 = sessionStorage.exlife1;
 var exlife2 = sessionStorage.exlife2;
+var exlife3 = sessionStorage.exlife3;
 var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
@@ -576,7 +577,11 @@ function move(){
 		if (score>=10000 && score <10500 && exlife2) {
 			exlife2=0; sessionStorage.exlife2=0;
 			lives++; sessionStorage.lives++; lifeform.value = lives;
-		} 
+		}
+		if (score>=20000 && score <21000 && exlife3) {
+			exlife3=0; sessionStorage.exlife3 = 0;
+			lives++; sessionStorage.lives = lives; lifeform.value = lives;
+		}
 
 		// show a piece of fruit at certain times - based on incrementing score with a length in a decrementing var called fruitTimer
 		if (score >= nextfruitscore && score <=nextfruitscore+300 && fruitArray[thisfruit]) {showFruit()}

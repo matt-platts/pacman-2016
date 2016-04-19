@@ -5,6 +5,7 @@ globals.level = 1,
 globals.speed = 42,
 globals.exlife1 = 1,
 globals.exlife2 = 1,
+globals.exlife3 = 1,
 globals.gameTime = 2000;
 
 globals.basicVision = false; // set to 1 and the ghosts can see you if there is no wall between you and them in scatter mode, and move towards you (or away if a powerill is on) 
