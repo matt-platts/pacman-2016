@@ -58,9 +58,9 @@
 */
 
 // initial settings. these should be increased at around 10000 points?
-var powerPillLifetime=200; // how many iterations the powerpill lasts for - hard is 120
-var ghostBlinkLifetime=25; // how long the ghosts blink for within the power pill. Hard is 15.
-var fruitLifetime=195; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc)
+var powerPillLifetime=400; // how many iterations the powerpill lasts for - hard is 120. 200 for moveInc 5, 400 for moveInc 2
+var ghostBlinkLifetime=35; // how long the ghosts blink for within the power pill. Hard is 15.
+var fruitLifetime=295; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
 var scatterTime = 300; // how long ghosts remain in scatter mode before switching to chase mode
@@ -69,7 +69,7 @@ var mode = "scatter" // the initial mode for starting the game
 var previousMode = "scatter"; // simply ensures it is set to avoid error if there is no previous mode yet..
 var levelOptions; // may contain an array set in each mazedata js file, or may be undefined. This ensures it exists..
 var total_ghosts=4; // editable and only really used for debugging - ie set to 1 and read the console logs for one ghost as its easier than deciphering 4..
-var moveInc = 5;
+var moveInc = parseInt(sessionStorage.moveInc); 
 
 // pull in session storage vars - these are (to be) all settable from the settins page - the game will be entirely configurable and come in 'flavours' eventually...
 var lives = parseInt(sessionStorage.lives)
