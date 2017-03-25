@@ -60,7 +60,7 @@
 // initial settings. these should be increased at around 10000 points?
 var powerPillLifetime=200; // how many iterations the powerpill lasts for - hard is 120
 var ghostBlinkLifetime=25; // how long the ghosts blink for within the power pill. Hard is 15.
-var fruitLifetime=95; // how many iterations a piece of fruit stays on screen - hard is 80
+var fruitLifetime=195; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
 var scatterTime = 300; // how long ghosts remain in scatter mode before switching to chase mode
@@ -69,6 +69,7 @@ var mode = "scatter" // the initial mode for starting the game
 var previousMode = "scatter"; // simply ensures it is set to avoid error if there is no previous mode yet..
 var levelOptions; // may contain an array set in each mazedata js file, or may be undefined. This ensures it exists..
 var total_ghosts=4; // editable and only really used for debugging - ie set to 1 and read the console logs for one ghost as its easier than deciphering 4..
+var moveInc = 5;
 
 // pull in session storage vars - these are (to be) all settable from the settins page - the game will be entirely configurable and come in 'flavours' eventually...
 var lives = parseInt(sessionStorage.lives)
@@ -253,7 +254,11 @@ function ghosts(){
 
 		// 1. Load the possible moves from the mazedata array into the possG array. 
 		//   All the data for all the ghosts is used later (collision detection) hence the array. 
-		possG[wg] = bindata[topG[wg]][parseInt(leftG[wg])];
+		if (bindata[topG[wg]] && bindata[topG[wg]][parseInt(leftG[wg])]) { // queried as part of moveInc
+			possG[wg] = bindata[topG[wg]][parseInt(leftG[wg])];
+		} else { 
+			possG[wg] = ""; // set as part of moveInc
+		}
 
 		// 2. Check possibile moves. The ghostData array contains info on which moves are possible. 
 		//    If more than 2 directions are present, or only 1 (ie backwards, so dead end) - a new direction must be generated...
@@ -277,10 +282,10 @@ function ghosts(){
 		engGhost[wg] = true;
 
 		// update position variable, and then position
-		if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-10); eval ("divGhost" + wg + ".top = topG[wg]")}
-		if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+10); eval ("divGhost" + wg + ".top = topG[wg]")}
-		if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-10); eval ("divGhost" + wg + ".left = leftG[wg]")}
-		if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+10); eval ("divGhost" + wg + ".left = leftG[wg]")}
+		if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-moveInc); eval ("divGhost" + wg + ".top = topG[wg]")}
+		if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+moveInc); eval ("divGhost" + wg + ".top = topG[wg]")}
+		if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-moveInc); eval ("divGhost" + wg + ".left = leftG[wg]")}
+		if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+moveInc); eval ("divGhost" + wg + ".left = leftG[wg]")}
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
 		if (onPath[wg]){
@@ -308,13 +313,13 @@ function ghosts(){
 		// Collision detection
 		// If so, either send the ghost home, or lose a life, depending whether a powerpill is currently active. 
 		if (ppTimer > 1){
-			closeness_allowed=20;
+			closeness=20;
 		} else {
-			closeness_allowed=30;
+			closeness=10;
 		}
 
 		// detect collision
-		if (pacLeft > leftG[wg]-20 && pacLeft < leftG[wg]+20 && pacTop > topG[wg]-20 && pacTop < topG[wg]+20 && 
+		if (pacLeft > leftG[wg]-closeness && pacLeft < leftG[wg]+closeness && pacTop > topG[wg]-closeness && pacTop < topG[wg]+closeness && 
 			(pacLeft == leftG[wg] || pacTop == topG[wg] || vulnerable[wg])) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. If the ghost is vulnerable, i've decided to let this through though.. 
 			{
 
@@ -444,10 +449,12 @@ function ghosts(){
 
 	// Check to see if a ghost has gone through the channel to the other side of the screen
 	for (i=0;i<total_ghosts;i++){
-		ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
-		if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
-			if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
-			if (leftG[i] >= 565 && ghostDir[i] ==1) {leftG[i] = 35; }
+		if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){ 
+			ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
+			if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
+				if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
+				if (leftG[i] >= 565 && ghostDir[i] ==1) {leftG[i] = 35; }
+			}
 		}
 	}
 
@@ -483,7 +490,11 @@ function ghosts(){
 function move(){
 
 	// 1. Look up the possible moves from the current position
-	pac_possibilities = bindata[pacTop][pacLeft];
+	if (bindata[pacTop] && bindata[pacTop][pacLeft]){ //' queried as part of moveInc
+		pac_possibilities = bindata[pacTop][pacLeft];
+	} else {
+		pac_possibilities = ""; // set as part of moveInc
+	} 
 	
 
 	// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
@@ -517,10 +528,10 @@ function move(){
 		}
 
 		// 5. Move the sprite on screen to correspond to the direction
-		if (movekey==8) {divPacman.top=(pacTop-10); pacTop=pacTop-10}
-		if (movekey==4) {divPacman.top=(pacTop+10); pacTop=pacTop+10}
-		if (movekey==2) {divPacman.left=(pacLeft-10);pacLeft=pacLeft-10}
-		if (movekey==1) {divPacman.left=(pacLeft+10); pacLeft=pacLeft+10}
+		if (movekey==8) {divPacman.top=(pacTop-moveInc); pacTop=pacTop-moveInc}
+		if (movekey==4) {divPacman.top=(pacTop+moveInc); pacTop=pacTop+moveInc}
+		if (movekey==2) {divPacman.left=(pacLeft-moveInc);pacLeft=pacLeft-moveInc}
+		if (movekey==1) {divPacman.left=(pacLeft+moveInc); pacLeft=pacLeft+moveInc}
 
 
 		//console.log("Top: " + pacTop + " Left: " + pacLeft);
@@ -528,8 +539,8 @@ function move(){
 		//console.log(mazedata[pacTop][pacLeft]);
 
 		// 6. The var newLocationData is the data for the cell we've just moved into. We may need to process a pill being eaten..
-		newLocationData = mazedata[pacTop][pacLeft];
-		if (newLocationData.length>=5){// position 4 is a pill, may or may not be there 
+		if (mazedata[pacTop] && mazedata[pacTop][pacLeft]) { newLocationData = mazedata[pacTop][pacLeft];} else {newLocationData="";}
+		if (newLocationData && newLocationData.length>=5){// position 4 is a pill, may or may not be there 
 			pillType = newLocationData.charAt(4);
 		} else {
 			pillType = 0;
@@ -545,7 +556,7 @@ function move(){
 				createGhostScores();
 				ppTimer = powerPillLifetime 
 				ghostscore=50
-				movespeed = speed-10;
+				movespeed = speed-5;
 				powerpilon = true
 				//document.getElementById("maze").classList.add("spin"); // mushrooms 
 				for(i=0;i<total_ghosts;i++){
@@ -620,7 +631,7 @@ function move(){
 
 		// For the tunnels off the side of the mazes, may need to update location of pacman 
 		// NB: The tunnel is denoted in the data by a capital O in the movement bit of the data.
-		if (newLocationData.charAt(2)=="O" || newLocationData.charAt(3)=="O"){
+		if (newLocationData && (newLocationData.charAt(2)=="O" || newLocationData.charAt(3)=="O")){
 			if (pacLeft==35){ pacLeft=555; divPacman.left=pacLeft; }
 			if (pacLeft==575){ pacLeft=55; divPacman.left=pacLeft; }
 		}
