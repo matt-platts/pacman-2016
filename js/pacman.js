@@ -1281,8 +1281,8 @@ function start(){
  * -  lots of console logs seems to slow things down so I can turn it on and off here
 */
 function showmode(input){
-	console.log(input);
 	return;
+	console.log(input);
 }
 
 /* Below is simply thiknking about proper OO version and not currently used */
