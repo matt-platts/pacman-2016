@@ -63,7 +63,7 @@ var ghostBlinkLifetime=65; // how long the ghosts blink for within the power pil
 var fruitLifetime=295; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
-var scatterTime = 300; // how long ghosts remain in scatter mode before switching to chase mode
+var scatterTime = 600; // how long ghosts remain in scatter mode before switching to chase mode
 var chaseTime = 50; // how long the ghosts remain in chase mode
 var mode = "scatter" // the initial mode for starting the game
 var previousMode = "scatter"; // simply ensures it is set to avoid error if there is no previous mode yet..
@@ -836,7 +836,7 @@ function randomDir(x,n){
 /* 
  * Function: headFor
  * Param who (string) - index of which ghost we are sending somewhere
- * Param where (array) - 2 item aray of L and R co-ordinates of the cell we are sending the ghost toi
+ * Param where (array) - 2 item aray of L and R co-ordinates of the cell we are sending the ghost to
  * Return dir (string) - the direction that can be direcly set for that ghost
 */
 function headFor(who,where){

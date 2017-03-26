@@ -9,6 +9,7 @@ var pillNumber=0; // count the pills as we add them. This var is used to check i
  * Function: convert
  * Meta: Convert the original maze data which is a 1d array to a 2d array of rows and columns
  *       This 2d array is stored in the var interim_maze, which is later looped in order to build a bigger array containing every possible move available from each cell.
+ *       run convert(maze) to see the result in the console
  */
 function convert(maze){
 	maze = maze.join("");
@@ -29,7 +30,7 @@ function convert(maze){
 			x=0;
 		}
 		if (typeof (interim_maze[y]) != "object"){
-			interim_maze[y]=Array();
+			interim_maze[y]=Array(); // basically just initialising an array each time there isn't one..
 		}
 		interim_maze[y][x]=character;
 		//console.log(typeof(interim_maze[y]) + " Y: " + interim_maze[y] + " == " + "x is " + x + " and y is " + y + " ======" + interim_maze[y][x]);
@@ -40,14 +41,16 @@ function convert(maze){
 
 /* 
  * Function : renderGrid
- * Meta: takes the 2d grid and builds a larger 2d array of possible moves from each position and other information. Each cell contains data up to 6 bytes long:
+ * Meta: takes the 2d grid and builds a better data structure from it that we can query easily. Actually it builds two - mazedata and bindata. 
+ * 	bindata - for binary lookups of possible moves where we can use a bitwise and to see if a move is possible from the current cell.. 
+ * 	mazedata - larger 2d array of possible moves from each position and other information. Each cell contains data up to 6 bytes long:
  *      Byte 1 - set to U if can go up, X if not
  *	Byte 2 - set to D if can go down, X if not
  *	Byte 3 - set to L if can go left, X if not
  *	Byte 4 - set to R if can go right, X if not
  *	Byte 5 - set to 1 if a pill is in the cell, 2 if a powerpill, 3 if it is the ghosts home, 4 if the cell goes to an offscreen tunnel, 5 indicates the top of the ghosts home.  
  *               which should only allow movement in one direction (out of the ghosts home) and not in unless the ghost has been eaten
- * 	Byte 6 - In the original version this contained one direction character (U, D, L or R) to tell the ghosts how to get back home. This still needs to be calculated. 
+ * 	Byte 6 - In the original version this contained one direction character (U, D, L or R) to tell the ghosts how to get back home. This is no longer used. 
  *
  * 	This function also takes care of screen rendering including pills.
 */
@@ -66,7 +69,7 @@ function renderGrid(){
 		bindata[v_offset] = Array();
 		for (x=0;x<19;x++){
 		
-			bit = interim_maze[y][x];
+			bit = interim_maze[y][x]; // yeah its a byte not a bit, byte is a reserved word. Ahem..
 			binbit = 0;
 			var movestring=""; // empty var to take the possible directions
 
@@ -94,7 +97,7 @@ function renderGrid(){
 
 				styles=movestring.substring(0,4); // we add the 4 move positions to a css class in order to draw the correct borders for the maze
 
-				if (y==0){ 
+				if (y==0){ // upper edge 
 					if (x != 0 && x!=18){
 						 styles = styles.replace("XXL","XDL");	
 						 styles = styles.replace("XXX","XDL");	
@@ -102,15 +105,15 @@ function renderGrid(){
 						 styles = styles.replace("XDLX","XDLR");	
 					}
 				}
-				if (y==14){
+				if (y==14){ // lower edge
 					styles = styles.replace("XXXR","UXXR");
 					styles = styles.replace("XXLR","UXLR");
 				}
-				if (x==0){
+				if (x==0){ // left edge
 					styles = styles.replace("DXX","DXR");
 					styles = styles.replace("XXLR","XDLR");
 				}
-				if (x==18){
+				if (x==18){ // right edge
 					styles = styles.replace("UDX","UDL");
 					styles = styles.replace("XDX","UDL");
 					styles = styles.replace("UXL","UDL");
@@ -124,7 +127,7 @@ function renderGrid(){
 					styles=styles.replace("XXLX","XDLR");
 					styles=styles.replace("XXXR","XDLR");
 				}
-				if (x==18 && y == 14){
+				if (x==18 && y == 14){ // bottom right corner
 					styles = "UXLX";
 				}
 			
