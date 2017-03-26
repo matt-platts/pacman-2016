@@ -59,7 +59,7 @@
 
 // initial settings. these should be increased at around 10000 points?
 var powerPillLifetime=400; // how many iterations the powerpill lasts for - hard is 120. 200 for moveInc 5, 400 for moveInc 2
-var ghostBlinkLifetime=35; // how long the ghosts blink for within the power pill. Hard is 15.
+var ghostBlinkLifetime=65; // how long the ghosts blink for within the power pill. Hard is 15.
 var fruitLifetime=295; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
@@ -666,12 +666,12 @@ function gameModes(){
 				if (mode=="scatter"){
 					resetModeTime = currentTime - chaseTime;
 					mode="chase";
-					showmode("Set mode to chase");
+					showmode("Set mode to chase at " + currentTime + " - next change at " + resetModeTime);
 				} else if (mode=="chase"){
 					resetModeTime = currentTime - scatterTime;
 					scatterTime = scatterTime - 10; 
 					mode="scatter";
-					showmode("Set mode to scatter");
+					showmode("Set mode to scatter at " + currentTime + " next change at " + resetModeTime);
 				} else {
 					if (previousMode != "random"){
 						mode=previousMode;
@@ -686,7 +686,7 @@ function gameModes(){
 			mode=previousMode;
 		}
 
-		showmode("MODE: " + mode + " next change at " , parseInt(resetModeTime) -parseInt(scatterTime));
+		showmode("MODE: " + mode + " next change at " + (parseInt(resetModeTime) - parseInt(scatterTime)));
 
 }
 
@@ -1156,7 +1156,6 @@ function reset(){
 function levelEnd(){
 
 	pilcount=0;
-	resetModeTime=gameTime;
 	sessionStorage.score=score
 	sessionStorage.lives = lives
 	sessionStorage.level++
@@ -1254,7 +1253,6 @@ var renderNewData = function() {
  * Meta: Loads the mazedata file from the server, and calls renderNewData as a callback
 */
 function loadLevel(level){
-	resetModeTime=2000;
 	moving = false;
 	dataFile = "js/data/mazedata" + level + ".js";
 	dynLoader(dataFile,renderNewData);
@@ -1266,6 +1264,7 @@ function loadLevel(level){
 */
 function start(){
 	mode="scatter";
+	resetModeTime=gameTime;
 	ghostReleaseTime = timeform.value;
 	ghostDelayRelease=Array(); // used to delay the release of each ghost
 	for (var i=0;i<total_ghosts;i++){
@@ -1282,8 +1281,8 @@ function start(){
  * -  lots of console logs seems to slow things down so I can turn it on and off here
 */
 function showmode(input){
-	return;
 	console.log(input);
+	return;
 }
 
 /* Below is simply thiknking about proper OO version and not currently used */
