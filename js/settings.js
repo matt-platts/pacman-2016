@@ -13,7 +13,7 @@ globals.basicVision = false; // set to 1 and the ghosts can see you if there is 
 globals.resetModeOnResetGame = true; // set to 1 to always start back in scatter mode, it can be un-nerving when they jump on you at the start of a new level or after you lost a life. Can be over-ridden locally in maze data for individual mazes.
 globals.excludeReverseDirectionInRandomMode = true; // a better chance to catch them if they double back on themselves.
 globals.fx = true; // extra animation effects 
-globals.extras=true; // extra stuff I'm playing with
+globals.extras=false; // extra stuff I'm playing with
 
 
 if (location.search && location.search.substr(1,5)=="noset"){

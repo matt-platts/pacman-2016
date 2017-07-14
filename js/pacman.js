@@ -252,7 +252,7 @@ function ghosts(){
 	// The movement functions are run four times in a loop - once for each ghost
 	for (wg=0;wg<total_ghosts;wg++){
 
-		// 1. Load the possible moves from the mazedata array into the possG array. 
+		// 1. Load the possible moves from the bindata array into the possG array. 
 		//   All the data for all the ghosts is used later (collision detection) hence the array. 
 		if (bindata[topG[wg]] && bindata[topG[wg]][parseInt(leftG[wg])]) { // queried as part of moveInc
 			possG[wg] = bindata[topG[wg]][parseInt(leftG[wg])];
@@ -449,7 +449,7 @@ function ghosts(){
 
 	// Check to see if a ghost has gone through the channel to the other side of the screen
 	for (i=0;i<total_ghosts;i++){
-		if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){ 
+		if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){
 			ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
 			if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
 				if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
@@ -457,6 +457,18 @@ function ghosts(){
 			}
 		}
 	}
+
+// binary lookup of the above (not yet working)
+//for (i=0;i<total_ghosts;i++){
+//		if ( bindata[topG[i]] && bindata[topG[i]][parseInt(leftG[i])]){ 
+//			ghostPos = bindata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
+//			if (ghostPos && (ghostPos == "4")){
+//			alert("it is four");
+//				if (ghostDir[i] ==2) {leftG[i] = 555; }
+//				if (ghostDir[i] ==1) {leftG[i] = 35; }
+//			}
+//		}
+//	}
 
 	//checkBasicVision()
 	// Game timer on the screen.. 
