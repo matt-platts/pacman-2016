@@ -95,20 +95,7 @@ var mazeNo=0;
 var ghostscore=50
 var nextfruitscore=score+600
 
-// set up images sources
-ghimg0 = new Image
-ghimg0.src = 'graphics/ghost_red.gif'
-ghimg1 = new Image
-ghimg1.src = 'graphics/ghost_pink.gif'
-ghimg2 = new Image
-ghimg2.src = 'graphics/ghost_blue.gif'
-ghimg3 = new Image
-ghimg3.src = 'graphics/ghost_orange.gif'
-ghimg5 = new Image
-ghimg5.src = 'graphics/ghost5.gif'
-ghimg6 = new Image
-ghimg6.src = 'graphics/ghost6.gif'
-
+// set up images sources - note ghost imgs 1-4 have meen moved to an array based architecture
 ghostImgs = new Array(new Image,new Image,new Image, new Image, new Image, new Image);
 ghostImgs[0].src = 'graphics/ghost_red.gif'
 ghostImgs[1].src = 'graphics/ghost_pink.gif'
@@ -404,7 +391,7 @@ function ghosts(){
 	if (ppTimer == ghostBlinkLifetime) {
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
-				if (vulnerable[i]) { ghostSrc[i].src=ghimg6.src;}
+				if (vulnerable[i]) { ghostSrc[i].src=ghostImgs[5].src;}
 				if (fx){
 					//eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
 					divName = "ghost" + i;
@@ -565,7 +552,7 @@ function move(){
 				//document.getElementById("maze").classList.add("spin"); // mushrooms 
 				for(i=0;i<total_ghosts;i++){
 					if (!onPath[i]){
-						ghostSrc[i].src = ghimg5.src;
+						ghostSrc[i].src = ghostImgs[4].src;
 						vulnerable[i]=true
 					}
 				}
