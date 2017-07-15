@@ -108,16 +108,24 @@ ghimg5 = new Image
 ghimg5.src = 'graphics/ghost5.gif'
 ghimg6 = new Image
 ghimg6.src = 'graphics/ghost6.gif'
+
+ghostImgs = new Array(new Image,new Image,new Image, new Image, new Image, new Image);
+ghostImgs[0].src = 'graphics/ghost_red.gif'
+ghostImgs[1].src = 'graphics/ghost_pink.gif'
+ghostImgs[2].src = 'graphics/ghost_blue.gif'
+ghostImgs[3].src = 'graphics/ghost_orange.gif'
+ghostImgs[4].src = 'graphics/ghost5.gif'
+ghostImgs[5].src = 'graphics/ghost6.gif'
+
 eyes = new Image
 eyes.src = 'graphics/eyes.gif'
 blank = new Image
 blank.src = 'graphics/blank.gif'
-berry0 = new Image
-berry0.src = 'graphics/cherry.gif'
-berry1 = new Image
-berry1.src = 'graphics/strawberry.gif'
-berry2 = new Image
-berry2.src = 'graphics/mushroom.png'
+
+fruitImgs = new Array(new Image, new Image, new Image);
+fruitImgs[0].src='graphics/cherry.gif';
+fruitImgs[1].src='graphics/strawberry.gif';
+fruitImgs[2].src='graphics/mushroom.gif';
 
 // Initialise global vars. (have so many global vars.. time for OO!)
 var won = false // true if won the game
@@ -173,30 +181,25 @@ function init(){
 
 	if (n6){
 		divPacman  =  (ns)? document.pacman:document.getElementById('pacman').style
-		divGhost0  =  (ns)? document.ghost0:document.getElementById('ghost0').style
-		divGhost1  =  (ns)? document.ghost1:document.getElementById('ghost1').style
-		divGhost2  =  (ns)? document.ghost2:document.getElementById('ghost2').style
-		divGhost3  =  (ns)? document.ghost3:document.getElementById('ghost3').style
 		divFruit   =  (ns)? document.fruit:document.getElementById('fruit').style
 		divMessage =  (ns)? document.message:document.getElementById('message').style
 		divStart   =  (ns)? document.start:document.getElementById('start').style
 		divMessEnd =  (ns)? document.messageEnd:document.getElementById('messageEnd').style
 	} else {
 		divPacman   =  (ns)? document.pacman:document.all.pacman.style
-		divGhost0   =  (ns)? document.ghost0:document.all.ghost0.style
-		divGhost1   =  (ns)? document.ghost1:document.all.ghost1.style
-		divGhost2   =  (ns)? document.ghost2:document.all.ghost2.style
-		divGhost3   =  (ns)? document.ghost3:document.all.ghost3.style
 		divFruit    =  (ns)? document.fruit:document.all.fruit.style
 		divMessage  =  (ns)? document.message:document.getElementById('message').style
 		divStart    =  (ns)? document.message:document.all.start.style
 		divMessEnd  =  (ns)? document.messageEnd:document.all.messageEnd.style
 	}
 
-	ghost0src = (ns)? divGhost0.document.images[0]:document.images.gst0
-	ghost1src = (ns)? divGhost1.document.images[0]:document.images.gst1
-	ghost2src = (ns)? divGhost2.document.images[0]:document.images.gst2
-	ghost3src = (ns)? divGhost3.document.images[0]:document.images.gst3
+	ghostSrc = new Array(document.images.gst0,document.images.gst1,document.images.gst2,document.images.gst3);
+	ghostDiv = new Array(	document.getElementById('ghost0').style,
+				document.getElementById('ghost1').style,
+				document.getElementById('ghost2').style,
+				document.getElementById('ghost3').style,
+				);
+
 	fruitsrc = (ns)? divFruit.document.images[0]:document.images.berry
 
 	scoreform  = (ns)? document.score.document:document.forms[0].elements[0];
@@ -226,10 +229,8 @@ function init(){
 	pacLeft = parseInt(divPacman.left)
 	pacTop = parseInt(divPacman.top)
 	for(i=0;i<4;i++){
-		leftG[i] = eval ("divGhost" + i +".left")
-		leftG[i] = parseInt(leftG[i])
-		topG[i] = eval ("divGhost" + i +".top")
-		topG[i] = parseInt(topG[i])
+		leftG[i] = parseInt(ghostDiv[i].left);
+		topG[i] = parseInt(ghostDiv[i].top)
 		ghostDir[i] = 8; // Set to 8 (up) to start the game..
 	}
 	start(); // kick off the game timers. This needs to be called for each level and hence is not part of init()
@@ -276,10 +277,10 @@ function ghosts(){
 		if (!onPath[wg] && basicVision === true) { checkBasicVision(wg) }
 
 		// update position variable, and then position
-		if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-moveInc); eval ("divGhost" + wg + ".top = topG[wg]")}
-		if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+moveInc); eval ("divGhost" + wg + ".top = topG[wg]")}
-		if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-moveInc); eval ("divGhost" + wg + ".left = leftG[wg]")}
-		if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+moveInc); eval ("divGhost" + wg + ".left = leftG[wg]")}
+		if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-moveInc); ghostDiv[wg].top = topG[wg]; } 
+		if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+moveInc); ghostDiv[wg].top = topG[wg]; } 
+		if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-moveInc); ghostDiv[wg].left = leftG[wg];} 
+		if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+moveInc); ghostDiv[wg].left = leftG[wg]; }
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
 		if (onPath[wg]){
@@ -287,11 +288,7 @@ function ghosts(){
 			if (leftG[wg] == ghostHomeBase[0] && topG[wg] == ghostHomeBase[1]){
 				if (!won){ onPath[wg] = false; }
 				vulnerable[wg] = false;
-				//resetGhost="ghost" + wg;
-				//ghostSrc="ghimg" + wg;
-				//resetGhost.src=ghostSrc.src;
-				//console.log(resetGhost,resetGhost.src,ghostSrc,ghostSrc.src);
-				eval ("ghost" + wg + "src.src=ghimg" + wg + ".src"); // need to get rid of this eval!
+				ghostSrc[wg].src=ghostImgs[wg].src;
 				ghostDir[wg] = 8;
 			}
 		}
@@ -356,7 +353,7 @@ function ghosts(){
 				} 
 			//if powerpill is on and ghost is vulnerable, turns ghost to eyes, sets first possible direction, and makes path true
 			} else if (ppTimer>="1" && vulnerable[wg]) {
-				eval ("ghost" + wg + "src.src = eyes.src")
+				ghostSrc[wg].src=eyes.src;
 				vulnerable[wg] = false;
 				onPath[wg] = true
 				
@@ -407,9 +404,11 @@ function ghosts(){
 	if (ppTimer == ghostBlinkLifetime) {
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
-				if (vulnerable[i]) eval ("ghost" + i + "src.src = ghimg6.src")
+				if (vulnerable[i]) { ghostSrc[i].src=ghimg6.src;}
 				if (fx){
-					eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+					//eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+					divName = "ghost" + i;
+					document.getElementById(divName).classList.remove('spin');
 				}
 			}
 		}
@@ -424,9 +423,10 @@ function ghosts(){
 		document.getElementById("maze").classList.remove("spin");
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
-				eval ("ghost" + i + "src.src = ghimg" + i + ".src")
+				ghostSrc[i].src = ghostImgs[i].src;
 				onPath[i]=false
-				eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+				divName = "ghost" + i;
+				document.getElementById(divName).classList.remove('spin');
 				vulnerable[i] = true
 				ghostscore=50
 			}
@@ -553,7 +553,8 @@ function move(){
 			document.getElementById('cell-' + pacLeft + '-' + pacTop).setAttribute('data-pills',0); // reset pill to zero 
 			
 			if (ns) pilsrc = eval("document.p" + pacLeft + pacTop + ".document")
-			eval("pilsrc.images.pil_" + pacLeft + pacTop + ".src = blank.src")
+			pilName = "pil_" + pacLeft + pacTop;
+			document.images[pilName].src=blank.src;
 
 			if (pillType==2){
 				createGhostScores();
@@ -564,8 +565,7 @@ function move(){
 				//document.getElementById("maze").classList.add("spin"); // mushrooms 
 				for(i=0;i<total_ghosts;i++){
 					if (!onPath[i]){
-						eval ("ghost" + i + "src.src=ghimg5.src")
-						//eval ("document.getElementById('ghost" + i + "').classList.add('spin')"); // mushrooms 
+						ghostSrc[i].src = ghimg5.src;
 						vulnerable[i]=true
 					}
 				}
@@ -970,7 +970,9 @@ function showFruit() {
 	if (extras=="true"){ var rand_no = 2;; } else { var rand_no = 1;}
 	whichFruit = Math.round(Math.random() * rand_no)
 	fruitTimer=fruitLifetime
-	if (!fruitOn) eval ("fruitsrc.src=berry" + whichFruit + ".src")
+	if (!fruitOn) { 
+		fruitsrc.src = fruitImgs[whichFruit].src;
+	}
 	fruitOn=true
 	divFruit.visibility='visible'
 
@@ -1133,13 +1135,13 @@ function reset(){
 	pacLeft = parseInt(divPacman.left)
 	pacTop = parseInt(divPacman.top)
 
-	for (i=0;i<4;i++){
-		eval ("divGhost" + i + ".top=ghostStartTop")
-		eval ("divGhost" + i + ".left=ghostStartLeft")
-		leftG[i] = eval ("parseInt(divGhost" + i + ".left)")
-		topG[i] = eval ("parseInt(divGhost" + i + ".top)")
+	for (i=0;i<total_ghosts;i++){
+		ghostDiv[i].top = ghostStartTop;
+		ghostDiv[i].left = ghostStartLeft;
+		leftG[i] = ghostStartLeft;
+		topG[i] = ghostStartTop; 
 		vulnerable[i] = true
-		eval ("ghost" + i + "src.src=ghimg" + i + ".src")
+		ghostSrc[i].src=ghostImgs[i].src;
 		ghostDir[i]=8;
 	}
 	newkey = 1;
