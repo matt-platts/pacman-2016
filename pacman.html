@@ -101,9 +101,7 @@ var kickOff = function(){
 	init();
 }
 var loadMain = function(){
-	griddata=renderGrid();
-	mazedata=griddata[0];
-	bindata=griddata[1];
+	mazedata=renderGrid();
 	loadScript("js/pacman.js",kickOff);
 	
 }

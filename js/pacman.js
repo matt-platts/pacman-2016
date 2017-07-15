@@ -112,7 +112,7 @@ blank.src = 'graphics/blank.gif'
 fruitImgs = new Array(new Image, new Image, new Image);
 fruitImgs[0].src='graphics/cherry.gif';
 fruitImgs[1].src='graphics/strawberry.gif';
-fruitImgs[2].src='graphics/mushroom.gif';
+fruitImgs[2].src='graphics/mushroom.png';
 
 // Initialise global vars. (have so many global vars.. time for OO!)
 var won = false // true if won the game
@@ -240,10 +240,10 @@ function ghosts(){
 	// The movement functions are run four times in a loop - once for each ghost
 	for (wg=0;wg<total_ghosts;wg++){
 
-		// 1. Load the possible moves from the bindata array into the possG array. 
+		// 1. Load the possible moves from the mazedata array into the possG array. 
 		//   All the data for all the ghosts is used later (collision detection) hence the array. 
-		if (bindata[topG[wg]] && bindata[topG[wg]][parseInt(leftG[wg])]) { // queried as part of moveInc
-			possG[wg] = bindata[topG[wg]][parseInt(leftG[wg])];
+		if (mazedata[topG[wg]] && mazedata[topG[wg]][parseInt(leftG[wg])]) { // queried as part of moveInc
+			possG[wg] = mazedata[topG[wg]][parseInt(leftG[wg])];
 		} else { 
 			possG[wg] = ""; // set as part of moveInc
 		}
@@ -428,19 +428,12 @@ function ghosts(){
 				if (leftG[i]==575){ leftG[i] = 35;}
 			}
 		}
-		//if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){
-		//	ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
-		//	if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
-		//		if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
-		//		if (leftG[i] >= 565 && ghostDir[i] ==1) {leftG[i] = 35; }
-		//	}
-		//}
 	}
 
 // binary lookup of the above (not yet working)
 //for (i=0;i<total_ghosts;i++){
-//		if ( bindata[topG[i]] && bindata[topG[i]][parseInt(leftG[i])]){ 
-//			ghostPos = bindata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
+//		if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){ 
+//			ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
 //			if (ghostPos && (ghostPos == "4")){
 //			alert("it is four");
 //				if (ghostDir[i] ==2) {leftG[i] = 555; }
@@ -481,8 +474,8 @@ function ghosts(){
 function move(){
 
 	// 1. Look up the possible moves from the current position
-	if (bindata[pacTop] && bindata[pacTop][pacLeft]){ //' queried as part of moveInc
-		pac_possibilities = bindata[pacTop][pacLeft];
+	if (mazedata[pacTop] && mazedata[pacTop][pacLeft]){ //' queried as part of moveInc
+		pac_possibilities = mazedata[pacTop][pacLeft];
 	} else {
 		pac_possibilities = ""; // set as part of moveInc
 	}
@@ -525,8 +518,6 @@ function move(){
 
 
 		//console.log("Top: " + pacTop + " Left: " + pacLeft);
-		//console.log(mazedata);
-		//console.log(mazedata[pacTop][pacLeft]);
 
 		// pills
 		if (document.getElementById('cell-' + pacLeft + '-' + pacTop) && document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills')){
@@ -731,7 +722,7 @@ function generateGhostDir(who,howMany,ghost_possibilities){
 		} else if (ghostMode=="random") { // random
 
 				//possibilities=possibilities.replace(/X/g,"");
-				if (bindata[topG[who]][leftG[who]] == "3" && !onPath(who)){// ghosts can only re-enter the home base when on a path to regenerate 
+				if (mazedata[topG[who]][leftG[who]] == "3" && !onPath(who)){// ghosts can only re-enter the home base when on a path to regenerate 
 					ghost_possibilities=ghost_possibilities.replace(/5/g,"");
 				}
 				if (howMany>2){ // NB: having howmany>2 gives more chances for the ghosts to backtrack on themsleves, making them easier to catch.
@@ -809,8 +800,8 @@ function qtyBits(bin){
 /* 
  * Function : randomDir
  * Meta: generates a random direction for a ghost by bitshifting the data to find the direction corresponding to the nth set bit
- * Param x - data from the bindata array
- * Param y - take our random number and use the nth set bit from the right of the x (cell in bindata)
+ * Param x - data from the mazedata array
+ * Param y - take our random number and use the nth set bit from the right of the x (cell in mazedata)
 */
 function randomDir(x,n){
 	var sum = 0;
@@ -835,7 +826,7 @@ function randomDir(x,n){
  * Return dir (string) - the direction that can be direcly set for that ghost
 */
 function headFor(who,where){
-	currentCell = bindata[parseInt([topG[who]])][parseInt(leftG[who])]
+	currentCell = mazedata[parseInt([topG[who]])][parseInt(leftG[who])]
 	if (!currentCell){
 		//return ghostDir[who]; // Doesnt look like i need to do this...
 	}
@@ -1222,9 +1213,7 @@ function dynLoader(url, callback){
  * Meta: Renders the new maze, resets the timer, resets the sprite positions and calls start (to show the next level message and kick off the timers) 
 */
 var startNewLevel = function (){
-	griddata= renderGrid();
-	mazedata=griddata[0];
-	bindata=griddata[1];
+	mazedata = renderGrid();
 	if (levelOptions != undefined){
 		if (levelOptions.pacStartTop){
 			pacStartTop=levelOptions.pacStartTop;

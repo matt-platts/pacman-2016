@@ -41,9 +41,8 @@ function convert(maze){
 
 /* 
  * Function : renderGrid
- * Meta: takes the 2d grid and builds a better data structure from it that we can query easily. Actually it builds two - mazedata and bindata. 
+ * Meta: takes the 2d grid and builds a better data structure from it that we can query easily. 
  * 	bindata - for binary lookups of possible moves where we can use a bitwise and to see if a move is possible from the current cell.. 
- * 	mazedata - larger 2d array of possible moves from each position and other information. Each cell contains data up to 6 bytes long:
  *      Byte 1 - set to U if can go up, X if not
  *	Byte 2 - set to D if can go down, X if not
  *	Byte 3 - set to L if can go left, X if not
@@ -56,7 +55,6 @@ function convert(maze){
 */
 function renderGrid(){
 	var interim_maze = convert(maze);
-	var mazedata = Array();
 	var bindata = Array();
 	var binpills = Array();
 	var x=0;
@@ -65,7 +63,6 @@ function renderGrid(){
 	for (y=0;y<interim_maze.length;y++){
 		var lineMoves = Array();
 		h_offset=35; // start a new line 35px in
-		mazedata[v_offset] = Array();
 		bindata[v_offset] = Array();
 		for (x=0;x<19;x++){
 		
@@ -187,35 +184,10 @@ function renderGrid(){
 			if (bit != "0"){
 				str='<div id="cell-' + h_offset + '-' + v_offset + '" data-pills="' + bit + '" style="position:absolute; top:' + v_offset + 'px; left:' + h_offset + 'px;" class="mazeCell ' + styles + '">' + cellInnerHTML + '</div>';
 				innerStr += str;
-				mazedata[v_offset][h_offset] = movestring; 
 				//binbit = (binbit>>>0).toString(2); // only use this to store in binary notation
 				bindata[v_offset][h_offset] = binbit;
 
-				// Cells and sprites are 30x30px and pacman moves in 10px increments. 
-				// If you can go right from this cell, populate the next two elements in the lookup array (these are on screen positions) with left and right options. 
-				// These are spaces pacman takes up between the main cells. 
-				if (movestring.charAt(3)=="R"){ // can move right from here
-					mazedata[v_offset][h_offset+10] = "XXLR";
-					mazedata[v_offset][h_offset+20] = "XXLR";
-				}
-				if (movestring.charAt(1)=="D"){ // and the same for down. Not we may need to initialise the arrays when going down.
-					if (typeof(mazedata[v_offset+10]) != "object"){
-						mazedata[v_offset+10] = Array();
-						bindata[v_offset+10] = Array();
-					}
-					if (typeof(mazedata[v_offset+20]) != "object"){
-						mazedata[v_offset+20] = Array();
-						bindata[v_offset+20] = Array();
-					}
-					mazedata[v_offset+10][h_offset] = "UDXX";
-					mazedata[v_offset+20][h_offset] = "UDXX";
-				}
-
-			// add zeros (technically this should not be necessary but it saves checking for undefined and seems nicer
 			} else {
-				mazedata[v_offset][h_offset] = "0"; 
-				mazedata[v_offset][h_offset+10] = "0";
-				mazedata[v_offset][h_offset+20] = "0";
 
 				str='<div id="cell-' + h_offset + '-' + v_offset + '" style="position:absolute; top:' + v_offset + 'px; left:' + h_offset + 'px;" class="wallCell w_' + wallStyles + '">' + cellInnerHTML + '</div>';
 				innerStr += str;
@@ -227,10 +199,6 @@ function renderGrid(){
 		//console.log("Linemoves: " + lineMoves);
 		v_offset = v_offset + 30; 
 	}
-	//console.log(innerStr);
-	//console.log(mazedata);
 	document.getElementById('mazeinner').innerHTML=innerStr;
-	//console.log(bindata);
-	mazedata=""; // FINALLY we don't need it any more!
-	return Array(mazedata,bindata);
+	return bindata;
 }
