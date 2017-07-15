@@ -449,13 +449,19 @@ function ghosts(){
 
 	// Check to see if a ghost has gone through the channel to the other side of the screen
 	for (i=0;i<total_ghosts;i++){
-		if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){
-			ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
-			if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
-				if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
-				if (leftG[i] >= 565 && ghostDir[i] ==1) {leftG[i] = 35; }
+		if (document.getElementById('cell-' + leftG[i]+ '-' + topG[i])){
+			if (document.getElementById('cell-' + leftG[i]+ '-' + topG[i]).classList.contains('mazeTunnel')){
+				if (leftG[i]==35){ leftG[i] = 565;}
+				if (leftG[i]==575){ leftG[i] = 35;}
 			}
 		}
+		//if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){
+		//	ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
+		//	if (ghostPos && (ghostPos.charAt(2)=="O" || ghostPos.charAt(3)=="O")){
+		//		if (leftG[i] <= 35 && ghostDir[i] ==2) {leftG[i] = 555; }
+		//		if (leftG[i] >= 565 && ghostDir[i] ==1) {leftG[i] = 35; }
+		//	}
+		//}
 	}
 
 // binary lookup of the above (not yet working)
@@ -506,8 +512,7 @@ function move(){
 		pac_possibilities = bindata[pacTop][pacLeft];
 	} else {
 		pac_possibilities = ""; // set as part of moveInc
-	} 
-	
+	}
 
 	// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
 	if (pac_possibilities && (pac_possibilities & newkey)) {
@@ -550,17 +555,17 @@ function move(){
 		//console.log(mazedata);
 		//console.log(mazedata[pacTop][pacLeft]);
 
-		// 6. The var newLocationData is the data for the cell we've just moved into. We may need to process a pill being eaten..
-		if (mazedata[pacTop] && mazedata[pacTop][pacLeft]) { newLocationData = mazedata[pacTop][pacLeft];} else {newLocationData="";}
-		if (newLocationData && newLocationData.length>=5){// position 4 is a pill, may or may not be there 
-			pillType = newLocationData.charAt(4);
+		// pills
+		if (document.getElementById('cell-' + pacLeft + '-' + pacTop) && document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills')){
+			pillType = document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills');
 		} else {
-			pillType = 0;
+			pillType=0;
 		}
 
 		if (pillType == "1" || pillType == "2"){
-			newLocationData = newLocationData.substring(0,4); 
-			mazedata[pacTop][pacLeft] = newLocationData; 
+
+			document.getElementById('cell-' + pacLeft + '-' + pacTop).setAttribute('data-pills',0); // reset pill to zero 
+			
 			if (ns) pilsrc = eval("document.p" + pacLeft + pacTop + ".document")
 			eval("pilsrc.images.pil_" + pacLeft + pacTop + ".src = blank.src")
 
@@ -643,9 +648,14 @@ function move(){
 
 		// For the tunnels off the side of the mazes, may need to update location of pacman 
 		// NB: The tunnel is denoted in the data by a capital O in the movement bit of the data.
-		if (newLocationData && (newLocationData.charAt(2)=="O" || newLocationData.charAt(3)=="O")){
-			if (pacLeft==35){ pacLeft=555; divPacman.left=pacLeft; }
-			if (pacLeft==575){ pacLeft=55; divPacman.left=pacLeft; }
+		if (document.getElementById('cell-' + pacLeft + '-' + pacTop)){
+			if (document.getElementById('cell-' + pacLeft + '-' + pacTop).classList.contains('mazeTunnel')){
+				if (pacLeft==35){
+					pacLeft=555; divPacman.left=pacLeft;
+				} else if (pacLeft==575){
+					pacLeft=55; divPacman.left=pacLeft;
+				}
+			}
 		}
 
 		moving = true
@@ -748,7 +758,7 @@ function generateGhostDir(who,howMany,ghost_possibilities){
 		} else if (ghostMode=="random") { // random
 
 				//possibilities=possibilities.replace(/X/g,"");
-				if (mazedata[topG[who]][leftG[who]] == "3" && !onPath(who)){// ghosts can only re-enter the home base when on a path to regenerate 
+				if (bindata[topG[who]][leftG[who]] == "3" && !onPath(who)){// ghosts can only re-enter the home base when on a path to regenerate 
 					ghost_possibilities=ghost_possibilities.replace(/5/g,"");
 				}
 				if (howMany>2){ // NB: having howmany>2 gives more chances for the ghosts to backtrack on themsleves, making them easier to catch.

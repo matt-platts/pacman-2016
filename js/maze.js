@@ -147,6 +147,7 @@ function renderGrid(){
 					movestring = movestring.replace("XXLX","XXLO"); 
 				}
 				styles += " " + movestring;
+				styles += " mazeTunnel"; 
 				cellInnerHTML = "";
 
 			// 5 is the red barrier at the top of the ghosts home base
@@ -184,7 +185,7 @@ function renderGrid(){
 			// The lookup array maps to pixels on the screen so you can look up moves from the top and left properties of the sprites.
 			// if it's not a zero in the original maze array, add the html to a string, and add this to innerStr. innerStr is built up and used as innerHTML to the maze div.
 			if (bit != "0"){
-				str='<div id="cell-' + h_offset + '-' + v_offset + '" style="position:absolute; top:' + v_offset + 'px; left:' + h_offset + 'px;" class="mazeCell ' + styles + '">' + cellInnerHTML + '</div>';
+				str='<div id="cell-' + h_offset + '-' + v_offset + '" data-pills="' + bit + '" style="position:absolute; top:' + v_offset + 'px; left:' + h_offset + 'px;" class="mazeCell ' + styles + '">' + cellInnerHTML + '</div>';
 				innerStr += str;
 				mazedata[v_offset][h_offset] = movestring; 
 				//binbit = (binbit>>>0).toString(2); // only use this to store in binary notation
@@ -230,5 +231,6 @@ function renderGrid(){
 	//console.log(mazedata);
 	document.getElementById('mazeinner').innerHTML=innerStr;
 	//console.log(bindata);
+	mazedata=""; // FINALLY we don't need it any more!
 	return Array(mazedata,bindata);
 }
