@@ -211,7 +211,7 @@ function init(){
 	}
 
 	ghostData = new Array (6,7,9,10) // used later to test for if opposite directions are present
-	leftG = new Array; topG = new Array; possG = new Array; engGhost = new Array
+	leftG = new Array; topG = new Array; possG = new Array;
 	vulnerable = new Array (true, true, true, true) // are the ghosts vulnerable at this point in time? Set to false when eaten and homing..
 	onPath = new Array (false, false, false, false) // array showing if ghost is on a path (onPath means a path to the home base after being eaten)
 
@@ -275,12 +275,6 @@ function ghosts(){
 		// 4. if basicVision is set, and ghost is not onPath to home, compare ghost positions to your position & if it can see you, adjust direction.
 		if (!onPath[wg] && basicVision === true) { checkBasicVision(wg) }
 
-		// For each ghost, if ghostDir (current direction) is in the possG array (the move is possible) then a flag to engage the ghost (engGhost) is set to true. 
-		// Otherwise (move not possible) engGhost (engage ghost) is set to false. Thus, the ghost is only engaged if it can make the move. 
-		// NB: Ghost is also engaged if onPath is true, as it knows where it's going (onPath means the ghost has been eaten and is on a path to the base.. - this path is coded into the mazedata array)
-
-		engGhost[wg] = true;
-
 		// update position variable, and then position
 		if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-moveInc); eval ("divGhost" + wg + ".top = topG[wg]")}
 		if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+moveInc); eval ("divGhost" + wg + ".top = topG[wg]")}
@@ -289,23 +283,15 @@ function ghosts(){
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
 		if (onPath[wg]){
-			if (topG[wg]>445 || topG[wg] <25 || leftG[wg]<35 || leftG[wg] >575) {
-			/*
-			alert("ERROR IN DATA");
-				eval ("divGhost" + wg + ".left = ghostStartLeft")
-				eval ("divGhost" + wg + ".top = ghostStartTop")
-				leftG[wg] = eval ("parseInt(divGhost" + wg + ".left)")
-				topG[wg] = eval ("parseInt(divGhost" + wg + ".top)")
-				onPath[wg] = false
-				ghostDir[wg] = 8;
-				eval ("ghost" + wg + "src.src=ghimg" + wg + ".src")
-			*/
-			}
-			// and if it's home, reset it to not vulnerable and back to correct image
+			// if it's home, reset it to not vulnerable and back to correct image
 			if (leftG[wg] == ghostHomeBase[0] && topG[wg] == ghostHomeBase[1]){
 				if (!won){ onPath[wg] = false; }
 				vulnerable[wg] = false;
-				eval ("ghost" + wg + "src.src=ghimg" + wg + ".src")
+				//resetGhost="ghost" + wg;
+				//ghostSrc="ghimg" + wg;
+				//resetGhost.src=ghostSrc.src;
+				//console.log(resetGhost,resetGhost.src,ghostSrc,ghostSrc.src);
+				eval ("ghost" + wg + "src.src=ghimg" + wg + ".src"); // need to get rid of this eval!
 				ghostDir[wg] = 8;
 			}
 		}
