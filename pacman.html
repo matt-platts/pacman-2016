@@ -74,6 +74,7 @@
 
 var levelOptions;
 
+/* Generic functionto load a script and execute a callback when complete */
 function loadScript(url, callback){
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
@@ -89,6 +90,7 @@ function loadScript(url, callback){
     head.appendChild(script);
 }
 
+/* Callback 1 : keeploading */
 var keepLoading = function (){
 	if (levelOptions){
 		if (levelOptions.pacStartTop){
@@ -97,22 +99,21 @@ var keepLoading = function (){
 	}
 	loadScript("js/maze.js",loadMain);
 }
-var kickOff = function(){
-	init();
-}
+
+/* Callback 2 : loadMain*/
 var loadMain = function(){
 	mazedata=renderGrid();
 	loadScript("js/pacman.js",kickOff);
-	
 }
+
+/* Callback 3 : kickOff */
+var kickOff = function(){
+	init(); // calls init functionin pacman.js
+}
+
+/* Main starts here */
 dataFile = "js/data/mazedata" + sessionStorage.level + ".js";
 loadScript(dataFile,keepLoading);
-
-function gameStart(){
-	window.focus();
-	document.focus();
-	init();
-}
 
 //-->
 </script>
