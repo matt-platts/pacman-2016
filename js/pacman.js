@@ -68,7 +68,9 @@ var chaseTime = 50; // how long the ghosts remain in chase mode
 var mode = "scatter" // the initial mode for starting the game
 var previousMode = "scatter"; // simply ensures it is set to avoid error if there is no previous mode yet..
 var levelOptions; // may contain an array set in each mazedata js file, or may be undefined. This ensures it exists..
-var total_ghosts=4; // editable and only really used for debugging - ie set to 1 and read the console logs for one ghost as its easier than deciphering 4..
+var ghosts_names = new Array("Blinky","Pinky","Inky","Clyde");
+var ghostSrc = new Array(document.images.gst0,document.images.gst1,document.images.gst2,document.images.gst3);
+var total_ghosts=ghosts_names.length; // editable and only really used for debugging - ie set to 1 and read the console logs for one ghost as its easier than deciphering 4..
 var moveInc = parseInt(sessionStorage.moveInc); 
 
 // pull in session storage vars - these are (to be) all settable from the settins page - the game will be entirely configurable and come in 'flavours' eventually...
@@ -180,7 +182,6 @@ function init(){
 		divMessEnd  =  (ns)? document.messageEnd:document.all.messageEnd.style
 	}
 
-	ghostSrc = new Array(document.images.gst0,document.images.gst1,document.images.gst2,document.images.gst3);
 	ghostDiv = new Array(	document.getElementById('ghost0').style,
 				document.getElementById('ghost1').style,
 				document.getElementById('ghost2').style,
@@ -220,7 +221,16 @@ function init(){
 		topG[i] = parseInt(ghostDiv[i].top)
 		ghostDir[i] = 8; // Set to 8 (up) to start the game..
 	}
-	start(); // kick off the game timers. This needs to be called for each level and hence is not part of init()
+	var sprites = oo_start();
+	console.log(sprites[0]);
+	console.log(sprites[1][3]);
+	alert("returning sprites");
+	return sprites;
+}
+
+function startGame(sprites){
+	alert("and were off");
+	start(sprites); // kick off the game timers. This needs to be called for each level and hence is not part of init()
 }
 
 /* 
@@ -319,7 +329,7 @@ function ghosts(){
 					document.getElementById("pacman").classList.add("spin");
 				}
 				onPause=1;
-				setTimeout('divMessage.visibility=\'hidden\'; onPause=0;   document.getElementById("pacman").classList.remove("spin"); for (i=0;i<total_ghosts;i++){ document.getElementById("ghost" + i).classList.remove("spin"); } pacTimer = setTimeout("move()",movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
+				setTimeout('divMessage.visibility=\'hidden\'; onPause=0;   document.getElementById("pacman").classList.remove("spin"); for (i=0;i<total_ghosts;i++){ document.getElementById("ghost" + i).classList.remove("spin"); } pacTimer = setTimeout(sprite_pacman.move(),movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
 				
 					
 				 if (lives==0) {
@@ -471,7 +481,7 @@ function ghosts(){
  *       It accesses the newkey, lastkey and movekey variables from the keyLogic function, which it compares to 
  * 	 data of possible moves from the mazedata array where pacman currently resides.
 */
-function move(){
+function movePacman(){
 
 	// 1. Look up the possible moves from the current position
 	if (mazedata[pacTop] && mazedata[pacTop][pacLeft]){ //' queried as part of moveInc
@@ -1006,11 +1016,11 @@ function kd(e){
 		if (document.getElementById){ key = e.keyCode}
 		if (key == "80" || key == "112"){
 			onPause=0;
-			move(); ghosts();
+			sprite_pacman.move(); ghosts();
 		}
 
 	} else {
-		if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) move()}
+		if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) sprite_pacman.move()}
 		if (document.all && !document.getElementById){key = window.event.keyCode}
 		if (document.getElementById){ key = e.keyCode}
 		keyLogic(key);
@@ -1019,7 +1029,7 @@ function kd(e){
 
 // netscape 4 version of kd.
 function kdns(evt){
-	if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) move()}
+	if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) sprite_pacman.move()}
 	key = evt.which
 	//status = key
 	keyLogic(key);
@@ -1071,7 +1081,7 @@ function keyLogic(key){
 			if (gameTimer){ clearTimeout(gameTimer);}
 		
 	} else {
-		if (movekey != key) {newkey = key; if (!moving) move(); keycount++}
+		if (movekey != key) {newkey = key; if (!moving) {sprite_pacman.move();} keycount++}
 	}
 
 }
@@ -1248,7 +1258,10 @@ function loadLevel(level){
  * Function: start
  * Meta: At the start of each level, or after losing a life, display the message and kick off the game timers
 */
-function start(){
+function start(sprites){
+	sprite_pacman=sprites[0];
+	sprites_ghosts=sprites[1];
+	console.log(sprite_pacman);
 	mode="scatter";
 	resetModeTime=gameTime;
 	ghostReleaseTime = timeform.value;
@@ -1260,7 +1273,8 @@ function start(){
 	onPause=0;
 	document.getElementById("levelIndicator").innerHTML = "Level " + sessionStorage.level;
 	divStart.visibility="visible";
-	gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; move(); ghosts();',messageLifetime) 
+	//gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); ghosts();',messageLifetime) 
+	gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); ghosts();',messageLifetime) 
 }
 
 /* Temnporary function for debugging and adjusting mode timers  
@@ -1278,30 +1292,197 @@ var class_pacman = function(startLeft,startTop){
 
 	this.left=startLeft;
 	this.top=startTop;
-	this.direction = "R";
+	this.direction = 8;
 	this.lives = sessionStorage.lives;
 	this.speed = sessionStorage.speed;
+	this.speed = movespeed; 
 
-	function move(){}
-	function eat(){}
-	function powerUp(){}
-	function powerDown(){}
+	this.move = function(){
+
+		console.log("Moving sprite pacman");
+
+		// 1. Look up the possible moves from the current position
+		if (mazedata[pacTop] && mazedata[pacTop][pacLeft]){ //' queried as part of moveInc
+			pac_possibilities = mazedata[pacTop][pacLeft];
+		} else {
+			pac_possibilities = ""; // set as part of moveInc
+		}
+
+		// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
+		if (pac_possibilities && (pac_possibilities & newkey)) {
+
+			engage=true; movekey = newkey; lastkey = newkey // lastkey set to stop constant repetition of last 2 moves without the user touching anything.. see later on.
+
+		} else if (pac_possibilities && (pac_possibilities & lastkey)){
+
+			// 2.1 If previously pressed key generated a character that exists in the possible moves array then we can use that to continue in that direction
+				engage = true
+				movekey = lastkey
+
+			// 2.2 The latest and last key presses do not match a possible direction - therefore pacman stops. 'engage' and 'moving' set to false
+		} else if (!pac_possibilities){
+			engage = true;
+		} else {
+			engage = false
+			moving = false
+		}
+
+		console.log(pacTop,pacLeft,mazedata[pacTop][pacLeft],"Engage:",engage,"movekey:",movekey,"Newkey",newkey);
+		// 3. Engage is now set if a move can be made. This is either off the new key the previously pressed key, it doesn't matter as we make that move.
+		if (engage) {
+
+			if (movekey==newkey) { // 4. This means the latest key press and not the previous one generated this move, so we update the icon to point the right way
+				newClass = "pacman_" + newkey;
+				document.getElementById("pacman").classList.remove("pacman_1");
+				document.getElementById("pacman").classList.remove("pacman_2");
+				document.getElementById("pacman").classList.remove("pacman_4");
+				document.getElementById("pacman").classList.remove("pacman_8");
+				document.getElementById("pacman").classList.add(newClass);
+			}
+
+			// 5. Move the sprite on screen to correspond to the direction
+			if (movekey==8) {divPacman.top=(pacTop-moveInc); pacTop=pacTop-moveInc}
+			if (movekey==4) {divPacman.top=(pacTop+moveInc); pacTop=pacTop+moveInc}
+			if (movekey==2) {divPacman.left=(pacLeft-moveInc);pacLeft=pacLeft-moveInc}
+			if (movekey==1) {divPacman.left=(pacLeft+moveInc); pacLeft=pacLeft+moveInc}
+			alert("Its engaged - just moved");
+
+
+			//console.log("Top: " + pacTop + " Left: " + pacLeft);
+
+			// pills
+			if (document.getElementById('cell-' + pacLeft + '-' + pacTop) && document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills')){
+				pillType = document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills');
+			} else {
+				pillType=0;
+			}
+
+			if (pillType == "1" || pillType == "2"){
+
+				document.getElementById('cell-' + pacLeft + '-' + pacTop).setAttribute('data-pills',0); // reset pill to zero 
+				
+				if (ns) pilsrc = eval("document.p" + pacLeft + pacTop + ".document")
+				pilName = "pil_" + pacLeft + pacTop;
+				document.images[pilName].src=blank.src;
+
+				if (pillType==2){
+					createGhostScores();
+					ppTimer = powerPillLifetime 
+					ghostscore=50
+					movespeed = speed-5;
+					powerpilon = true
+					//document.getElementById("maze").classList.add("spin"); // mushrooms 
+					for(i=0;i<total_ghosts;i++){
+						if (!onPath[i]){
+							ghostSrc[i].src = ghostImgs[4].src;
+							vulnerable[i]=true
+						}
+					}
+				}
+
+				pilcount++
+				score += 10;
+				scoreform.value = score
+				if (pilcount>=pillNumber) {
+					won = true
+					onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
+					document.getElementById("pacman").style.display="none";
+					levelEnd();
+
+				}
+			}
+
+			// Give extra lives at 5000 and 1000 points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is left. 
+			if (score>=5000 && score <6000 && exlife1) {
+				exlife1=0; sessionStorage.exlife1 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
+			if (score>=10000 && score <10500 && exlife2) {
+				exlife2=0; sessionStorage.exlife2=0;
+				lives++; sessionStorage.lives++; lifeform.value = lives;
+			}
+			if (score>=20000 && score <21000 && exlife3) {
+				exlife3=0; sessionStorage.exlife3 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
+
+			// show a piece of fruit at certain times - based on incrementing score with a length in a decrementing var called fruitTimer
+			if (score >= nextfruitscore && score <=nextfruitscore+300 && fruitArray[thisfruit]) {showFruit()}
+			if (fruitTimer>0) fruitTimer--
+			if (fruitTimer==1) {
+				divFruit.visibility='hidden'; fruitOn=false
+			}
+			//status= parseInt(divFruit.left) + "-" + pacLeft + "--" + parseInt(divFruit.top) + "-" + pacTop
+
+			if (fruitOn && pacLeft==parseInt(divFruit.left) && pacTop == parseInt(divFruit.top)) {
+				score=score+250; scoreform.value=score
+				fruitOn=false
+				divFruit.visibility='hidden';
+
+				document.getElementById("fruits").style.top=(parseInt(document.getElementById("fruits").style.top)-30);
+				document.getElementById("fruits").innerHTML="250";
+				document.getElementById("fruits").classList.add("trans"); 
+				document.getElementById("fruits").style.opacity=0;
+					
+				srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
+				if (srcname == "mushroom.png"){
+					var effect_no = Math.floor(Math.random() * 3);
+					if (effect_no == 1) { effect = "effect_long_spin"; }
+					if (effect_no == 2) { effect = "effect_mushrooms"; }
+					if (effect_no == 3) { effect = "effect_mushrooms"; }
+
+					if (effect=="effect_long_spin"){
+						effect_long_spin();
+					} else if (effect=="effect_quick_spin"){
+						effect_quick_spin();
+					} else {
+						effect_mushrooms();
+					}
+				}
+			}
+
+			// For the tunnels off the side of the mazes, may need to update location of pacman 
+			// NB: The tunnel is denoted in the data by a capital O in the movement bit of the data.
+			if (document.getElementById('cell-' + pacLeft + '-' + pacTop)){
+				if (document.getElementById('cell-' + pacLeft + '-' + pacTop).classList.contains('mazeTunnel')){
+					if (pacLeft==35){
+						pacLeft=555; divPacman.left=pacLeft;
+					} else if (pacLeft==575){
+						pacLeft=55; divPacman.left=pacLeft;
+					}
+				}
+			}
+
+			moving = true
+			if (!won && !onPause){
+				pacTimer = setTimeout(this.move,this.speed)
+			}
+		}
+	} // end function move
+
+	this.eat = function(){}
+	this.powerUp = function(){}
+	this.powerDown = function(){}
 	
 }
 
 // ghost constructor
-var class_ghost = function(name){
+var class_ghost = function(name,number){
 
-	this.name = name;
-	// src - the source image can be named after the name
-	this.left=305;
-	this.top = 205;
-	this.alive=1; // gets rid of the onPath global
-	this.mode="scatter"; // mode (chase, scatter, frightened, sit, homing)
-	this.leftBase=0;
-	this.direction = 8;
-	this.speed = sessionStorage.speed;
-	console.log(this.name);
+	this.name 	= name;
+	this.elementId 	= "ghost" + number;
+	this.src  	= ghostSrc[number];
+	this.left 	= document.getElementById(this.elementId).style.left;
+	this.top  	= document.getElementById(this.elementId).style.top;
+	this.vulnerable = false;
+	this.alive	= 1; // gets rid of the onPath global
+	this.mode	="scatter"; // mode (chase, scatter, frightened, sit, homing)
+	this.leftBase	= 0; // has left home base
+	this.direction 	= 8;
+	this.speed 	= sessionStorage.speed;
+
+	ghostReleaseTime = timeform.value;
+	this.releaseDelay = ghostReleaseTime - number*47;
 
 	function move(){}
 
@@ -1310,8 +1491,8 @@ var class_ghost = function(name){
 	function scatter(){}
 	function sit(){}
 	function homing(){}
-	function frightened(){}
 
+	function frightened(){}
 	function eaten(){}
 	
 }
@@ -1331,18 +1512,23 @@ var class_level = function(){
 
 // make four ghosts to start
 function makeGhosts(){
-	var ghosts_names = new Array("Blinky","Pinky","Inky","Clyde");
+	var all_ghosts = new Array();
 	for (i=0;i<ghosts_names.length;i++){
-		all_ghosts[i] = new class_ghost(ghosts_names[i]);	
+		all_ghosts[i] = new class_ghost(ghosts_names[i],i);	
 	}
 	return all_ghosts;
 }
 
 function oo_start(){
 	var pacman = new class_pacman(pacStartLeft,pacStartTop);
-	var all_ghosts = make_ghosts();
+	var all_ghosts = makeGhosts();
+	console.log(all_ghosts);
 	var total_ghosts = ghosts_names.length;
-	var level = new level(level);
+	var level = new class_level(level);
+
+	return Array(pacman,all_ghosts);
+
+	pacman.move();
 	
 }
 

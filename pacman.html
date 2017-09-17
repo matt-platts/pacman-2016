@@ -108,7 +108,8 @@ var loadMain = function(){
 
 /* Callback 3 : kickOff */
 var kickOff = function(){
-	init(); // calls init functionin pacman.js
+	sprites = init(); // calls init functionin pacman.js
+	startGame(sprites);
 }
 
 /* Main starts here */
