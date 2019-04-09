@@ -19,7 +19,7 @@ function convert(maze){
 	//console.log(maze);
 	for (i=0;i<maze.length;i++){
 		character = maze.charAt(i);
-		if (i==19 || x==19){
+		if (i==19 || x==19){ // maze is 19 blocks wide, drop to next line
 			x = 0;
 			//console.log("x is now " + x + " at " + i);
 			y++;
@@ -41,7 +41,7 @@ function convert(maze){
 
 /* 
  * Function : renderGrid
- * Meta: takes the 2d grid and builds a better data structure from it that we can query easily. 
+ * Meta: takes the 2d grid and builds a data structure from it that we can query easily. 
  * 	bindata - for binary lookups of possible moves where we can use a bitwise and to see if a move is possible from the current cell.. 
  *      Byte 1 - set to U if can go up, X if not
  *	Byte 2 - set to D if can go down, X if not
