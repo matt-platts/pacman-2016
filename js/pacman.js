@@ -224,12 +224,12 @@ function init(){
 	var sprites = oo_start();
 	console.log(sprites[0]);
 	console.log(sprites[1][3]);
-	alert("returning sprites");
+	//alert("ooalert returning sprites");
 	return sprites;
 }
 
 function startGame(sprites){
-	alert("and were off");
+	//alert("ooalert and were off");
 	start(sprites); // kick off the game timers. This needs to be called for each level and hence is not part of init()
 }
 
@@ -634,7 +634,7 @@ function movePacman(){
 
 		moving = true
 		if (!won && !onPause){
-			pacTimer = setTimeout("move()",movespeed)
+			pacTimer = setTimeout("movePacman()",movespeed)
 		}
 	}
 }
@@ -1062,26 +1062,30 @@ function kdns(evt){
  * 	 The keycount variable is also incremented. 
  * 	 Hmm no that didn't really help either did it..
 */
-function keyLogic(key){
+function keyLogic(keyIn){
 
-	// movement kreys (aznm or cursor keys)
-	if (key=="65" || key=="97" || key == "38") {key=8}
-	if (key=="90" || key=="122" || key == "40") {key=4}
-	if (key=="78" || key=="110" || key == "37") {key=2}
-	if (key=="77" || key=="109" || key == "39") {key=1}
+	var key;
+	// movement keys (aznm or cursor keys)
+	if (keyIn=="65" || keyIn=="97"  || keyIn == "38") {key=8} // up
+	else if (keyIn=="90" || keyIn=="122" || keyIn == "40") {key=4} // down
+	else if (keyIn=="78" || keyIn=="110" || keyIn == "37") {key=2} // left
+	else if (keyIn=="77" || keyIn=="109" || keyIn == "39") {key=1} // right
 
 	// game reset key (r)
-	if (key=="82" || key=="114"){ top.location.reload();} // r = reset
+	else if (keyIn=="82" || keyIn=="114"){ top.location.reload();} // r = reset
 	
 	// game pause key (p)
-	if (key=="80" || key=="112"){
+	else if (keyIn=="80" || keyIn=="112"){
 			onPause=1; 
 			if (pacTimer){ clearTimeout(pacTimer);}
 			if (ghostsTimer){ clearTimeout(ghostsTimer);}
 			if (gameTimer){ clearTimeout(gameTimer);}
-		
-	} else {
-		if (movekey != key) {newkey = key; if (!moving) {sprite_pacman.move();} keycount++}
+	}	
+
+	if (key && movekey != key) {
+		newkey = key; 
+		if (!moving) {sprite_pacman.move();} 
+		keycount++
 	}
 
 }
@@ -1312,7 +1316,7 @@ var class_pacman = function(startLeft,startTop){
 		if (pac_possibilities && (pac_possibilities & newkey)) {
 
 			engage=true; movekey = newkey; lastkey = newkey // lastkey set to stop constant repetition of last 2 moves without the user touching anything.. see later on.
-
+			//alert("YES to " +  pac_possibilities + " &" + newkey);
 		} else if (pac_possibilities && (pac_possibilities & lastkey)){
 
 			// 2.1 If previously pressed key generated a character that exists in the possible moves array then we can use that to continue in that direction
@@ -1327,7 +1331,7 @@ var class_pacman = function(startLeft,startTop){
 			moving = false
 		}
 
-		console.log(pacTop,pacLeft,mazedata[pacTop][pacLeft],"Engage:",engage,"movekey:",movekey,"Newkey",newkey);
+		console.log(pacTop,pacLeft,"Mazedata:",pac_possibilities,"Engage:",engage,"movekey:",movekey,"Newkey",newkey,"Moving",moving);
 		// 3. Engage is now set if a move can be made. This is either off the new key the previously pressed key, it doesn't matter as we make that move.
 		if (engage) {
 
@@ -1345,7 +1349,7 @@ var class_pacman = function(startLeft,startTop){
 			if (movekey==4) {divPacman.top=(pacTop+moveInc); pacTop=pacTop+moveInc}
 			if (movekey==2) {divPacman.left=(pacLeft-moveInc);pacLeft=pacLeft-moveInc}
 			if (movekey==1) {divPacman.left=(pacLeft+moveInc); pacLeft=pacLeft+moveInc}
-			alert("Its engaged - just moved");
+			//alert("ooalert Its engaged - just moved");
 
 
 			//console.log("Top: " + pacTop + " Left: " + pacLeft);
@@ -1455,7 +1459,9 @@ var class_pacman = function(startLeft,startTop){
 
 			moving = true
 			if (!won && !onPause){
-				pacTimer = setTimeout(this.move,this.speed)
+				//console.log("calling this.move on timer of " + this.speed);
+				//pacTimer = setTimeout(this.move(),100000)
+				setTimeout(function(){ sprite_pacman.move(); }, this.speed);
 			}
 		}
 	} // end function move
