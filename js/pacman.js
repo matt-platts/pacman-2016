@@ -17,7 +17,7 @@
  * 	       NB: Most functionality is in ghosts() - this is the standard loop that runs at a consistent speed throughout the game, including dealing with the timings of switching
  * 	       modes, collision detection and stopping/starting the game after pacman is eaten, as well as switching ghost directions (which is itself related to the game modes) 
  * ghosts()
- * move()
+ * move() ** NOW MOVED TO class_pacman.move()
 
  * Section 3 - Functions required by the game loops above. All of these relate to ghosts() bar showFruit which reltes to move()
  * 
@@ -214,8 +214,8 @@ function init(){
 	}
 
 	ghostDir = new Array // Array contains directions for each ghost
-	pacLeft = parseInt(divPacman.left)
-	pacTop = parseInt(divPacman.top)
+	//pacLeft = parseInt(divPacman.left)
+	//pacTop = parseInt(divPacman.top)
 	for(i=0;i<4;i++){
 		leftG[i] = parseInt(ghostDiv[i].left);
 		topG[i] = parseInt(ghostDiv[i].top)
@@ -299,8 +299,8 @@ function ghosts(){
 		}
 
 		// detect collision
-		if (pacLeft > leftG[wg]-closeness && pacLeft < leftG[wg]+closeness && pacTop > topG[wg]-closeness && pacTop < topG[wg]+closeness && 
-			(pacLeft == leftG[wg] || pacTop == topG[wg] || vulnerable[wg])) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. If the ghost is vulnerable, i've decided to let this through though.. 
+		if (sprite_pacman.posLeft > leftG[wg]-closeness && sprite_pacman.posLeft < leftG[wg]+closeness && sprite_pacman.posTop > topG[wg]-closeness && sprite_pacman.posTop < topG[wg]+closeness && 
+			(sprite_pacman.posLeft == leftG[wg] || sprite_pacman.posTop == topG[wg] || vulnerable[wg])) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. If the ghost is vulnerable, i've decided to let this through though.. 
 			{
 
 			// if no Powerpill and game not won and ghost not on path, you've lost a life
@@ -417,6 +417,7 @@ function ghosts(){
 		mode=previousMode;
 		ghostspeed=speed;
 		movespeed=speed;
+		sprite_pacman.speed=speed; // set pacman speed back to normal
 		document.getElementById("maze").classList.remove("spin");
 		for(i=0;i<total_ghosts;i++){
 			if (!onPath[i]) {
@@ -475,169 +476,6 @@ function ghosts(){
 	if (!onPause){ ghostsTimer = setTimeout("ghosts()",ghostspeed);}
 }
 
-/*
- * Function: move
- * Meta: This is one of the two continually looping functions which make up the two game loops. 
- *       It accesses the newkey, lastkey and movekey variables from the keyLogic function, which it compares to 
- * 	 data of possible moves from the mazedata array where pacman currently resides.
-*/
-function movePacman(){
-
-	// 1. Look up the possible moves from the current position
-	if (mazedata[pacTop] && mazedata[pacTop][pacLeft]){ //' queried as part of moveInc
-		pac_possibilities = mazedata[pacTop][pacLeft];
-	} else {
-		pac_possibilities = ""; // set as part of moveInc
-	}
-
-	// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
-	if (pac_possibilities && (pac_possibilities & newkey)) {
-
-		engage=true; movekey = newkey; lastkey = newkey // lastkey set to stop constant repetition of last 2 moves without the user touching anything.. see later on.
-
-	} else if (pac_possibilities && (pac_possibilities & lastkey)){
-
-		// 2.1 If previously pressed key generated a character that exists in the possible moves array then we can use that to continue in that direction
-			engage = true
-			movekey = lastkey
-
-		// 2.2 The latest and last key presses do not match a possible direction - therefore pacman stops. 'engage' and 'moving' set to false
-	} else if (!pac_possibilities){
-		engage = true;
-	} else {
-		engage = false
-		moving = false
-	}
-	// 3. Engage is now set if a move can be made. This is either off the new key the previously pressed key, it doesn't matter as we make that move.
-	if (engage) {
-
-		if (movekey==newkey) { // 4. This means the latest key press and not the previous one generated this move, so we update the icon to point the right way
-			newClass = "pacman_" + newkey;
-			document.getElementById("pacman").classList.remove("pacman_1");
-			document.getElementById("pacman").classList.remove("pacman_2");
-			document.getElementById("pacman").classList.remove("pacman_4");
-			document.getElementById("pacman").classList.remove("pacman_8");
-			document.getElementById("pacman").classList.add(newClass);
-		}
-
-		// 5. Move the sprite on screen to correspond to the direction
-		if (movekey==8) {divPacman.top=(pacTop-moveInc); pacTop=pacTop-moveInc}
-		if (movekey==4) {divPacman.top=(pacTop+moveInc); pacTop=pacTop+moveInc}
-		if (movekey==2) {divPacman.left=(pacLeft-moveInc);pacLeft=pacLeft-moveInc}
-		if (movekey==1) {divPacman.left=(pacLeft+moveInc); pacLeft=pacLeft+moveInc}
-
-
-		//console.log("Top: " + pacTop + " Left: " + pacLeft);
-
-		// pills
-		if (document.getElementById('cell-' + pacLeft + '-' + pacTop) && document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills')){
-			pillType = document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills');
-		} else {
-			pillType=0;
-		}
-
-		if (pillType == "1" || pillType == "2"){
-
-			document.getElementById('cell-' + pacLeft + '-' + pacTop).setAttribute('data-pills',0); // reset pill to zero 
-			
-			if (ns) pilsrc = eval("document.p" + pacLeft + pacTop + ".document")
-			pilName = "pil_" + pacLeft + pacTop;
-			document.images[pilName].src=blank.src;
-
-			if (pillType==2){
-				createGhostScores();
-				ppTimer = powerPillLifetime 
-				ghostscore=50
-				movespeed = speed-5;
-				powerpilon = true
-				//document.getElementById("maze").classList.add("spin"); // mushrooms 
-				for(i=0;i<total_ghosts;i++){
-					if (!onPath[i]){
-						ghostSrc[i].src = ghostImgs[4].src;
-						vulnerable[i]=true
-					}
-				}
-			}
-
-			pilcount++
-			score += 10;
-			scoreform.value = score
-			if (pilcount>=pillNumber) {
-				won = true
-				onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
-				document.getElementById("pacman").style.display="none";
-				levelEnd();
-
-			}
-		}
-
-		// Give extra lives at 5000 and 1000 points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is left. 
-		if (score>=5000 && score <6000 && exlife1) {
-			exlife1=0; sessionStorage.exlife1 = 0;
-			lives++; sessionStorage.lives = lives; lifeform.value = lives;
-		}
-		if (score>=10000 && score <10500 && exlife2) {
-			exlife2=0; sessionStorage.exlife2=0;
-			lives++; sessionStorage.lives++; lifeform.value = lives;
-		}
-		if (score>=20000 && score <21000 && exlife3) {
-			exlife3=0; sessionStorage.exlife3 = 0;
-			lives++; sessionStorage.lives = lives; lifeform.value = lives;
-		}
-
-		// show a piece of fruit at certain times - based on incrementing score with a length in a decrementing var called fruitTimer
-		if (score >= nextfruitscore && score <=nextfruitscore+300 && fruitArray[thisfruit]) {showFruit()}
-		if (fruitTimer>0) fruitTimer--
-		if (fruitTimer==1) {
-			divFruit.visibility='hidden'; fruitOn=false
-		}
-		//status= parseInt(divFruit.left) + "-" + pacLeft + "--" + parseInt(divFruit.top) + "-" + pacTop
-
-		if (fruitOn && pacLeft==parseInt(divFruit.left) && pacTop == parseInt(divFruit.top)) {
-			score=score+250; scoreform.value=score
-			fruitOn=false
-			divFruit.visibility='hidden';
-
-			document.getElementById("fruits").style.top=(parseInt(document.getElementById("fruits").style.top)-30);
-			document.getElementById("fruits").innerHTML="250";
-			document.getElementById("fruits").classList.add("trans"); 
-			document.getElementById("fruits").style.opacity=0;
-				
-			srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
-			if (srcname == "mushroom.png"){
-				var effect_no = Math.floor(Math.random() * 3);
-				if (effect_no == 1) { effect = "effect_long_spin"; }
-				if (effect_no == 2) { effect = "effect_mushrooms"; }
-				if (effect_no == 3) { effect = "effect_mushrooms"; }
-
-				if (effect=="effect_long_spin"){
-					effect_long_spin();
-				} else if (effect=="effect_quick_spin"){
-					effect_quick_spin();
-				} else {
-					effect_mushrooms();
-				}
-			}
-		}
-
-		// For the tunnels off the side of the mazes, may need to update location of pacman 
-		// NB: The tunnel is denoted in the data by a capital O in the movement bit of the data.
-		if (document.getElementById('cell-' + pacLeft + '-' + pacTop)){
-			if (document.getElementById('cell-' + pacLeft + '-' + pacTop).classList.contains('mazeTunnel')){
-				if (pacLeft==35){
-					pacLeft=555; divPacman.left=pacLeft;
-				} else if (pacLeft==575){
-					pacLeft=55; divPacman.left=pacLeft;
-				}
-			}
-		}
-
-		moving = true
-		if (!won && !onPause){
-			pacTimer = setTimeout("movePacman()",movespeed)
-		}
-	}
-}
 
 /*
  * SECTION 3
@@ -1124,8 +962,8 @@ function reset(){
 	document.getElementById("pacman").classList.add("pacman_1");
 
 	won=false;
-	pacLeft = parseInt(divPacman.left)
-	pacTop = parseInt(divPacman.top)
+	sprite_pacman.posLeft = parseInt(divPacman.left)
+	sprite_pacman.posTop = parseInt(divPacman.top)
 
 	for (i=0;i<total_ghosts;i++){
 		ghostDiv[i].top = ghostStartTop;
@@ -1264,7 +1102,7 @@ function loadLevel(level){
 */
 function start(sprites){
 	sprite_pacman=sprites[0];
-	sprites_ghosts=sprites[1];
+	sprites_ghosts=sprites[1]; //; this is an array within an array
 	console.log(sprite_pacman);
 	mode="scatter";
 	resetModeTime=gameTime;
@@ -1294,8 +1132,8 @@ function showmode(input){
 // pacman object constructor
 var class_pacman = function(startLeft,startTop){
 
-	this.left=startLeft;
-	this.top=startTop;
+	this.posLeft=startLeft;
+	this.posTop=startTop;
 	this.direction = 8;
 	this.lives = sessionStorage.lives;
 	this.speed = sessionStorage.speed;
@@ -1306,8 +1144,8 @@ var class_pacman = function(startLeft,startTop){
 		console.log("Moving sprite pacman");
 
 		// 1. Look up the possible moves from the current position
-		if (mazedata[pacTop] && mazedata[pacTop][pacLeft]){ //' queried as part of moveInc
-			pac_possibilities = mazedata[pacTop][pacLeft];
+		if (mazedata[this.posTop] && mazedata[this.posTop][this.posLeft]){ //' queried as part of moveInc
+			pac_possibilities = mazedata[this.posTop][this.posLeft];
 		} else {
 			pac_possibilities = ""; // set as part of moveInc
 		}
@@ -1331,7 +1169,7 @@ var class_pacman = function(startLeft,startTop){
 			moving = false
 		}
 
-		console.log(pacTop,pacLeft,"Mazedata:",pac_possibilities,"Engage:",engage,"movekey:",movekey,"Newkey",newkey,"Moving",moving);
+		console.log(this.posTop,this.posLeft,"Mazedata:",pac_possibilities,"Engage:",engage,"movekey:",movekey,"Newkey",newkey,"Moving",moving);
 		// 3. Engage is now set if a move can be made. This is either off the new key the previously pressed key, it doesn't matter as we make that move.
 		if (engage) {
 
@@ -1345,58 +1183,26 @@ var class_pacman = function(startLeft,startTop){
 			}
 
 			// 5. Move the sprite on screen to correspond to the direction
-			if (movekey==8) {divPacman.top=(pacTop-moveInc); pacTop=pacTop-moveInc}
-			if (movekey==4) {divPacman.top=(pacTop+moveInc); pacTop=pacTop+moveInc}
-			if (movekey==2) {divPacman.left=(pacLeft-moveInc);pacLeft=pacLeft-moveInc}
-			if (movekey==1) {divPacman.left=(pacLeft+moveInc); pacLeft=pacLeft+moveInc}
+			if (movekey==8) {divPacman.top=(this.posTop-moveInc);  this.posTop=this.posTop-moveInc;}
+			if (movekey==4) {divPacman.top=(this.posTop+moveInc);  this.posTop=this.posTop+moveInc;}
+			if (movekey==2) {divPacman.left=(this.posLeft-moveInc); this.posLeft=this.posLeft-moveInc;}
+			if (movekey==1) {divPacman.left=(this.posLeft+moveInc); this.posLeft=this.posLeft+moveInc;}
 			//alert("ooalert Its engaged - just moved");
 
 
-			//console.log("Top: " + pacTop + " Left: " + pacLeft);
+			//console.log("Top: " + this.posTop + " Left: " + this.posLeft);
 
 			// pills
-			if (document.getElementById('cell-' + pacLeft + '-' + pacTop) && document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills')){
-				pillType = document.getElementById('cell-' + pacLeft + '-' + pacTop).getAttribute('data-pills');
+			if (document.getElementById('cell-' + this.posLeft + '-' + this.posTop) && document.getElementById('cell-' + this.posLeft + '-' + this.posTop).getAttribute('data-pills')){
+				pillType = document.getElementById('cell-' + this.posLeft+ '-' + this.posTop).getAttribute('data-pills');
 			} else {
 				pillType=0;
 			}
-
 			if (pillType == "1" || pillType == "2"){
-
-				document.getElementById('cell-' + pacLeft + '-' + pacTop).setAttribute('data-pills',0); // reset pill to zero 
-				
-				if (ns) pilsrc = eval("document.p" + pacLeft + pacTop + ".document")
-				pilName = "pil_" + pacLeft + pacTop;
-				document.images[pilName].src=blank.src;
-
-				if (pillType==2){
-					createGhostScores();
-					ppTimer = powerPillLifetime 
-					ghostscore=50
-					movespeed = speed-5;
-					powerpilon = true
-					//document.getElementById("maze").classList.add("spin"); // mushrooms 
-					for(i=0;i<total_ghosts;i++){
-						if (!onPath[i]){
-							ghostSrc[i].src = ghostImgs[4].src;
-							vulnerable[i]=true
-						}
-					}
-				}
-
-				pilcount++
-				score += 10;
-				scoreform.value = score
-				if (pilcount>=pillNumber) {
-					won = true
-					onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
-					document.getElementById("pacman").style.display="none";
-					levelEnd();
-
-				}
+				this.eatPill();
 			}
 
-			// Give extra lives at 5000 and 1000 points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is left. 
+			// Give extra lives at 5000 and 1000 points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is set. 
 			if (score>=5000 && score <6000 && exlife1) {
 				exlife1=0; sessionStorage.exlife1 = 0;
 				lives++; sessionStorage.lives = lives; lifeform.value = lives;
@@ -1416,58 +1222,113 @@ var class_pacman = function(startLeft,startTop){
 			if (fruitTimer==1) {
 				divFruit.visibility='hidden'; fruitOn=false
 			}
-			//status= parseInt(divFruit.left) + "-" + pacLeft + "--" + parseInt(divFruit.top) + "-" + pacTop
 
-			if (fruitOn && pacLeft==parseInt(divFruit.left) && pacTop == parseInt(divFruit.top)) {
-				score=score+250; scoreform.value=score
-				fruitOn=false
-				divFruit.visibility='hidden';
-
-				document.getElementById("fruits").style.top=(parseInt(document.getElementById("fruits").style.top)-30);
-				document.getElementById("fruits").innerHTML="250";
-				document.getElementById("fruits").classList.add("trans"); 
-				document.getElementById("fruits").style.opacity=0;
-					
-				srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
-				if (srcname == "mushroom.png"){
-					var effect_no = Math.floor(Math.random() * 3);
-					if (effect_no == 1) { effect = "effect_long_spin"; }
-					if (effect_no == 2) { effect = "effect_mushrooms"; }
-					if (effect_no == 3) { effect = "effect_mushrooms"; }
-
-					if (effect=="effect_long_spin"){
-						effect_long_spin();
-					} else if (effect=="effect_quick_spin"){
-						effect_quick_spin();
-					} else {
-						effect_mushrooms();
-					}
-				}
+			// fruit
+			if (fruitOn && this.posLeft == parseInt(divFruit.left) && this.posTop == parseInt(divFruit.top)) {
+				this.eatFruit();
 			}
 
 			// For the tunnels off the side of the mazes, may need to update location of pacman 
 			// NB: The tunnel is denoted in the data by a capital O in the movement bit of the data.
-			if (document.getElementById('cell-' + pacLeft + '-' + pacTop)){
-				if (document.getElementById('cell-' + pacLeft + '-' + pacTop).classList.contains('mazeTunnel')){
-					if (pacLeft==35){
-						pacLeft=555; divPacman.left=pacLeft;
-					} else if (pacLeft==575){
-						pacLeft=55; divPacman.left=pacLeft;
-					}
-				}
-			}
+			this.checkForTunnel();
 
 			moving = true
 			if (!won && !onPause){
-				//console.log("calling this.move on timer of " + this.speed);
-				//pacTimer = setTimeout(this.move(),100000)
 				setTimeout(function(){ sprite_pacman.move(); }, this.speed);
 			}
 		}
 	} // end function move
 
-	this.eat = function(){}
-	this.powerUp = function(){}
+
+	this.checkForTunnel = function(){
+
+		if (document.getElementById('cell-' + this.posLeft + '-' + this.posTop)){
+			if (document.getElementById('cell-' + this.posLeft + '-' + this.posTop).classList.contains('mazeTunnel')){
+				if (this.posLeft==35){
+					this.posLeft=555; divPacman.left=this.posLeft;
+				} else if (this.posLeft==575){
+					this.posLeft=55; divPacman.left=this.posLeft; 
+				}
+			}
+		}
+
+	}
+
+
+	this.eatPill = function(){
+
+
+		document.getElementById('cell-' + this.posLeft + '-' + this.posTop).setAttribute('data-pills',0); // reset pill to zero 
+		
+		if (ns) pilsrc = eval("document.p" + this.posLeft + this.posTop + ".document")
+		pilName = "pil_" + this.posLeft + this.posTop;
+		document.images[pilName].src=blank.src;
+
+		if (pillType==2){
+			this.powerUp();
+		}
+
+		pilcount++
+		score += 10;
+		scoreform.value = score
+
+		// check if game won
+		if (pilcount >= pillNumber) {
+			won = true
+			onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
+			document.getElementById("pacman").style.display="none";
+			levelEnd();
+		}
+
+	}
+
+	this.eatFruit = function(){
+
+		score=score+250; scoreform.value=score
+		fruitOn=false
+		divFruit.visibility='hidden';
+
+		document.getElementById("fruits").style.top=(parseInt(document.getElementById("fruits").style.top)-30);
+		document.getElementById("fruits").innerHTML="250";
+		document.getElementById("fruits").classList.add("trans"); 
+		document.getElementById("fruits").style.opacity=0;
+			
+		srcname = fruitsrc.src.substring(fruitsrc.src.lastIndexOf('/')+1);
+		if (srcname == "mushroom.png"){
+			var effect_no = Math.floor(Math.random() * 3);
+			if (effect_no == 1) { effect = "effect_long_spin"; }
+			if (effect_no == 2) { effect = "effect_mushrooms"; }
+			if (effect_no == 3) { effect = "effect_mushrooms"; }
+
+			if (effect=="effect_long_spin"){
+				effect_long_spin();
+			} else if (effect=="effect_quick_spin"){
+				effect_quick_spin();
+			} else {
+				effect_mushrooms();
+			}
+		}
+	}
+
+	this.powerUp = function(){
+
+		createGhostScores();
+		ppTimer = powerPillLifetime 
+		ghostscore=50
+		movespeed = speed-5; // moving to this.speed
+		this.speed = this.speed-5;
+		powerpilon = true
+		//document.getElementById("maze").classList.add("spin"); // mushrooms 
+		for(i=0;i<total_ghosts;i++){
+			if (!onPath[i]){
+				ghostSrc[i].src = ghostImgs[4].src;
+				vulnerable[i]=true
+			}
+		}
+
+	}
+
+
 	this.powerDown = function(){}
 	
 }
@@ -1490,7 +1351,243 @@ var class_ghost = function(name,number){
 	ghostReleaseTime = timeform.value;
 	this.releaseDelay = ghostReleaseTime - number*47;
 
-	function move(){}
+	function move(){
+
+		gameModes(); // these adjust on a timer
+
+		// The movement functions are run four times in a loop - once for each ghost
+		for (wg=0;wg<total_ghosts;wg++){
+
+			// 1. Load the possible moves from the mazedata array into the possG array. 
+			//   All the data for all the ghosts is used later (collision detection) hence the array. 
+			if (mazedata[topG[wg]] && mazedata[topG[wg]][parseInt(leftG[wg])]) { // queried as part of moveInc
+				possG[wg] = mazedata[topG[wg]][parseInt(leftG[wg])];
+			} else { 
+				possG[wg] = ""; // set as part of moveInc
+			}
+
+			// 2. Check possibile moves. The ghostData array contains info on which moves are possible. 
+			//    If more than 2 directions are present, or only 1 (ie backwards, so dead end) - a new direction must be generated...
+			totalDirections=qtyBits(possG[wg]);
+			if (totalDirections>2 || totalDirections==1) generateGhostDir(wg,totalDirections,possG[wg])
+
+			// 3. if there's 2 directions only, need to ascertain if they are 180 or 90 degrees. 
+			if (totalDirections==2) {
+				if (possG[wg] != 12 && possG[wg] != 3){ // 12 is Up and Down, 3 is Left and Right - no need to recalc
+					 generateGhostDir(wg,totalDirections,possG[wg]);  // don't have any pairs so it's right angles
+				}
+			}
+
+			// 4. if basicVision is set, and ghost is not onPath to home, compare ghost positions to your position & if it can see you, adjust direction.
+			if (!onPath[wg] && basicVision === true) { checkBasicVision(wg) }
+
+			// update position variable, and then position
+			if (ghostDir[wg] == 8) {topG[wg] = (topG[wg]-moveInc); ghostDiv[wg].top = topG[wg]; } 
+			if (ghostDir[wg] == 4) {topG[wg] = (topG[wg]+moveInc); ghostDiv[wg].top = topG[wg]; } 
+			if (ghostDir[wg] == 2) {leftG[wg] = (leftG[wg]-moveInc); ghostDiv[wg].left = leftG[wg];} 
+			if (ghostDir[wg] == 1) {leftG[wg] = (leftG[wg]+moveInc); ghostDiv[wg].left = leftG[wg]; }
+
+			// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
+			if (onPath[wg]){
+				// if it's home, reset it to not vulnerable and back to correct image
+				if (leftG[wg] == ghostHomeBase[0] && topG[wg] == ghostHomeBase[1]){
+					if (!won){ onPath[wg] = false; }
+					vulnerable[wg] = false;
+					ghostSrc[wg].src=ghostImgs[wg].src;
+					ghostDir[wg] = 8;
+				}
+			}
+
+			// Collision detection
+			// If so, either send the ghost home, or lose a life, depending whether a powerpill is currently active. 
+			if (ppTimer > 1){
+				closeness=20;
+			} else {
+				closeness=10;
+			}
+
+			// detect collision
+			if (this.posLeft > leftG[wg]-closeness && this.posLeft < leftG[wg]+closeness && this.posTop > topG[wg]-closeness && this.posTop < topG[wg]+closeness && 
+				(this.posLeft == leftG[wg] || this.posTop == topG[wg] || vulnerable[wg])) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. If the ghost is vulnerable, i've decided to let this through though.. 
+				{
+
+				// if no Powerpill and game not won and ghost not on path, you've lost a life
+				// or pill is on but ghost is not vulnerable then same
+				if ((ppTimer=="0" && !won && !onPath[wg] && !invincibility) || (ppTimer>="1" && !vulnerable[wg] && !onPath[wg] && !invincibility)) {
+					lives = (lives-1)
+					score -= 50
+					scoreform.value = score
+					lifeform.value -= 1
+					resetModeTime = timeform.value;
+
+					
+					// reset ghost release time and mode
+					mode="scatter";
+					//showmode("Set mode to " + mode + " for scatterTime " + scatterTime);
+					ghostReleaseTime = timeform.value;
+					ghostDelayRelease=Array(); // used to delay the release of each ghost
+					for (i=0;i<total_ghosts;i++){
+						ghostDelayRelease[i] = ghostReleaseTime - i*15;
+						if (fx){
+							document.getElementById("ghost" + i).classList.add("spin");
+						}
+					}
+					divMessage.visibility='visible'
+					if (fx){
+						document.getElementById("pacman").classList.add("spin");
+					}
+					onPause=1;
+					setTimeout('divMessage.visibility=\'hidden\'; onPause=0;   document.getElementById("pacman").classList.remove("spin"); for (i=0;i<total_ghosts;i++){ document.getElementById("ghost" + i).classList.remove("spin"); } pacTimer = setTimeout(sprite_pacman.move(),movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
+					
+						
+					 if (lives==0) {
+						divMessEnd.visibility='visible'
+						onPause=1;
+						divMessage.display="none";
+						if (fx){
+							for (i=0;i<total_ghosts;i++){
+								document.getElementById("ghost" + i).classList.add("negspin");
+							}
+						}
+						reset()
+						locStr = "intropage.html?score=" + score;
+						won=true
+						setTimeout('won=true; sessionStorage.score=score; location=locStr;',messageLifetime);
+					} else {
+						reset()
+					} 
+				//if powerpill is on and ghost is vulnerable, turns ghost to eyes, sets first possible direction, and makes path true
+				} else if (ppTimer>="1" && vulnerable[wg]) {
+					ghostSrc[wg].src=eyes.src;
+					vulnerable[wg] = false;
+					onPath[wg] = true
+					
+					document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghost" + wg).style.top));
+					document.getElementById("ghostscore" + wg).style.left=(parseInt(document.getElementById("ghost" + wg).style.left));
+					document.getElementById("ghostscore" + wg).innerHTML=ghostscore;
+					document.getElementById("ghostscore" + wg).classList.add("trans"); 
+					document.getElementById("ghostscore" + wg).style.opacity=0;
+					document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghostscore" + wg).style.top-30));
+
+					score += ghostscore
+					ghostscore+=50
+					scoreform.value = score
+
+			      } 
+			}
+		}
+
+		// Decrement the power pill timer, and change source of ghost images if powerpill nearly over.
+		if (ppTimer >0) {
+			ppTimer=(ppTimer-1);
+		}
+
+		// Random game effect - experimental feature
+		if (effectTimer > 0){
+			effectTimer--;
+			if (effectTimer==40){
+				if (effect=="effect_long_spin"){
+					effect_long_spin_warn();
+				} else if (effect=="effect_quick_spin"){
+					effect_quick_spin_warn();
+				} else {
+				
+					effect_mushrooms_warn();
+				}
+			}
+		}
+		if (effectTimer==1){
+			if (effect=="effect_long_spin"){
+				effect_long_spin_end();
+			} else if (effect=="effect_quick_spin"){
+				effect_quick_spin_end();
+			} else {
+				effect_mushrooms_end();
+			}
+		}
+
+		if (ppTimer == ghostBlinkLifetime) {
+			for(i=0;i<total_ghosts;i++){
+				if (!onPath[i]) {
+					if (vulnerable[i]) { ghostSrc[i].src=ghostImgs[5].src;}
+					if (fx){
+						//eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
+						divName = "ghost" + i;
+						document.getElementById(divName).classList.remove('spin');
+					}
+				}
+			}
+		}
+
+		// Return ghost to normal when powerpill wears off.
+		if (ppTimer == "0" && powerpilon) {
+			powerpilon=false
+			mode=previousMode;
+			ghostspeed=speed;
+			movespeed=speed;
+			this.speed=speed;
+			console.log(speed,movespeed,this.speed);
+			alert("Speed done");
+			document.getElementById("maze").classList.remove("spin");
+			for(i=0;i<total_ghosts;i++){
+				if (!onPath[i]) {
+					ghostSrc[i].src = ghostImgs[i].src;
+					onPath[i]=false
+					divName = "ghost" + i;
+					document.getElementById(divName).classList.remove('spin');
+					vulnerable[i] = true
+					ghostscore=50
+				}
+			}
+		}
+
+		// Check to see if a ghost has gone through the channel to the other side of the screen
+		for (i=0;i<total_ghosts;i++){
+			if (document.getElementById('cell-' + leftG[i]+ '-' + topG[i])){
+				if (document.getElementById('cell-' + leftG[i]+ '-' + topG[i]).classList.contains('mazeTunnel')){
+					if (leftG[i]==35){ leftG[i] = 565;}
+					if (leftG[i]==575){ leftG[i] = 35;}
+				}
+			}
+		}
+
+	// binary lookup of the above (not yet working)
+	//for (i=0;i<total_ghosts;i++){
+	//		if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){ 
+	//			ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
+	//			if (ghostPos && (ghostPos == "4")){
+	//			alert("it is four");
+	//				if (ghostDir[i] ==2) {leftG[i] = 555; }
+	//				if (ghostDir[i] ==1) {leftG[i] = 35; }
+	//			}
+	//		}
+	//	}
+
+		//checkBasicVision()
+		// Game timer on the screen.. 
+		if (!won){ timeform.value--;}
+		if (timeform.value==0){
+			lives = (lives-1)
+			score -= 50
+			scoreform.value = score
+			lifeform.value -= 1
+			gameTime=sessionStorage.gameTime;
+			timeform.value=gameTime
+			alert ("OUT OF TIME! One life lost.")
+			if (lives==0) {
+				locStr = "intropage.html?score=" + score;
+				alert ("All lives lost - Game Over!! Your score was " + score + " points"); sessionStorage.score = score; location=locStr; } else {
+				reset()
+			} 
+
+		}
+
+		// And finally, call the function again if the game isn't paused
+		if (!onPause){ ghostsTimer = setTimeout("ghosts()",ghostspeed);}
+			// code from the ghosts function here
+
+
+	}
 
 	// modes
 	function chase(){}
