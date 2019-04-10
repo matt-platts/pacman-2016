@@ -289,7 +289,6 @@ function ghosts(){
 			if (!sprites_ghosts[i].onPath) {
 				if (sprites_ghosts[i].vulnerable) { ghostSrc[i].src=ghostImgs[5].src;}
 				if (fx){
-					//eval ("document.getElementById('ghost" + i + "').classList.remove('spin')"); 
 					divName = "ghost" + i;
 					document.getElementById(divName).classList.remove('spin');
 				}
@@ -1156,10 +1155,10 @@ var class_ghost = function(name,number){
 	this.alive	= 1; // gets rid of the onPath global
 	this.mode	="scatter"; // mode (chase, scatter, frightened, sit, homing)
 	this.leftBase	= 0; // bool for has left home base
-	this.direction 	= '';
+	this.direction 	= 8; //  one of the ghosts starts in a position with no moves,it needs to move up to get an 'official' position otherwise it never starts
 	this.speed 	= sessionStorage.speed;
 
-	this.possible_moves = "";
+	this.possibleMoves = "";
 
 	ghostReleaseTime = timeform.value;
 	this.releaseDelay = ghostReleaseTime - number*47;
@@ -1509,11 +1508,9 @@ function oo_start(){
 	
 }
 
-// BELOW IS FIRST THOUGHTS ON USING BINARY DATA FOR THE MAZE DATA AND LOOKUPS 
-
 /*
  * Function binary_lookup
- * Neta; just experimenting
+ * Meta; just experimenting
 */
 function binary_lookup(direction,data) {
 
