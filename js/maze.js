@@ -55,9 +55,9 @@ function convert(maze){
 */
 function renderGrid(){
 	var interim_maze = convert(maze);
-	interim_maze=randomMaze();
-	//interim_maze= convert(testmaze);
-	//interim_maze=removeDeadBlocksInTest(testmaze);
+	//interim_maze=randomMaze();
+	//interim_maze= convert(testmaze); - only for testing
+	//interim_maze=removeDeadBlocksInTest(testmaze); - further testing
 	var bindata = Array();
 	var binpills = Array();
 	var x=0;
