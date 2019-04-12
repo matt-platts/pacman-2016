@@ -55,7 +55,9 @@ function convert(maze){
 */
 function renderGrid(){
 	var interim_maze = convert(maze);
-	//interim_maze=randomMaze();
+	interim_maze=randomMaze();
+	//interim_maze= convert(testmaze);
+	//interim_maze=removeDeadBlocksInTest(testmaze);
 	var bindata = Array();
 	var binpills = Array();
 	var x=0;
@@ -306,53 +308,61 @@ function randomMaze(){
         }
 
         //document.getElementById("sourcear").innerHTML=mazeMap.gridMap.toString();
-        addGhostHome();
 	addPowerPills();
+	removeDeadBlocks();
+        addGhostHome();
         return mazeMap.gridMap;
 
 }
 
 function addGhostHome(){
 
-	mazeMap.gridMap[4][7]=1;
-	mazeMap.gridMap[4][6]=1;
-	mazeMap.gridMap[4][8]=1;
-	mazeMap.gridMap[4][9]=1;
-	mazeMap.gridMap[4][10]=1;
-	mazeMap.gridMap[4][11]=1;
-	mazeMap.gridMap[4][12]=1;
+	var ghost_home_y = Array(2,4,8,10); // possible start positions for ghost home. Need to adjust where fruit appear (underneath), where the ghosts start and where pacman starts for anything other than 4
+	var y=4;
 
-	mazeMap.gridMap[5][7]=1;
-	mazeMap.gridMap[5][7]=0;
-	mazeMap.gridMap[5][8]=0;
-	mazeMap.gridMap[5][9]=5;
-	mazeMap.gridMap[5][10]=0;
-	mazeMap.gridMap[5][11]=0;
-	mazeMap.gridMap[5][12]=1;
+	mazeMap.gridMap[y][7]=1;
+	mazeMap.gridMap[y][6]=1;
+	mazeMap.gridMap[y][8]=1;
+	mazeMap.gridMap[y][9]=1;
+	mazeMap.gridMap[y][10]=1;
+	mazeMap.gridMap[y][11]=1;
+	mazeMap.gridMap[y][12]=1;
+
+	y++;
+	mazeMap.gridMap[y][6]=1;
+	mazeMap.gridMap[y][7]=0;
+	mazeMap.gridMap[y][8]=0;
+	mazeMap.gridMap[y][9]=5;
+	mazeMap.gridMap[y][10]=0;
+	mazeMap.gridMap[y][11]=0;
+	mazeMap.gridMap[y][12]=1;
 	
-	mazeMap.gridMap[6][6]=1;
-	mazeMap.gridMap[6][7]=0;
-	mazeMap.gridMap[6][8]=3;
-	mazeMap.gridMap[6][9]=3;
-	mazeMap.gridMap[6][10]=3;
-	mazeMap.gridMap[6][11]=0;
-	mazeMap.gridMap[6][12]=1;
+	y++;
+	mazeMap.gridMap[y][6]=1;
+	mazeMap.gridMap[y][7]=0;
+	mazeMap.gridMap[y][8]=3;
+	mazeMap.gridMap[y][9]=3;
+	mazeMap.gridMap[y][10]=3;
+	mazeMap.gridMap[y][11]=0;
+	mazeMap.gridMap[y][12]=1;
 
-	mazeMap.gridMap[7][6]=1;
-	mazeMap.gridMap[7][7]=0;
-	mazeMap.gridMap[7][8]=0;
-	mazeMap.gridMap[7][9]=0;
-	mazeMap.gridMap[7][10]=0;
-	mazeMap.gridMap[7][11]=0;
-	mazeMap.gridMap[7][12]=1;
+	y++;
+	mazeMap.gridMap[y][6]=1;
+	mazeMap.gridMap[y][7]=0;
+	mazeMap.gridMap[y][8]=0;
+	mazeMap.gridMap[y][9]=0;
+	mazeMap.gridMap[y][10]=0;
+	mazeMap.gridMap[y][11]=0;
+	mazeMap.gridMap[y][12]=1;
 
-	mazeMap.gridMap[8][6]=1;
-	mazeMap.gridMap[8][7]=1;
-	mazeMap.gridMap[8][8]=1;
-	mazeMap.gridMap[8][9]=1;
-	mazeMap.gridMap[8][10]=1;
-	mazeMap.gridMap[8][11]=1;
-	mazeMap.gridMap[8][12]=1;
+	y++;
+	mazeMap.gridMap[y][6]=1;
+	mazeMap.gridMap[y][7]=1;
+	mazeMap.gridMap[y][8]=1;
+	mazeMap.gridMap[y][9]=1;
+	mazeMap.gridMap[y][10]=1;
+	mazeMap.gridMap[y][11]=1;
+	mazeMap.gridMap[y][12]=1;
 }
 	
 function addPowerPills(){
@@ -362,3 +372,114 @@ function addPowerPills(){
 	mazeMap.gridMap[14][18]=2;
 
 }
+
+function removeDeadBlocks(){
+// anywhere there is 0 in the map bounded by 0 on a diagonal corner - change the diagonal corner to a 1 
+// we need to scan  all diagonals so start second row down and finish one row up.
+
+// example data:
+// here second row down second value in is a 0. See diagonal top right is also 0 - this 0 should become a 1
+//
+//
+//	2,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,2,
+//	1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1,
+//	1,1,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,0,
+//	0,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,
+//	0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,
+//	1,0,1,0,0,0,0,0,0,5,0,0,1,0,1,0,0,0,1,
+//	1,0,1,1,1,1,1,0,3,3,3,0,1,0,1,1,1,1,1,
+//	1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,
+//	1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,
+//	1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+//	1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,0,
+//	1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,0,
+//	1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,
+//	1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,
+//	2,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,2
+//
+//
+
+interim= mazeMap.gridMap;
+
+	for (i=1;i<interim.length;i++){
+
+		for (j=1;j<interim[i].length-1;j++){
+			if(interim[i][j]==0){
+				if (interim[i-1][j+1]==0){
+					interim[i-1][j+1]=1;
+				}
+				if (i<interim.length-1){
+					if (interim[i+1][j-1]==0){
+						interim[i+1][j-1]=1;
+					}
+				}
+			}
+		}
+	}
+mazeMap.gridMap=interim;
+}
+
+function removeDeadBlocksInTest(){
+	// anywhere there is 0 in the map bounded by 0 on a diagonal corner - change the diagonal corner to a 1 
+	// we need to scan  all diagonals so start second row down and finish one row up.
+
+	// example data:
+	// here second row down second value in is a 0. See diagonal top right is also 0 - this 0 should become a 1
+	//
+	//
+	//	2,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,2,
+	//	1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1,
+	//	1,1,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,0,
+	//	0,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,
+	//	0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,
+	//	1,0,1,0,0,0,0,0,0,5,0,0,1,0,1,0,0,0,1,
+	//	1,0,1,1,1,1,1,0,3,3,3,0,1,0,1,1,1,1,1,
+	//	1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,
+	//	1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,
+	//	1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+	//	1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,0,
+	//	1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,0,
+	//	1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,
+	//	1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,
+	//	2,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,2
+	//
+	//
+
+	interim= convert(testmaze);
+
+		for (i=1;i<interim.length;i++){
+
+			for (j=1;j<interim[i].length-1;j++){
+				if(interim[i][j]==0){
+					if (interim[i-1][j+1]==0){
+						interim[i-1][j+1]=1;
+					}
+					if (i<interim.length-1){
+						if (interim[i+1][j-1]==0){
+							interim[i+1][j-1]=1;
+						}
+					}
+				}
+			}
+		}
+	return interim;
+}
+
+var testmaze= Array (
+
+	2,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,2,
+	1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1,
+	1,1,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,0,
+	0,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,
+	0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,
+	1,0,1,0,0,0,0,0,0,5,0,0,1,0,1,0,0,0,1,
+	1,0,1,1,1,1,1,0,3,3,3,0,1,0,1,1,1,1,1,
+	1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,
+	1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,
+	1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+	1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,0,
+	1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,0,
+	1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,
+	1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,
+	2,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,2
+)
