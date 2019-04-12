@@ -54,8 +54,14 @@ function convert(maze){
  * 	This function also takes care of screen rendering including pills.
 */
 function renderGrid(){
-	var interim_maze = convert(maze);
-	//interim_maze=randomMaze();
+
+	var interim_maze;
+
+	if (sessionStorage.mazeSource=="random"){
+		interim_maze=randomMaze();
+	} else {
+		interim_maze = convert(maze);
+	}
 	//interim_maze= convert(testmaze); - only for testing
 	//interim_maze=removeDeadBlocksInTest(testmaze); - further testing
 	var bindata = Array();

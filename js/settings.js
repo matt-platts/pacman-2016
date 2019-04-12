@@ -8,6 +8,7 @@ globals.exlife1 = 1,
 globals.exlife2 = 1,
 globals.exlife3 = 1,
 globals.gameTime = 10000; // previously 2000 but as we've sped up the movenent *2 it's been doubled
+globals.mazeSource = "designed"; // designed or random
 
 globals.basicVision = false; // set to 1 and the ghosts can see you if there is no wall between you and them in scatter mode, and move towards you (or away if a powerill is on) 
 globals.resetModeOnResetGame = true; // set to 1 to always start back in scatter mode, it can be un-nerving when they jump on you at the start of a new level or after you lost a life. Can be over-ridden locally in maze data for individual mazes.
