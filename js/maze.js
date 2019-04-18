@@ -12,7 +12,7 @@
 
 var pillNumber=0; // count the pills as we add them. This var is used to check if the screen has been completed in the game. 
 var fromSource;
-var removeDeadEndsAtCorners=1;
+var removeAnnexedCorners=1;
 
 /* 
  * Function: convert
@@ -435,16 +435,64 @@ function randomMaze(){
         }
 
         //document.getElementById("sourcear").innerHTML=mazeMap.gridMap.toString();
-	addPowerPills();
-	removeDiagonalBlocks();
-        addGhostHome();
-	//remove dead ends at corners
-	if (removeDeadEndsAtCorners){
+	//remove annexed corners
+	if (removeAnnexedCorners){
 		mazeMap.gridMap[1][0]=1;
 		mazeMap.gridMap[0][1]=1;
 		mazeMap.gridMap[14][17]=1;
 		mazeMap.gridMap[13][18]=1;
 	}
+
+	copy0 = mazeMap.gridMap[0].slice();
+	copy1 = mazeMap.gridMap[1].slice();
+	copy2 = mazeMap.gridMap[2].slice();
+	copy3 = mazeMap.gridMap[3].slice();
+	copy4 = mazeMap.gridMap[4].slice();
+	copy5 = mazeMap.gridMap[5].slice();
+	copy6 = mazeMap.gridMap[6].slice();
+
+	mazeMap.gridMap[14]=copy0.reverse();
+	mazeMap.gridMap[13]=copy1.reverse();
+	mazeMap.gridMap[12]=copy2.reverse();
+	mazeMap.gridMap[11]=copy3.reverse();
+	mazeMap.gridMap[10]=copy4.reverse();
+	mazeMap.gridMap[9]=copy5.reverse();
+	mazeMap.gridMap[8]=copy6.reverse();
+
+	removeDiagonalBlocks();
+	addPowerPills();
+        addGhostHome();
+
+	// tunnels
+	tPos=[6,8,10];
+	t=shuffleArray(tPos)[0];
+	if(mazeMap.gridMap[t][0]==1 && mazeMap.gridMap[t][18]==1){
+		mazeMap.gridMap[t][0]=4;
+		mazeMap.gridMap[t][18]=4;
+		mazeMap.gridMap[t][1]=1;
+		mazeMap.gridMap[t][17]=1;
+		mazeMap.gridMap[t][2]=1;
+		mazeMap.gridMap[t][16]=1;
+
+		mazeMap.gridMap[t-1][0]=0;
+		mazeMap.gridMap[t+1][0]=0;
+		mazeMap.gridMap[t-1][18]=0;
+		mazeMap.gridMap[t+1][18]=0;
+
+		mazeMap.gridMap[t-1][1]=0;
+		mazeMap.gridMap[t+1][1]=0;
+		mazeMap.gridMap[t-1][17]=0;
+		mazeMap.gridMap[t+1][17]=0;
+
+		mazeMap.gridMap[t-2][1]=1;
+		mazeMap.gridMap[t+2][1]=1;
+
+		mazeMap.gridMap[t-2][17]=1;
+		mazeMap.gridMap[t+2][17]=1;
+
+
+	}
+
         return mazeMap.gridMap;
 
 }
@@ -453,6 +501,7 @@ function addGhostHome(){
 
 	var ghost_home_y = Array(2,4,8,10); // possible start positions for ghost home. Need to adjust where fruit appear (underneath), where the ghosts start and where pacman starts for anything other than 4
 	var y=4;
+	y=4;
 	if (sessionStorage.level==2){
 		y=8;
 	}
