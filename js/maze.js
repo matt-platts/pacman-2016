@@ -1,9 +1,18 @@
 /* 
  * File: maze.js
  * Meta: functions for creating the maze visual and an array to describe all of the maze cells in terms of possible moves, where pills are etc. 
+ *
+ * To edit the random maze, render and play on the fly, pause the game then do the following in the console:
+ * 1. fromSource=1
+ * 2. mazeMap.gridMap - then edit this as you see fit
+ * 3. mazedata = renderGrid(); - adjusts the screen and loads the data into the array for playing
+ * 4 Unpause game and play
+ *
 */
 
 var pillNumber=0; // count the pills as we add them. This var is used to check if the screen has been completed in the game. 
+var fromSource;
+var removeDeadEndsAtCorners=1;
 
 /* 
  * Function: convert
@@ -56,23 +65,28 @@ function convert(maze){
 function renderGrid(){
 
 	var interim_maze;
-
-	if (sessionStorage.mazeSource=="random"){
+	if (fromSource){ //  var set to 1 from console only - for testing 
+		interim_maze=mazeMap.gridMap;
+	} else if (sessionStorage.mazeSource=="random"){
 		interim_maze=randomMaze();
 	} else {
 		interim_maze = convert(maze);
 	}
+
 	//interim_maze= convert(testmaze); - only for testing
-	//interim_maze=removeDeadBlocksInTest(testmaze); - further testing
+	//interim_maze=removeDiagonalBlocksInTest(testmaze); - further testing
+	
 	var bindata = Array();
 	var binpills = Array();
 	var x=0;
-	v_offset=25; // start 25px down
-	innerStr="";
+	var v_offset=25; // start 25px down
+	var innerStr="";
+
 	for (y=0;y<interim_maze.length;y++){
 		var lineMoves = Array();
 		h_offset=35; // start a new line 35px in
 		bindata[v_offset] = Array();
+
 		for (x=0;x<19;x++){
 		
 			bit = interim_maze[y][x]; // yeah its a byte not a bit, byte is a reserved word. Ahem..
@@ -92,37 +106,58 @@ function renderGrid(){
 			if (interim_maze[y][x+1] && interim_maze[y][x+1] != "0"){
 				 movestring += "R"; binbit += 1; } else { movestring += "X";}
 
-			if (interim_maze[y][x-1] =="3" && interim_maze[y][x+1]=="3"){ binbit = 8;} // stop ghosts L and R in home base
+			if (interim_maze[y][x-1] == "3" && interim_maze[y][x+1] == "3"){ binbit = 8;} // stop ghosts L and R in home base - means from the center position they will ALWAYS go up and out
 
 			movestring += bit; // this adds the pill
 			lineMoves.push(movestring); // ADD to an array of the whole line
 
-			// This section draws the inner wall of the outer double wall (where x and y are the perimiters).
+			// This section draws the inner wall of the outer double wall if where x and y are the perimiters
 			// The CSS for the mazecells is no longer used, but anticipating I may again in the future, I'm manually altering it here.
 			if (y==0 || x==0 || y==14 || x==18 ){
 
 				styles=movestring.substring(0,4); // we add the 4 move positions to a css class in order to draw the correct borders for the maze
 
+
+				// these replacements relate to the outer walls which do not render correctly with borders on opposite sides.
+				// this is not the correct way to fix this, would be better to alter the css, however this retains the css functionality as the css is currently used for another project I am playing with
+				// in time none of this code will be required and I will fix the css
 				if (y==0){ // upper edge 
 					if (x != 0 && x!=18){
 						 styles = styles.replace("XXL","XDL");	
 						 styles = styles.replace("XXX","XDL");	
 						 styles = styles.replace("XDX","XDL");	
 						 styles = styles.replace("XDLX","XDLR");	
+						 styles = styles.replace("XXXR","XDXR");	
+					} else if (x==0){
+						 styles = styles.replace("XXXR","XDXR");	
+					} else if (x==18){
+						 styles = styles.replace("XDXX","XDLX");	
 					}
 				}
 				if (y==14){ // lower edge
 					styles = styles.replace("XXXR","UXXR");
+					styles = styles.replace("XXLX","UXLX");
 					styles = styles.replace("XXLR","UXLR");
 				}
 				if (x==0){ // left edge
 					styles = styles.replace("DXX","DXR");
 					styles = styles.replace("XXLR","XDLR");
+					styles = styles.replace("XXXR","UDXR");
+					styles = styles.replace("UXXX","UXXR"); // added for level 6
+					if (y!=0&&y!=14){
+						styles = styles.replace("UXXR","UDXR"); // added for level 6
+						styles = styles.replace("XDXR","UDXR"); // added for level 6
+					}
 				}
 				if (x==18){ // right edge
-					styles = styles.replace("UDX","UDL");
-					styles = styles.replace("XDX","UDL");
-					styles = styles.replace("UXL","UDL");
+					styles = styles.replace("UDX","UDL"); // asasumes can go left (no left border)
+					styles = styles.replace("UXXX","UDLX"); // asasumes can go left (no left border)
+					if (y!=0&&y!=14){
+						styles = styles.replace("XDXX","XDLX"); // asasumes can go left (no left border)
+						styles = styles.replace("XDLX","UDLX"); // asasumes can go left (no left border)
+						styles = styles.replace("UXLX","UDLX"); // asasumes can go left (no left border)
+						styles = styles.replace("XXLX","XDLX"); // asasumes can go left (no left border)
+					}
 				}
 
 				styles = styles.replace("XXLR","");
@@ -138,12 +173,12 @@ function renderGrid(){
 				}
 			
 			} else {
-				styles="";
+				styles=""; // only required for the borders now
 			}
 
 			wallStyles = movestring.substring(0,4);
 
-			// 4 is the off side tunnel
+			// 4 is the tunnel at the side of the maze
 			if (bit==4){
 				if (x==0){
 					styles = styles.replace("XXXR","XXLR"); 
@@ -172,7 +207,7 @@ function renderGrid(){
 				cellInnerHTML="<div id='p" + v_offset + h_offset + "' ><img src='graphics/powerpil.gif' name='pil_" + h_offset + v_offset + "'></div>";
 				pillNumber++;
 
-			// 0 is a cell within a wall
+			// and 0 is a cell within a wall
 			} else {
 				cellInnerHTML="<div id='p" + v_offset + h_offset + "' ></div>";
 			}
@@ -180,10 +215,10 @@ function renderGrid(){
 			// add further css for creating the left and right walls on the next row down using css before and after selectors. This takes care of the double walls.
 			if (y<14){
 				if (movestring.charAt(3)=="R"){
-					styles +=" blockLowerRight";
+					//styles +=" blockLowerRight"; M1 - appears to no longer be used - from old maze gen code
 				}
 				if (movestring.charAt(2)=="L"){
-					styles += " blockLowerLeft";
+					//styles += " blockLowerLeft"; M1 - appears to no longer be used
 				}
 			}
 
@@ -213,12 +248,23 @@ function renderGrid(){
 }
 
 // Randomly generated mazes
-function Maze(w, h){ 
+function Maze(w, h){
+
         this.w = (isNaN(w) || w < 5 || w > 999 ? 20 : w); 
         this.h = (isNaN(h) || h < 5 || h > 999 ? 20 : h); 
+
         this.map = new Array();
-        for(var mh = 0; mh < h; ++mh) { this.map[mh] = new Array(); for(var mw = 0; mw < w; ++mw) { this.map[mh][mw] = {'n':0,'s':0,'e':0,'w':0,'v':0}; } } 
+	// mh and mw are map height and map width. Loop through these and set each array point to have no possible directions, set to not visited 
+        for(var mh = 0; mh < h; ++mh) { 
+		this.map[mh] = new Array();
+		for(var mw = 0; mw < w; ++mw) {
+			this.map[mh][mw] = {'n':0,'s':0,'e':0,'w':0,'v':0};
+		}
+	}
+	// store the directions in an array
         this.dirs = ['n', 's', 'e', 'w'];
+
+	// store the x/y shifts for each direction in an array. each direction has a change in either the x or y axis (not both) and an opposite o
         this.modDir = { 
                 'n' : { y : -1, x : 0, o : 's' },
                 's' : { y : 1, x : 0, o : 'n' },
@@ -229,76 +275,152 @@ function Maze(w, h){
         this.build(0, 0); 
 }
 
+// toGrid plots the map on a grid and allows for the walls which also take up space by multiplying each movement by 2. This effectively doubles the size of the existing grid.
+// The maze is called with 10*8 as the size, however we need 19*15.
+// This function builds walls as an outside, which returns  21*17. These walls are later removed.
 Maze.prototype.toGrid = function(){
+
         var grid = new Array();
-        for(var mh = 0; mh < (this.h * 2 + 1); ++mh) { 
+
+	// first populate the full size grid with zeros
+        for(var mh = 0; mh < (this.h * 2 + 1); ++mh){// original height of 8 becomes doubled to 16, and +1 = 17. 
                 grid[mh] = new Array(); 
                 for(var mw = 0; mw < (this.w * 2 + 1); ++mw) { 
                         grid[mh][mw] = 0; } 
                 }   
 
+	
         for(var y = 0; y < this.h; ++ y){ 
-                var py = (y * 2) + 1;
+                var py = (y * 2) + 1; // plot at old y * 2 and plus 1. Thus 0*2+1 plots at 1, 1*2+1 plots at 3, allowing us to fill in 2 with a wall.
 
                 for(var x = 0; x < this.w; ++x){
-                        var px = (x * 2) + 1;
+                        var px = (x * 2) + 1; // plot at old x * 2 and plus 1 as well
 
                         if(this.map[y][x].v==1) {
-                                grid[py][px] = 1;
+                                grid[py][px] = 1; // if it's been visited as part of the maze generation, we can write a 1. This puts a 1 in all cells from the original x,y and walls everywhere else which we tunnel through next
                         }   
 
+			// for each direction we went in the original exploration, we can also plot a 1 to tunnel through our wall
                         for(d in this.dirs){
                                 if(this.map[y][x][this.dirs[d]]==1) {
                                          grid[(py+this.modDir[this.dirs[d]].y)][(px+this.modDir[this.dirs[d]].x)] = 1;
-                                }   
-                        }   
+                                }
+                        }
                 }   
         }   
 
-        this.gridMap = grid;
+        this.gridMap 	= grid;
         this.gridW      = grid.length;
         this.gridH      = grid[0].length;
 };
 
 Maze.prototype.build = function(x, y){ 
+
+	// does not need params, just set x and y to 0 to start. Can experiment with this later.
         var x = 0;
         var y = 0;
 
-        this.explore(x, y); 
-        this.toGrid();
+        this.explore(x, y); // function called recusrively  - this is the recursive backtracker 
+        this.toGrid(); // plots the maze onto a grid allowing for the walls
 };
 
+// globs
+lastDir="";
+moveCount=0;
+
+// Explore function, called recusrively with the current starting point x,y
 Maze.prototype.explore = function(ex, ey){
-        this.dirs = sortRand(this.dirs);
+	console.warn("exploring from",ex,ey);
 
-        for(d in this.dirs){
-                var nx = ex + this.modDir[this.dirs[d]].x;
-                var ny = ey + this.modDir[this.dirs[d]].y;
+	var localDirs = this.dirs; //nsew
+	if (ex==0&&ey==0){
+	       localDirs = ['s', 'w'];
+	}
+	if (ex==0&&ey!=0){
+		localDirs=['n','s','w'];
+	}
+	if (ey==0&&ex!=0){
+		localDirs=['e','s','w'];
+	}
+	if (ey==7&&ex==9){
+		localDirs=['e','n'];
+	}
+	if (ey==7&&ex!=9&&ex!=0){
+		localDirs=['e','n','w'];
+	}
+	if (ey!=0&&ey!=7&&ex==9){
+		localDirs=['e','n','s'];
+	}
+	if (ey==7&&ex==0){
+		localDirs=['w','n',];
+	}
+	if (ex==9&&ey==0){
+		localDirs=['s','e',];
+	}
+	
+        localDirs = shuffleArray(localDirs); // get all four directions in random order
+	console.warn(localDirs);
+	
+	//if (moveCount && lastDir &&  (lastDir == 'w' )){ // push towards horizontals
+	//if (moveCount && lastDir &&  (lastDir == 's' )){ // push towards verticals
+	if (moveCount && lastDir && moveCount%2==1 && (lastDir == 's' || lastDir == 'w' )){ // push towards longer going s and w. Very interesting if set localDirs0,1,2 and 3 to lastDir! 
+		console.log("Last was"+lastDir);
+		localDirs[0]=lastDir;
+		localDirs[1]=lastDir;
+		localDirs[2]=lastDir;
+		localDirs[3]=lastDir;
+	}
 
-                if(nx >= 0 && nx < this.w && ny >= 0 && ny < this.h && this.map[ny][nx].v==0){
-                        this.map[ey][ex][this.dirs[d]] = 1;
-                        this.map[ey][ex].v = 1;
-                        this.map[ny][nx][this.modDir[this.dirs[d]].o] = 1;
+	//IF WE DONT WANT TO ALLOW DEAD ENDS DO A BREADTH FIRST SEARCH FROM THE CORNERS
+	
 
-                        this.explore(nx, ny);
-                }
+        for(d in localDirs){ //each direction is tested in the random order. Note that the recusrion from within this loop  may mean that this loop is not completed until substantial portions of the maze are already mapped out bvy further calls to the explore function
+		if(!localDirs[d]){
+			console.error("UNDEF ERROR for ",d," at ",ex,",",ey,localDirs);
+			alert("ooops");
+			return;
+		}
+		console.warn("From ",ex,ey,": Testing ",d," of ",localDirs,"  gives ",localDirs[d]);
+
+                var nx = ex + this.modDir[localDirs[d]].x; // new X is current explored X + the X change for the direction. Eg. North from  a point will show  no change in x, east will show a  +1
+                var ny = ey + this.modDir[localDirs[d]].y;  //same operation on Y
+
+			console.log(this.map);
+
+                if(this.map[ny] && this.map[ny][nx] && this.map[ny][nx].v==0){ // if there is a change, and it does not take us off the grid and the point has not been visited
+                        this.map[ey][ex][localDirs[d]] = 1; // add the direction change to the directions object of the cell
+                        this.map[ey][ex].v = 1; //  set to visited
+                        this.map[ny][nx][this.modDir[localDirs[d]].o] = 1; // set the opposite direction to 1 as well
+			console.log(localDirs[d],"x:"+nx,"y:"+ny,this.modDir[localDirs[d]].x,this.modDir[localDirs[d]].y," - Yes - adding cell");
+			lastDir=localDirs[d];
+			moveCount++;
+                        this.explore(nx, ny); // and repeat, recursively calling this function from the new x and y  co-ordinates
+                } else {
+			console.error(localDirs[d],"x:"+nx,"y:"+ny,this.modDir[localDirs[d]].x,this.modDir[localDirs[d]].y," - No - returning to last");
+		}
         }
 };
 
+// shuffle an array randomly
+function shuffleArray(arrayIn){
 
-function sortRand(a){
-        var out = new Array();
-        var l   = a.length;
+        var arrayOut = new Array();
+        var len      = arrayIn.length;
 
-        for(x in a){
-                do { var p = Math.floor(Math.random() * (l * 1000)) % l; } while(typeof out[p]!='undefined');
+        for(el in arrayIn){
+                do { 
+			var ind = Math.floor(Math.random() * (len * 1000)) % len; 
+		} while (
+			typeof arrayOut[ind]!='undefined'
+		);
 
-                out[p] = a[x];
+                arrayOut[ind] = arrayIn[el];
         }
 
-        return out;
+        return arrayOut;
 }
 
+// Create a random maze using the maze object
 function randomMaze(){
 
         mazeMap = new Maze(10,8);
@@ -310,13 +432,19 @@ function randomMaze(){
         for (i=0;i<mazeMap.gridMap.length;i++){
                 mazeMap.gridMap[i].pop();
                 mazeMap.gridMap[i].shift();
-
         }
 
         //document.getElementById("sourcear").innerHTML=mazeMap.gridMap.toString();
 	addPowerPills();
-	removeDeadBlocks();
+	removeDiagonalBlocks();
         addGhostHome();
+	//remove dead ends at corners
+	if (removeDeadEndsAtCorners){
+		mazeMap.gridMap[1][0]=1;
+		mazeMap.gridMap[0][1]=1;
+		mazeMap.gridMap[14][17]=1;
+		mazeMap.gridMap[13][18]=1;
+	}
         return mazeMap.gridMap;
 
 }
@@ -325,6 +453,40 @@ function addGhostHome(){
 
 	var ghost_home_y = Array(2,4,8,10); // possible start positions for ghost home. Need to adjust where fruit appear (underneath), where the ghosts start and where pacman starts for anything other than 4
 	var y=4;
+	if (sessionStorage.level==2){
+		y=8;
+	}
+	if (sessionStorage.level==3){
+		y=2;
+	}
+	if (sessionStorage.level==4){
+		y=6;
+	}
+
+	if (y==2){
+		levelOptions.ghostStartTop=145;
+		ghostStartTop=145;
+		levelOptions.pacStartTop=205;
+		pacStartTop=205;
+	}
+	if (y==4){
+		levelOptions.ghostStartTop=205;
+		ghostStartTop=205;
+		levelOptions.pacStartTop=265;
+		pacStartTop=265;
+	}
+	if (y==6){
+		levelOptions.ghostStartTop=265;
+		ghostStartTop=265;
+		levelOptions.pacStartTop=325;
+		pacStartTop=325;
+	}
+	if (y==8){
+		levelOptions.ghostStartTop=325;
+		ghostStartTop=325;
+		levelOptions.pacStartTop=385;
+		pacStartTop=385;
+	}
 
 	mazeMap.gridMap[y][7]=1;
 	mazeMap.gridMap[y][6]=1;
@@ -379,7 +541,7 @@ function addPowerPills(){
 
 }
 
-function removeDeadBlocks(){
+function removeDiagonalBlocks(){
 // anywhere there is 0 in the map bounded by 0 on a diagonal corner - change the diagonal corner to a 1 
 // we need to scan  all diagonals so start second row down and finish one row up.
 
@@ -422,34 +584,10 @@ interim= mazeMap.gridMap;
 			}
 		}
 	}
-mazeMap.gridMap=interim;
+	mazeMap.gridMap=interim;
 }
 
-function removeDeadBlocksInTest(){
-	// anywhere there is 0 in the map bounded by 0 on a diagonal corner - change the diagonal corner to a 1 
-	// we need to scan  all diagonals so start second row down and finish one row up.
-
-	// example data:
-	// here second row down second value in is a 0. See diagonal top right is also 0 - this 0 should become a 1
-	//
-	//
-	//	2,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,2,
-	//	1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1,
-	//	1,1,1,1,1,0,1,1,1,1,0,1,1,0,1,1,1,1,0,
-	//	0,0,0,0,1,0,1,0,0,0,1,0,1,0,0,0,1,0,0,
-	//	0,0,1,1,1,0,1,1,1,1,1,1,1,1,1,0,1,1,1,
-	//	1,0,1,0,0,0,0,0,0,5,0,0,1,0,1,0,0,0,1,
-	//	1,0,1,1,1,1,1,0,3,3,3,0,1,0,1,1,1,1,1,
-	//	1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,
-	//	1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,
-	//	1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
-	//	1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,0,0,
-	//	1,0,1,0,0,0,1,0,1,0,1,0,1,0,0,0,1,0,0,
-	//	1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,0,0,
-	//	1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,
-	//	2,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,0,2
-	//
-	//
+function removeDiagonalBlocksInTest(){
 
 	interim= convert(testmaze);
 

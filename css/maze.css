@@ -18,12 +18,12 @@
 		border-bottom:2px #0033ff solid;
 	}
 
-	.XXXR {
+	.XXXR {  /*  Represents a dead end where can only go right  - border-bottom should not actually be required and filled in by the wall css*/
 		border-left:2px #0033ff solid;
 		border-top:2px #0033ff solid;
 		border-bottom:2px #0033ff solid;
 	}
-	.XXLX {
+	.XXLX { /*  Represents a dead end movement cell where can only go left - border-bottom is currently generating an error (2px lower than should be)*/
 		border-right:2px #0033ff solid;
 		border-top:2px #0033ff solid;
 		border-bottom:2px #0033ff solid;

@@ -487,7 +487,7 @@ function randomDir(x,n){
 function headFor(who,where){
 	currentCell = mazedata[parseInt([topG[who]])][parseInt(leftG[who])]
 	if (!currentCell){
-		console.log("early return:",ghostDir[who]);
+		//console.log("early return:",ghostDir[who]);
 		return ghostDir[who]; // Doesnt look like i need to do this...
 	}
 
@@ -558,7 +558,7 @@ function headFor(who,where){
 		}
 	}
 
-	console.log("Sending " + who + " to " + dir + " from data: " + currentCell + "      at top:" , topG[who], " left:", leftG[who], "Legal: ", currentCell & dir);
+	//console.log("Sending " + who + " to " + dir + " from data: " + currentCell + "      at top:" , topG[who], " left:", leftG[who], "Legal: ", currentCell & dir);
 	var legal = currentCell & dir;
 
 	if (!legal){
@@ -877,6 +877,9 @@ var startNewLevel = function (){
 		if (levelOptions.pacStartTop){
 			pacStartTop=levelOptions.pacStartTop;
 		}
+		if (levelOptions.ghostStartTop)(
+			ghostStartTop=levelOptions.ghostStartTop;
+		}
 	}
 	onPause=1;
 	timeform.value=gameTime
@@ -1158,6 +1161,10 @@ var class_ghost = function(name,number){
 	this.direction 	= 8; //  one of the ghosts starts in a position with no moves,it needs to move up to get an 'official' position otherwise it never starts
 	this.speed 	= sessionStorage.speed;
 
+	// Below not yet working. Move graphic??
+	if (levelOptions.ghostStartTop)(
+		this.posTop=levelOptions.ghostStartTop;
+	}
 	this.possibleMoves = "";
 
 	ghostReleaseTime = timeform.value;
@@ -1245,7 +1252,7 @@ var class_ghost = function(name,number){
 			else { this.direction = this.headFor(who,ghostHomeBase); }
 		}
 
-		console.log("Returning direction in mode:",mode,this.mode,this.direction);
+		//console.log("Returning direction in mode:",mode,this.mode,this.direction);
 		return this.direction;
 
 	}
@@ -1255,7 +1262,7 @@ var class_ghost = function(name,number){
 
 		currentCell = mazedata[parseInt(this.posTop)][parseInt(this.posLeft)];
 		if (!currentCell){
-			console.log("early return as no cell at:",this.posTop,this.posLeft,this.direction);
+			//console.log("early return as no cell at:",this.posTop,this.posLeft,this.direction);
 			return this.direction; // Doesnt look like i need to do this...
 		}
 
@@ -1326,7 +1333,7 @@ var class_ghost = function(name,number){
 			}
 		}
 
-		console.log("Sending " + who + " on dir " + dir + " from current cell data: " + currentCell + " at top:" , this.posTop, " left:", this.posLeft, "Legal: ", currentCell & dir);
+		//console.log("Sending " + who + " on dir " + dir + " from current cell data: " + currentCell + " at top:" , this.posTop, " left:", this.posLeft, "Legal: ", currentCell & dir);
 		var legal = currentCell & dir;
 
 		if (!legal){
@@ -1339,7 +1346,7 @@ var class_ghost = function(name,number){
 	this.move = function(wg){
 
 
-		console.log("position for " + wg + ":",this.posTop,this.posLeft);
+		//console.log("position for " + wg + ":",this.posTop,this.posLeft);
 		// 1. Load the possible moves from the mazedata array into the possG array. 
 		//   All the data for all the ghosts is used later (collision detection) hence the array. 
 		if (mazedata[parseInt(this.posTop)] && mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]) { // queried as part of moveInc
@@ -1348,7 +1355,7 @@ var class_ghost = function(name,number){
 			this.possibleMoves = ""; // set as part of moveInc
 		}
 
-		console.log("possible moves for " + wg + ":",this.possibleMoves);
+		//console.log("possible moves for " + wg + ":",this.possibleMoves);
 		// 2. Check possibile moves. The ghostData array contains info on which moves are possible. 
 		//    If more than 2 directions are present, or only 1 (ie backwards, so dead end) - a new direction must be generated...
 		totalDirections=qtyBits(this.possibleMoves);
