@@ -25,6 +25,7 @@ function convert(maze){
 	var interim_maze = Array();
 	x=0;
 	y=0;
+
 	//console.log(maze);
 	for (i=0;i<maze.length;i++){
 		character = maze.charAt(i);
@@ -81,6 +82,7 @@ function renderGrid(){
 	var x=0;
 	var v_offset=25; // start 25px down
 	var innerStr="";
+	pillNumber=0; // global
 
 	for (y=0;y<interim_maze.length;y++){
 		var lineMoves = Array();
@@ -492,6 +494,8 @@ function randomMaze(){
 
 
 	}
+
+	//  swap out 1,0,1,0,1 for 1,0,0,0,1
 
         return mazeMap.gridMap;
 

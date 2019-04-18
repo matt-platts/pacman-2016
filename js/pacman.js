@@ -714,7 +714,10 @@ function keyLogic(keyIn){
 	else if (keyIn=="77" || keyIn=="109" || keyIn == "39") {key=1} // right
 
 	// game reset key (r)
-	else if (keyIn=="82" || keyIn=="114"){ top.location.reload();} // r = reset
+	else if (keyIn=="82" || keyIn=="114"){ reset_game();}
+
+	// quit (q)
+	else if (keyIn=="81" || keyIn=="113"){ top.location.reload();}
 	
 	// game pause key (p)
 	else if (keyIn=="80" || keyIn=="112"){
@@ -877,7 +880,7 @@ var startNewLevel = function (){
 		if (levelOptions.pacStartTop){
 			pacStartTop=levelOptions.pacStartTop;
 		}
-		if (levelOptions.ghostStartTop)(
+		if (levelOptions.ghostStartTop){
 			ghostStartTop=levelOptions.ghostStartTop;
 		}
 	}
@@ -1162,7 +1165,7 @@ var class_ghost = function(name,number){
 	this.speed 	= sessionStorage.speed;
 
 	// Below not yet working. Move graphic??
-	if (levelOptions.ghostStartTop)(
+	if (levelOptions.ghostStartTop){
 		this.posTop=levelOptions.ghostStartTop;
 	}
 	this.possibleMoves = "";
@@ -1605,4 +1608,18 @@ function wallColour(col){
 		    wallCells[i].style.borderColor = col;
 		}
 		document.getElementById("mazeinner").style.borderColor=col;
+}
+
+function reset_game(){
+
+	if (sessionStorage.mazeSource=="random"){
+		mazedata=renderGrid();
+		document.forms[0].elements.score.value = sessionStorage.score;
+		score = parseInt(sessionStorage.score);
+		pilcount=0; // move to reset func
+		reset();
+		startNewLevel();
+	} else {
+		location="intropage.html";
+	}
 }

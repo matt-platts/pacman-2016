@@ -1,18 +1,66 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Pacman</title>
+
+	<title>Javascript Pacman - Javascript implementation of the 80s arcade classic pacman. Play directly in the web browser. By Matt Platts</title>
+
+	<meta name="description" content="Javascript Pacman - Javascript implementation of the 80s arcade classic pacman. Play directly in the web browser. By Matt Platts"></meta>
+	<meta name="keywords" content="Javascript pacman implementation arcade game games recursive backtracker maze ">
+
+
+	<style type="text/css">
+
+		body {
+			margin:0px auto;
+			text-align:center;
+			background-color:#000;
+			color:gray;
+		}
+
+		a {color:gray; font-family:verdana, arial,helvetica; font-size:0.8em; }
+		a:visited {color:gray;}
+		a:hover {color:white;}
+	
+
+		footer {
+			margin:0px auto;
+			width:90%;
+			margin-top:60px;
+			border-top:1px  gray solid;
+		}
+		
+	</style>
 </head>
-<body style="background-color:#000; margin:0px auto; text-align:center;">
-<img src="graphics/paclogo1.jpg">
-<br />
-<p style="font-family:system, terminal, courier, 'Courier New', monospaced; color:white; margin-top:0px; padding-top:0px; position:relative; top:-10px; margin:0px auto;" >Version 2.0</p>
-<iframe name="innerFrame" id="innerFrame" src="intropage.html" style="margin:0px auto; width:640px; height:580px; overflow:hidden; border=0; outline=0; frameBorder=0;" frameBorder="0"></iframe>
+<body>
+	<img src="graphics/paclogo1.jpg" alt="Javascript Pacman logo">
+	<br />
+	<p style="font-family:system, terminal, courier, 'Courier New', monospaced; color:white; margin-top:0px; padding-top:0px; position:relative; top:-10px; margin:0px auto;" >Version 2.0</p>
+	<iframe name="innerFrame" id="innerFrame" src="intropage.html" style="margin:0px auto; width:640px; height:580px; overflow:hidden; border=0; outline=0; frameBorder=0;" frameBorder="0"></iframe>
+
+
+	<p style='color:gray'> Javascript Pacman - A pure javascript implementation of the 80s arcade classic pacman. Play directly in the web browser. By <a href="/" style='color:gray'>Matt Platts</a>.</p>
+
+	<div id="notes" style="max-width:50%; text-align:left; margin:0px auto; margin-top:100px">
+		<ul>
+		<li>Scatter, chase and random movements for ghosts - similar to the original game</li>
+		<li>Play 10 pre-designed levels, or random maze generation</li>
+		<li>No plugins or javascript libraries - pure javascript code implementation</li>
+		<li>Originally written in 1999 for IE and Netscape, based on code from an early Oric-1 game from 1985</li>
+		<li>Updated in 2016 to generate maze graphics and movements from a simple binary grid and  use modenr css styling.</li>
+		<li> Random mazes added 2019</li>
+	</div>
+
+
+	<footer>
+	<p style='color:#f1f1f1'><a href="/site/pacman.html">Some notes I once scribbled down about this</a> | <a href="mailto:mattplatts@gmail.com">Contact</a> | <a href="/">Home</a></p>
+	</footer>
+
 <script>
-document.getElementById("innerFrame").contentWindow.focus();
-window.onclick = function() {
-document.getElementById("innerFrame").contentWindow.focus();
-}
+	document.getElementById("innerFrame").contentWindow.focus();
+	window.onclick = function() {
+		document.getElementById("innerFrame").contentWindow.focus();
+	}
 </script>
+
 </body>
 </html>
