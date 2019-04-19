@@ -1164,6 +1164,10 @@ var class_ghost = function(name,number){
 	this.direction 	= 8; //  one of the ghosts starts in a position with no moves,it needs to move up to get an 'official' position otherwise it never starts
 	this.speed 	= sessionStorage.speed;
 
+	this.homing_stack= []//{'x':undefined,'y':undefined}; // create stack of direction changes when ghost is homing
+	this.homing_loop=0;
+
+
 	// Below not yet working. Move graphic??
 	if (levelOptions.ghostStartTop){
 		this.posTop=levelOptions.ghostStartTop;
@@ -1220,7 +1224,12 @@ var class_ghost = function(name,number){
 
 		} else if (this.mode=="homing"){
 
+			currentCell = mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]	
 			this.direction = this.headFor(who,ghostHomeBase);
+			stackData={'x':parseInt(this.posLeft),'y':parseInt(this.posTop),'d':this.direction};
+			this.homing_stack.push(stackData);
+			
+		
 
 		} else if (this.mode=="random") { // random
 
@@ -1271,17 +1280,19 @@ var class_ghost = function(name,number){
 
 		var dir=null;
 
-		if (this.posLeft > where[0] && (currentCell & 2) && !(this.direction & 1) && this.direction != null){
+		// simple rules first where the opposite direction to where you want to go does not exist
+		// note that if there is an U/D it will always superseed a L/R direciton!! This was originally written as when ghoss head for home the last move they need to make is down so /L/R cannot take precedence!
+		if (this.posLeft > where[0] && (currentCell & 2) && !(this.direction & 1) && this.direction != null){ // if you should go left and can go left and can't go right
 			dir = 2;
-		} else if (this.posLeft <= where[0] && (currentCell & 1) && !(this.direction & 2) && this.direction != null){
-			dir= 1;
+		} else if (this.posLeft <= where[0] && (currentCell & 1) && !(this.direction & 2) && this.direction != null){  // if you should go right and can go right and can't go left
+			dir= 1; 
 		}
 
-		if (this.posTop > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){
+		if (this.posTop > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){ // if you should go up and can go up and can't go down
 			dir=8;
-		} else if (this.posTop <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){
-			if (this.posTop==145 && this.posLeft==305 && !this.onPath){
-				// cant go back to ghost house - just send them right, whatever..
+		} else if (this.posTop <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){ // if you should go down and can go down and can't go up
+			if (this.posTop==145 && this.posLeft==305 && !this.onPath){ // This code and comment looks questionable: 
+			// cant go back to ghost house - just send them right, whatever..
 				dir=1;
 			} else {
 				dir=4;
@@ -1294,15 +1305,17 @@ var class_ghost = function(name,number){
 
 		//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],dir);
 
-		// not got a direction? Means we can't head there directly, so lets make a decision 
+		// ok, the more complex code now:
+		// not got a direction yet? Means we can't head there directly as this direction isn't possible, so lets make a decision:
 		// if there are only two possibilities, try and force a 90 degree angle turn, otherwise just go through some defaults.
 		// logic is: if its going R or L, force in this order: U,D,L,R 
 		// 	     if its going U or D, force in this order: L,R,U,D
 		if (!dir) {
 			
-			qty_options = qtyBits(currentCell);
-			if (qty_options==2){
-				if (this.direction==1 || this.direction==2){
+			qty_options = qtyBits(currentCell); //look up tells us how many directions there are here (how many bits are set)
+
+			if (qty_options==2){ // there are 2 directions
+				if (this.direction==1 || this.direction==2){// if currently going left or right
 					if (currentCell & 8){ 
 						dir= 8;
 					 } else if (currentCell & 4){
@@ -1311,7 +1324,7 @@ var class_ghost = function(name,number){
 						dir= 2;
 					} else {
 						dir= 1;
-						alert("This wont even happen");
+						alert("This wont even happen because the code is called at a junction so the last option can never be used!");
 					}
 				} else  if (this.direction==4 || this.direction==8){
 					if (currentCell & 2) {
@@ -1331,8 +1344,28 @@ var class_ghost = function(name,number){
 
 					
 			} else if ( qty_options==3 || qty_options ==4){
-				// just keep going. This really helps when heading somewhere. I may come back to this for some more complex mazes in the future
+				// just keep going. This, it turns out, really helps when heading somewhere. I may come back to this for some more complex mazes in the future
 				dir = this.direction;
+			}
+		}
+
+		// Final question - are we homing and have we been here before?  If so we are stuck in a loop so need to choose a different directions this time!
+		// Loopbreaker
+		if (this.mode=="homing" && this.homing_stack.length>1){
+			for (pastMove in this.homing_stack){
+				if (this.posLeft==this.homing_stack[pastMove]['x'] && this.posTop==this.homing_stack[pastMove]['y'] && dir == this.homing_stack[pastMove]['d']){
+					this.homing_loop=1;
+					console.error("Stuck in a loop!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					console.log(this.homing_stack);
+					console.log(this.name);
+					console.log(dir)
+					if (dir==8||dir==4){
+						if (currentCell & 1){ dir=1; } else if (currentCell & 2) { dir=2;}
+					}
+					if (dir==1 || dir==2){
+						if (currentCell & 8){ dir=8; } else if (currentCell & 4) { dir=4;}
+					}
+				}
 			}
 		}
 
@@ -1390,6 +1423,7 @@ var class_ghost = function(name,number){
 				ghostSrc[wg].src=ghostImgs[wg].src;
 				ghostDir[wg] = 8;
 				sprites_ghosts[wg].direction = 8;
+				sprites_ghosts[wg].homing_stack=[]; //reset the stack for directions taken to get home
 			}
 		}
 
