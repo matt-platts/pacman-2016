@@ -1610,6 +1610,9 @@ function wallColour(col){
 		document.getElementById("mazeinner").style.borderColor=col;
 }
 
+/* Function reset_game
+ * Meta: called to regenerate a random maaze from the R key
+ */
 function reset_game(){
 
 	if (sessionStorage.mazeSource=="random"){
