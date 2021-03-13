@@ -63,7 +63,7 @@ var sprites_ghosts;
 // initial settings. these should be increased at around 10000 points?
 var powerPillLifetime=400; // how many iterations the powerpill lasts for - hard is 120. 200 for moveInc 5, 400 for moveInc 2
 var ghostBlinkLifetime=65; // how long the ghosts blink for within the power pill. Hard is 15.
-var fruitLifetime=295; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2)
+var fruitLifetime=345; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2, then 395 in 2021 as its too hard)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
 var scatterTime = 600; // how long ghosts remain in scatter mode before switching to chase mode
@@ -82,6 +82,9 @@ var score = parseInt(sessionStorage.score)
 var exlife1 = sessionStorage.exlife1;
 var exlife2 = sessionStorage.exlife2;
 var exlife3 = sessionStorage.exlife3;
+var exlife4 = sessionStorage.exlife4;
+var exlife5 = sessionStorage.exlife5;
+var exlife6 = sessionStorage.exlife6;
 var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
@@ -1028,6 +1031,18 @@ var class_pacman = function(startLeft,startTop){
 			}
 			if (score>=20000 && score <21000 && exlife3) {
 				exlife3=0; sessionStorage.exlife3 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
+			if (score>=30000 && score <31000 && exlife4) {
+				exlife4=0; sessionStorage.exlife4 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
+			if (score>=40000 && score <41000 && exlife5) {
+				exlife5=0; sessionStorage.exlife5 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
+			if (score>=50000 && score <51000 && exlife6) {
+				exlife6=0; sessionStorage.exlife6 = 0;
 				lives++; sessionStorage.lives = lives; lifeform.value = lives;
 			}
 

@@ -7,6 +7,9 @@ globals.moveInc = 2; // no of pixels to move each loop. Needs to tie in with the
 globals.exlife1 = 1,
 globals.exlife2 = 1,
 globals.exlife3 = 1,
+globals.exlife4 = 1,
+globals.exlife5 = 1,
+globals.exlife6 = 1,
 globals.gameTime = 10000; // previously 2000 but as we've sped up the movenent *2 it's been doubled
 globals.mazeSource = "designed"; // designed or random
 
