@@ -19,11 +19,11 @@
  * init() - further declaring of variables, these are dependent on the level being rendered which differs them from the above, hence they are in a function. Largely cross browser vars. 
 
  * Section 2 - Game loop functions - there are two loops continually running on timeouts - the reason for two being they must be able to run at different speeds to each other.
- * 	       NB: Most functionality is in ghosts() - this is the standard loop that runs at a consistent speed throughout the game, including dealing with the timings of switching
+ * 	       NB: Most functionality is in gameLoop() - this is the standard loop that runs at a consistent speed throughout the game, including dealing with the timings of switching
  * 	       modes, collision detection and stopping/starting the game after pacman is eaten, as well as switching ghost directions (which is itself related to the game modes) 
- * ghosts()
+ * gameLoop()
 
- * Section 3 - Functions required by the game loops above. All of these relate to ghosts() bar showFruit which relates to move()
+ * Section 3 - Functions required by the game loops above. All of these relate to gameLoop() bar showFruit which relates to move()
  * 
  * gameModes() - shifts the mode of the ghosts at various points (between scatter, chase, random etc)
  * generateGhostDir() - generates the next direction for a ghost who is at a junction or a dead end
@@ -110,7 +110,7 @@ var extras = sessionStorage.extras; // experimental extra features
 
 // Define timers
 var pacTimer; // for the move() loop
-var ghostsTimer; // for the ghosts() loop
+var ghostsTimer; // for the gameLoop() loop
 
 // define vars for flashing the maze as part of the game end routine 
 var mazecount=0;
@@ -258,7 +258,7 @@ function startGame(sprites){
 
 /* 
  * SECTION 2 - Originally the two main loop functions - ghosts (for running the ghosts) and move (for dealing with all the keypresses etc and moving pacman)
- * 	     - now only contains the ghosts() function - which should arguably be renamed now.
+ * 	     - now only contains the gameLoop() function - which should arguably be renamed now.
 */
 
 /* 
@@ -267,7 +267,7 @@ function startGame(sprites){
  *       Collision detection is also a part of this loop and not a part of the 'move' loop..
  * 
 */
-function ghosts(){
+function gameLoop(){
 
 	gameModes(); // these adjust on a timer
 
@@ -381,7 +381,7 @@ function ghosts(){
 	}
 
 	// And finally, call the function again if the game isn't paused
-	if (!onPause){ ghostsTimer = setTimeout("ghosts()",ghostspeed);}
+	if (!onPause){ ghostsTimer = setTimeout("gameLoop()",ghostspeed);}
 }
 
 
@@ -679,7 +679,7 @@ function kd(e){
 		if (document.getElementById){ key = e.keyCode}
 		if (key == "80" || key == "112"){
 			onPause=0;
-			sprite_pacman.move(); ghosts();
+			sprite_pacman.move(); gameLoop();
 		}
 
 	} else {
@@ -971,8 +971,8 @@ function start(sprites){
 	onPause=0;
 	document.getElementById("levelIndicator").innerHTML = "Level " + sessionStorage.level;
 	divStart.visibility="visible";
-	//gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); ghosts();',messageLifetime) 
-	gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); ghosts();',messageLifetime) 
+	//gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); gameLoop();',messageLifetime) 
+	gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); gameLoop();',messageLifetime) 
 }
 
 /* Section 6 : Classes and Objects */
@@ -1508,7 +1508,7 @@ var class_ghost = function(name,number){
 					document.getElementById("pacman").classList.add("spin");
 				}
 				onPause=1;
-				setTimeout('divMessage.visibility=\'hidden\'; onPause=0;   document.getElementById("pacman").classList.remove("spin"); for (i=0;i<total_ghosts;i++){ document.getElementById("ghost" + i).classList.remove("spin"); } pacTimer = setTimeout(sprite_pacman.move(),movespeed); ghostsTimer = setTimeout("ghosts()",ghostspeed)',messageLifetime);
+				setTimeout('divMessage.visibility=\'hidden\'; onPause=0;   document.getElementById("pacman").classList.remove("spin"); for (i=0;i<total_ghosts;i++){ document.getElementById("ghost" + i).classList.remove("spin"); } pacTimer = setTimeout(sprite_pacman.move(),movespeed); ghostsTimer = setTimeout("gameLoop()",ghostspeed)',messageLifetime);
 				
 					
 				 if (lives==0) {
