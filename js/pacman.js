@@ -63,7 +63,7 @@ var sprites_ghosts;
 // initial settings. these should be increased at around 10000 points?
 var powerPillLifetime=400; // how many iterations the powerpill lasts for - hard is 120. 200 for moveInc 5, 400 for moveInc 2
 var ghostBlinkLifetime=65; // how long the ghosts blink for within the power pill. Hard is 15.
-var fruitLifetime=295; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2)
+var fruitLifetime=345; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2, then 395 in 2021 as its too hard)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
 var scatterTime = 600; // how long ghosts remain in scatter mode before switching to chase mode
@@ -82,6 +82,9 @@ var score = parseInt(sessionStorage.score)
 var exlife1 = sessionStorage.exlife1;
 var exlife2 = sessionStorage.exlife2;
 var exlife3 = sessionStorage.exlife3;
+var exlife4 = sessionStorage.exlife4;
+var exlife5 = sessionStorage.exlife5;
+var exlife6 = sessionStorage.exlife6;
 var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
@@ -487,7 +490,7 @@ function randomDir(x,n){
 function headFor(who,where){
 	currentCell = mazedata[parseInt([topG[who]])][parseInt(leftG[who])]
 	if (!currentCell){
-		console.log("early return:",ghostDir[who]);
+		//console.log("early return:",ghostDir[who]);
 		return ghostDir[who]; // Doesnt look like i need to do this...
 	}
 
@@ -558,7 +561,7 @@ function headFor(who,where){
 		}
 	}
 
-	console.log("Sending " + who + " to " + dir + " from data: " + currentCell + "      at top:" , topG[who], " left:", leftG[who], "Legal: ", currentCell & dir);
+	//console.log("Sending " + who + " to " + dir + " from data: " + currentCell + "      at top:" , topG[who], " left:", leftG[who], "Legal: ", currentCell & dir);
 	var legal = currentCell & dir;
 
 	if (!legal){
@@ -714,8 +717,11 @@ function keyLogic(keyIn){
 	else if (keyIn=="77" || keyIn=="109" || keyIn == "39") {key=1} // right
 
 	// game reset key (r)
-	else if (keyIn=="82" || keyIn=="114"){ top.location.reload();} // r = reset
-	
+	else if (keyIn=="82" || keyIn=="114"){ reset_game();}
+
+	// quit (q)
+	else if (keyIn=="81" || keyIn=="113"){ top.location.reload();}
+
 	// game pause key (p)
 	else if (keyIn=="80" || keyIn=="112"){
 			onPause=1; 
@@ -877,6 +883,9 @@ var startNewLevel = function (){
 		if (levelOptions.pacStartTop){
 			pacStartTop=levelOptions.pacStartTop;
 		}
+		if (levelOptions.ghostStartTop){
+			ghostStartTop=levelOptions.ghostStartTop;
+		}
 	}
 	onPause=1;
 	timeform.value=gameTime
@@ -1024,6 +1033,18 @@ var class_pacman = function(startLeft,startTop){
 				exlife3=0; sessionStorage.exlife3 = 0;
 				lives++; sessionStorage.lives = lives; lifeform.value = lives;
 			}
+			if (score>=30000 && score <31000 && exlife4) {
+				exlife4=0; sessionStorage.exlife4 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
+			if (score>=40000 && score <41000 && exlife5) {
+				exlife5=0; sessionStorage.exlife5 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
+			if (score>=50000 && score <51000 && exlife6) {
+				exlife6=0; sessionStorage.exlife6 = 0;
+				lives++; sessionStorage.lives = lives; lifeform.value = lives;
+			}
 
 			// show a piece of fruit at certain times - based on incrementing score with a length in a decrementing var called fruitTimer
 			if (score >= nextfruitscore && score <=nextfruitscore+300 && fruitArray[thisfruit]) {showFruit()}
@@ -1158,6 +1179,14 @@ var class_ghost = function(name,number){
 	this.direction 	= 8; //  one of the ghosts starts in a position with no moves,it needs to move up to get an 'official' position otherwise it never starts
 	this.speed 	= sessionStorage.speed;
 
+	this.homing_stack= []//{'x':undefined,'y':undefined}; // create stack of direction changes when ghost is homing
+	this.homing_loop=0;
+
+
+	// Below not yet working. Move graphic??
+	if (levelOptions.ghostStartTop){
+		this.posTop=levelOptions.ghostStartTop;
+	}
 	this.possibleMoves = "";
 
 	ghostReleaseTime = timeform.value;
@@ -1210,7 +1239,12 @@ var class_ghost = function(name,number){
 
 		} else if (this.mode=="homing"){
 
+			currentCell = mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]	
 			this.direction = this.headFor(who,ghostHomeBase);
+			stackData={'x':parseInt(this.posLeft),'y':parseInt(this.posTop),'d':this.direction};
+			this.homing_stack.push(stackData);
+
+
 
 		} else if (this.mode=="random") { // random
 
@@ -1245,7 +1279,7 @@ var class_ghost = function(name,number){
 			else { this.direction = this.headFor(who,ghostHomeBase); }
 		}
 
-		console.log("Returning direction in mode:",mode,this.mode,this.direction);
+		//console.log("Returning direction in mode:",mode,this.mode,this.direction);
 		return this.direction;
 
 	}
@@ -1255,22 +1289,24 @@ var class_ghost = function(name,number){
 
 		currentCell = mazedata[parseInt(this.posTop)][parseInt(this.posLeft)];
 		if (!currentCell){
-			console.log("early return as no cell at:",this.posTop,this.posLeft,this.direction);
+			//console.log("early return as no cell at:",this.posTop,this.posLeft,this.direction);
 			return this.direction; // Doesnt look like i need to do this...
 		}
 
 		var dir=null;
 
-		if (this.posLeft > where[0] && (currentCell & 2) && !(this.direction & 1) && this.direction != null){
+		// simple rules first where the opposite direction to where you want to go does not exist
+		// note that if there is an U/D it will always superseed a L/R direciton!! This was originally written as when ghoss head for home the last move they need to make is down so /L/R cannot take precedence!
+		if (this.posLeft > where[0] && (currentCell & 2) && !(this.direction & 1) && this.direction != null){ // if you should go left and can go left and can't go right
 			dir = 2;
-		} else if (this.posLeft <= where[0] && (currentCell & 1) && !(this.direction & 2) && this.direction != null){
+		} else if (this.posLeft <= where[0] && (currentCell & 1) && !(this.direction & 2) && this.direction != null){  // if you should go right and can go right and can't go left
 			dir= 1;
 		}
 
-		if (this.posTop > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){
+		if (this.posTop > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){ // if you should go up and can go up and can't go down
 			dir=8;
-		} else if (this.posTop <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){
-			if (this.posTop==145 && this.posLeft==305 && !this.onPath){
+		} else if (this.posTop <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){ // if you should go down and can go down and can't go up
+			if (this.posTop==145 && this.posLeft==305 && !this.onPath){ // This code and comment looks questionable: 
 				// cant go back to ghost house - just send them right, whatever..
 				dir=1;
 			} else {
@@ -1284,15 +1320,17 @@ var class_ghost = function(name,number){
 
 		//console.log(ghostDir[who],topG[who],leftG[who],ghostHomeBase[0],ghostHomeBase[1],currentCell.charAt[0],currentCell.charAt[1],currentCell.charAt[2],currentCell.charAt[3],dir);
 
-		// not got a direction? Means we can't head there directly, so lets make a decision 
+		// ok, the more complex code now:
+		// not got a direction yet? Means we can't head there directly as this direction isn't possible, so lets make a decision:
 		// if there are only two possibilities, try and force a 90 degree angle turn, otherwise just go through some defaults.
 		// logic is: if its going R or L, force in this order: U,D,L,R 
 		// 	     if its going U or D, force in this order: L,R,U,D
 		if (!dir) {
 			
-			qty_options = qtyBits(currentCell);
-			if (qty_options==2){
-				if (this.direction==1 || this.direction==2){
+			qty_options = qtyBits(currentCell); //look up tells us how many directions there are here (how many bits are set)
+
+			if (qty_options==2){ // there are 2 directions
+				if (this.direction==1 || this.direction==2){// if currently going left or right
 					if (currentCell & 8){ 
 						dir= 8;
 					 } else if (currentCell & 4){
@@ -1301,7 +1339,7 @@ var class_ghost = function(name,number){
 						dir= 2;
 					} else {
 						dir= 1;
-						alert("This wont even happen");
+						alert("This wont even happen because the code is called at a junction so the last option can never be used!");
 					}
 				} else  if (this.direction==4 || this.direction==8){
 					if (currentCell & 2) {
@@ -1321,12 +1359,32 @@ var class_ghost = function(name,number){
 
 					
 			} else if ( qty_options==3 || qty_options ==4){
-				// just keep going. This really helps when heading somewhere. I may come back to this for some more complex mazes in the future
+				// just keep going. This, it turns out, really helps when heading somewhere. I may come back to this for some more complex mazes in the future
 				dir = this.direction;
 			}
 		}
 
-		console.log("Sending " + who + " on dir " + dir + " from current cell data: " + currentCell + " at top:" , this.posTop, " left:", this.posLeft, "Legal: ", currentCell & dir);
+		// Final question - are we homing and have we been here before?  If so we are stuck in a loop so need to choose a different directions this time!
+		// Loopbreaker
+		if (this.mode=="homing" && this.homing_stack.length>1){
+			for (pastMove in this.homing_stack){
+				if (this.posLeft==this.homing_stack[pastMove]['x'] && this.posTop==this.homing_stack[pastMove]['y'] && dir == this.homing_stack[pastMove]['d']){
+					this.homing_loop=1;
+					console.error("Stuck in a loop!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					console.log(this.homing_stack);
+					console.log(this.name);
+					console.log(dir)
+					if (dir==8||dir==4){
+						if (currentCell & 1){ dir=1; } else if (currentCell & 2) { dir=2;}
+					}
+					if (dir==1 || dir==2){
+						if (currentCell & 8){ dir=8; } else if (currentCell & 4) { dir=4;}
+					}
+				}
+			}
+		}
+
+		//console.log("Sending " + who + " on dir " + dir + " from current cell data: " + currentCell + " at top:" , this.posTop, " left:", this.posLeft, "Legal: ", currentCell & dir);
 		var legal = currentCell & dir;
 
 		if (!legal){
@@ -1339,7 +1397,7 @@ var class_ghost = function(name,number){
 	this.move = function(wg){
 
 
-		console.log("position for " + wg + ":",this.posTop,this.posLeft);
+		//console.log("position for " + wg + ":",this.posTop,this.posLeft);
 		// 1. Load the possible moves from the mazedata array into the possG array. 
 		//   All the data for all the ghosts is used later (collision detection) hence the array. 
 		if (mazedata[parseInt(this.posTop)] && mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]) { // queried as part of moveInc
@@ -1348,7 +1406,7 @@ var class_ghost = function(name,number){
 			this.possibleMoves = ""; // set as part of moveInc
 		}
 
-		console.log("possible moves for " + wg + ":",this.possibleMoves);
+		//console.log("possible moves for " + wg + ":",this.possibleMoves);
 		// 2. Check possibile moves. The ghostData array contains info on which moves are possible. 
 		//    If more than 2 directions are present, or only 1 (ie backwards, so dead end) - a new direction must be generated...
 		totalDirections=qtyBits(this.possibleMoves);
@@ -1380,6 +1438,7 @@ var class_ghost = function(name,number){
 				ghostSrc[wg].src=ghostImgs[wg].src;
 				ghostDir[wg] = 8;
 				sprites_ghosts[wg].direction = 8;
+				sprites_ghosts[wg].homing_stack=[]; //reset the stack for directions taken to get home
 			}
 		}
 
@@ -1598,4 +1657,21 @@ function wallColour(col){
 		    wallCells[i].style.borderColor = col;
 		}
 		document.getElementById("mazeinner").style.borderColor=col;
+}
+
+/* Function reset_game
+ * Meta: called to regenerate a random maaze from the R key
+ */
+function reset_game(){
+
+	if (sessionStorage.mazeSource=="random"){
+		mazedata=renderGrid();
+		document.forms[0].elements.score.value = sessionStorage.score;
+		score = parseInt(sessionStorage.score);
+		pilcount=0; // move to reset func
+		reset();
+		startNewLevel();
+	} else {
+		location="intropage.html";
+	}
 }
