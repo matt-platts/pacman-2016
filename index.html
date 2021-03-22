@@ -2,11 +2,17 @@
 <html>
 <head>
 
-	<title>Javascript Pacman - Javascript implementation of the 80s arcade classic pacman. Play directly in the web browser. By Matt Platts</title>
+	<!-- Javascript Pacman by Matt Platts //-->
+	<title>Javascript Pacman - Javascript implementation of the 80s arcade classic Pacman game by Namco. Play directly in the web browser. By Matt Platts</title>
 
-	<meta name="description" content="Javascript Pacman - Javascript implementation of the 80s arcade classic pacman. Play directly in the web browser. By Matt Platts"></meta>
-	<meta name="keywords" content="Javascript pacman implementation arcade game games recursive backtracker maze ">
+	<meta name="description" content="Javascript Pacman - A pure javascript implementation of the 80s arcade classic pacman. Play directly in the web browser. By Matt Platts"></meta>
+	<meta name="keywords" content="Javascript pacman arcade game games classic 80s recursive backtracker maze ">
+	<meta name="subject" content="A pure javascript implementation of the classic pacman game">
+	<meta name="author" content="Matt Platts, mattplatts@gmail.com">
+	<meta name="copyright" content="Matt Platts for the implementation, NAMCO for the original Pacman game and visuals">
+	<meta name="url" content="http://www.mattplatts.com/pacman">
 
+	<link rel="icon" href="favicon.ico" type="image/x-icon" />
 
 	<style type="text/css">
 
@@ -35,6 +41,8 @@
 	<img src="graphics/paclogo1.jpg" alt="Javascript Pacman logo">
 	<br />
 	<p style="font-family:system, terminal, courier, 'Courier New', monospaced; color:white; margin-top:0px; padding-top:0px; position:relative; top:-10px; margin:0px auto;" >Version 2.0</p>
+
+	<!-- THE GAME IS LOADED INTO AN IFRAME //-->
 	<iframe name="innerFrame" id="innerFrame" src="intropage.html" style="margin:0px auto; width:640px; height:580px; overflow:hidden; border=0; outline=0; frameBorder=0;" frameBorder="0"></iframe>
 
 
@@ -47,7 +55,7 @@
 		<li>No plugins or javascript libraries - pure javascript code implementation</li>
 		<li>Originally written in 1999 for IE and Netscape, based on code from an early Oric-1 game from 1985</li>
 		<li>Updated in 2016 to generate maze graphics and movements from a simple binary grid and  use modenr css styling.</li>
-		<li> Random mazes added 2019</li>
+		<li>Random mazes added 2019</li>
 	</div>
 
 
@@ -56,6 +64,7 @@
 	</footer>
 
 <script>
+	// we need to keep the focus on the iframe
 	document.getElementById("innerFrame").contentWindow.focus();
 	window.onclick = function() {
 		document.getElementById("innerFrame").contentWindow.focus();

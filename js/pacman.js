@@ -1,8 +1,13 @@
 /* 
  * File: pacman.js
  * Version: 2.0 beta 2
- * Meta: all game logic - only the maze rendering is in an external file
- * Author: Matt Platts
+ *
+ * Meta: All game logic is here - only the maze rendering and loading/kicking off the levels are done elsewhere. 
+ *       See ../pacman.html for the kickoff js - it calls loadScript() with a param of the maze data file for the first level
+ *       and a callback function (loadLevelOptions). Another callback from here renders the data (maze.js), 
+ *       before a third callback calls two fuctions from within this file (pacman.js), which are init() followed by startGame(). 
+ *
+ * Author: Matt Platts, mattplatts@gmail.com
  * History: Written 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated massively in 2016, and remains in progress.. 
 */
 
@@ -10,45 +15,57 @@
 
  * Section1 - set up and initialise
  * 
- * set up variables - these are not in a function and run automatically on script load. No point in waiting so as much that we can set up immediately is done here
- * init() - further declaring of variables, these are dependent on the page being rendered which differs them from the above, hence they are in a function. Largely cross browser vars..
+ * set-up variables - these are not in a function and run automatically once on script load for the whole game. As much that we can set up immediately is done here.
+ * init() - further declaring of variables, these are dependent on the level being rendered which differs them from the above, hence they are in a function. Largely cross browser vars. 
 
  * Section 2 - Game loop functions - there are two loops continually running on timeouts - the reason for two being they must be able to run at different speeds to each other.
  * 	       NB: Most functionality is in ghosts() - this is the standard loop that runs at a consistent speed throughout the game, including dealing with the timings of switching
  * 	       modes, collision detection and stopping/starting the game after pacman is eaten, as well as switching ghost directions (which is itself related to the game modes) 
  * ghosts()
- * move() ** NOW MOVED TO class_pacman.move()
 
- * Section 3 - Functions required by the game loops above. All of these relate to ghosts() bar showFruit which reltes to move()
+ * Section 3 - Functions required by the game loops above. All of these relate to ghosts() bar showFruit which relates to move()
  * 
- * gameModes() - shifts the mode of the game at various points (between scatter, chase, random etc)
+ * gameModes() - shifts the mode of the ghosts at various points (between scatter, chase, random etc)
  * generateGhostDir() - generates the next direction for a ghost who is at a junction or a dead end
- * excludeOppositeDirection() - because we want to keep them moving and not going back and forth
+ * excludeOppositeDirection() - because we want to keep them moving on and not just going back and forth
  * qtyBits() - how many bits are set in a value? Used for checking how many directions we can choose from
- * randomDir() - converts a random number into a legal direction
+ * randomDir() - converts a random number into a legal random direction
  * headFor() - send a ghost to some specific co-ordinates
- * getBasicVisionDir() - the basic vision function is currently down, however this is used to move a ghost towards you if it can see you in *any* game mode
- * showFruit() - when fruit need to be shown
+ * getBasicVisionDir() - the basic vision function is currently unused, however this was used to move a ghost towards you if it can see you in *any* game mode, and may be useful in the future
+ * showFruit() - deals with displaying a fruit. Also when this happens, sets up the criterea for displaying the next one. 
  *
  * Section 4 - Key down/up Functions - capturing multiple keypresses and converting them to move codes which are read by the move() function
  *
  * kd() - capture a key down event
  * kdns() - netscape 4 version of the above
  * keyLogic() - translate key press into a direction, storing the previous key press along the way for smooth action
- * ku() - I am no longer sure if this is required - fires when a key goes up
+ * ku() - *Deprecated* - fires when a key goes up
 
  * Section 5 - game resets, level loaders and interstetials / messages
  *
  * reset() - reset the sprites to their start positions before kicking the game off on a timer again. Used after losing a life.
+ * reset_level() - this is called from the R key and actually resets a level mid play (used for debugging) 
  * levelEnd() - called when you've completed a level.
  * dynLoader() - function for dynamically loading a new mazedata file.
- * startNewLevel() - when kicking off a new level you've just loaded for the first time 
+ * startNewLevel() - kicks off a new level you've just loaded for the first time 
  * renderNewData() - render new maze data on screen - ie draw maze, place pills.
  * loadLevel() - load a new level
  * start() - kick off the game or a new level 
 
- * Section 6 - Temporary functions unused in normal play and for debugging. These should simply just return in beta production, can eventually be removed.
+ * Section 7 - Classes and objects - finally moving this to OO! 
  *
+ * class_pacman
+ * class_ghost
+ * class_maze (still unused)
+ * class_level (still unused)
+ * makeGhosts - makes the four ghost objects
+ * oo_start - this is called from the init function which itself is called onload, creates the pacman object and the 4 ghost objects and returns the sprites
+*
+ 
+ * Section Final - Temporary functions unused in normal play and for debugging. 
+ *
+ * binary_lookup
+ * wallColour
  * showmode()
  */
 
@@ -164,8 +181,8 @@ var fruitArray = new Array(true,true,true);
 var qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4); // how many directions are there for each junction? Quick lokup table to avoid calculating number of possible directions at a junction
 
 /* Function: init
- * Meta: init() was originally called from the body onLoad, now it is called after the dynamically loaded javascript maze for the first level. 
- *       init() sets up cross-browser pointer variables, defines several vars arrays for later use, then calls start function to kick off the level itself. 
+ * Meta: init() was originally called from the body onLoad attribute, now it is called after the dynamically loaded javascript maze for the first level. 
+ *       init() sets up cross-browser pointer variables, defines several and vars arrays for later use, then calls start function to kick off the level itself. 
  *       This is only required for the first level of the game.
 */
 function init(){
@@ -240,7 +257,8 @@ function startGame(sprites){
 }
 
 /* 
- * SECTION 2 - The two main loop functions - ghosts and move
+ * SECTION 2 - Originally the two main loop functions - ghosts (for running the ghosts) and move (for dealing with all the keypresses etc and moving pacman)
+ * 	     - now only contains the ghosts() function - which should arguably be renamed now.
 */
 
 /* 
@@ -717,11 +735,11 @@ function keyLogic(keyIn){
 	else if (keyIn=="77" || keyIn=="109" || keyIn == "39") {key=1} // right
 
 	// game reset key (r)
-	else if (keyIn=="82" || keyIn=="114"){ reset_game();}
+	else if (keyIn=="82" || keyIn=="114"){ reset_level();}
 
 	// quit (q)
 	else if (keyIn=="81" || keyIn=="113"){ top.location.reload();}
-	
+
 	// game pause key (p)
 	else if (keyIn=="80" || keyIn=="112"){
 			onPause=1; 
@@ -791,6 +809,24 @@ function reset(){
 	ppTimer="0"
 	ghostscore=50
 	mode="scatter";
+}
+
+/* 
+ * Function reset_level 
+ * Meta: called to regenerate a random maaze from the R key
+ */
+function reset_level(){
+
+	if (sessionStorage.mazeSource=="random"){
+		mazedata=renderGrid();
+		document.forms[0].elements.score.value = sessionStorage.score;
+		score = parseInt(sessionStorage.score);
+		pilcount=0; // move to reset func
+		reset();
+		startNewLevel();
+	} else {
+		location="intropage.html";
+	}
 }
 
 /* 
@@ -939,15 +975,7 @@ function start(sprites){
 	gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); ghosts();',messageLifetime) 
 }
 
-/* Temnporary function for debugging and adjusting mode timers  
- * -  lots of console logs seems to slow things down so I can turn it on and off here
-*/
-function showmode(input){
-	return;
-	console.log(input);
-}
-
-/* Below is simply thiknking about proper OO version and not currently used */
+/* Section 6 : Classes and Objects */
 
 // pacman object constructor
 var class_pacman = function(startLeft,startTop){
@@ -1243,8 +1271,8 @@ var class_ghost = function(name,number){
 			this.direction = this.headFor(who,ghostHomeBase);
 			stackData={'x':parseInt(this.posLeft),'y':parseInt(this.posTop),'d':this.direction};
 			this.homing_stack.push(stackData);
-			
-		
+
+
 
 		} else if (this.mode=="random") { // random
 
@@ -1300,14 +1328,14 @@ var class_ghost = function(name,number){
 		if (this.posLeft > where[0] && (currentCell & 2) && !(this.direction & 1) && this.direction != null){ // if you should go left and can go left and can't go right
 			dir = 2;
 		} else if (this.posLeft <= where[0] && (currentCell & 1) && !(this.direction & 2) && this.direction != null){  // if you should go right and can go right and can't go left
-			dir= 1; 
+			dir= 1;
 		}
 
 		if (this.posTop > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){ // if you should go up and can go up and can't go down
 			dir=8;
 		} else if (this.posTop <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){ // if you should go down and can go down and can't go up
 			if (this.posTop==145 && this.posLeft==305 && !this.onPath){ // This code and comment looks questionable: 
-			// cant go back to ghost house - just send them right, whatever..
+				// cant go back to ghost house - just send them right, whatever..
 				dir=1;
 			} else {
 				dir=4;
@@ -1659,19 +1687,13 @@ function wallColour(col){
 		document.getElementById("mazeinner").style.borderColor=col;
 }
 
-/* Function reset_game
- * Meta: called to regenerate a random maaze from the R key
- */
-function reset_game(){
-
-	if (sessionStorage.mazeSource=="random"){
-		mazedata=renderGrid();
-		document.forms[0].elements.score.value = sessionStorage.score;
-		score = parseInt(sessionStorage.score);
-		pilcount=0; // move to reset func
-		reset();
-		startNewLevel();
-	} else {
-		location="intropage.html";
-	}
+ /* FINAL SECTION 8? */
+ 
+/* Temnporary function for debugging and adjusting mode timers  
+ * -  lots of console logs seems to slow things down so I can turn it on and off here
+*/
+function showmode(input){
+	return;
+	console.log(input);
 }
+
