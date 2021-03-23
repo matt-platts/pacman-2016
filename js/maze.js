@@ -80,7 +80,7 @@ function renderGrid(){
 	var bindata = Array();
 	var binpills = Array();
 	var x=0;
-	var v_offset=25; // start 25px down
+	var v_offset=25; // start 25px down, this just leaves some space on the page 
 	var innerStr="";
 	pillNumber=0; // global
 
@@ -93,7 +93,7 @@ function renderGrid(){
 		
 			bit = interim_maze[y][x]; // yeah its a byte not a bit, byte is a reserved word. Ahem..
 			binbit = 0;
-			var movestring=""; // empty var to take the possible directions
+			var movestring=""; // empty var to take the possible directions. Now we've switched exclusively to the binary do we still need this? I wonder if any of the code actually uses it.
 
 			// populate movestring by scanning the binary array left, right, up and down for more 1's
 			if (interim_maze[y-1] && interim_maze[y-1][x] != "0"){
@@ -279,7 +279,7 @@ function Maze(w, h){
 
 // toGrid plots the map on a grid and allows for the walls which also take up space by multiplying each movement by 2. This effectively doubles the size of the existing grid.
 // The maze is called with 10*8 as the size, however we need 19*15.
-// This function builds walls as an outside, which returns  21*17. These walls are later removed.
+// This function builds walls as an outside, which returns  21*17. These walls are later removed as I have the outer walls in my own css separately.
 Maze.prototype.toGrid = function(){
 
         var grid = new Array();
@@ -293,7 +293,7 @@ Maze.prototype.toGrid = function(){
 
 	
         for(var y = 0; y < this.h; ++ y){ 
-                var py = (y * 2) + 1; // plot at old y * 2 and plus 1. Thus 0*2+1 plots at 1, 1*2+1 plots at 3, allowing us to fill in 2 with a wall.
+                var py = (y * 2) + 1; // plot at old y * 2 and plus 1. Thus 0*2+1 plots at 1, 1*2+1 plots at 3, allowing us to fill in cell 2 with a wall.
 
                 for(var x = 0; x < this.w; ++x){
                         var px = (x * 2) + 1; // plot at old x * 2 and plus 1 as well
@@ -334,6 +334,7 @@ moveCount=0;
 Maze.prototype.explore = function(ex, ey){
 	console.warn("exploring from",ex,ey);
 
+	// first, set up which directions we can move in from our current position. Store this in localDirs
 	var localDirs = this.dirs; //nsew
 	if (ex==0&&ey==0){
 	       localDirs = ['s', 'w'];
@@ -360,7 +361,8 @@ Maze.prototype.explore = function(ex, ey){
 		localDirs=['s','e',];
 	}
 	
-        localDirs = shuffleArray(localDirs); // get all four directions in random order
+	// 2. Get the possible diretions in a random order 
+        localDirs = shuffleArray(localDirs);
 	console.warn(localDirs);
 	
 	//if (moveCount && lastDir &&  (lastDir == 'w' )){ // push towards horizontals
@@ -376,7 +378,7 @@ Maze.prototype.explore = function(ex, ey){
 	//IF WE DONT WANT TO ALLOW DEAD ENDS DO A BREADTH FIRST SEARCH FROM THE CORNERS
 	
 
-        for(d in localDirs){ //each direction is tested in the random order. Note that the recusrion from within this loop  may mean that this loop is not completed until substantial portions of the maze are already mapped out bvy further calls to the explore function
+        for(d in localDirs){ //each direction is tested in the random order. Note that the recusrion from within this loop may mean that this loop is not completed until substantial portions of the maze are already mapped out by further calls to the explore function
 		if(!localDirs[d]){
 			console.error("UNDEF ERROR for ",d," at ",ex,",",ey,localDirs);
 			alert("ooops");
@@ -384,10 +386,10 @@ Maze.prototype.explore = function(ex, ey){
 		}
 		console.warn("From ",ex,ey,": Testing ",d," of ",localDirs,"  gives ",localDirs[d]);
 
-                var nx = ex + this.modDir[localDirs[d]].x; // new X is current explored X + the X change for the direction. Eg. North from  a point will show  no change in x, east will show a  +1
-                var ny = ey + this.modDir[localDirs[d]].y;  //same operation on Y
+                var nx = ex + this.modDir[localDirs[d]].x; // new X is current explored X + the X change for the direction. Eg. North from a point will show no change in x, east will show a +1
+                var ny = ey + this.modDir[localDirs[d]].y; // same operation on Y
 
-			console.log(this.map);
+		console.log(this.map);
 
                 if(this.map[ny] && this.map[ny][nx] && this.map[ny][nx].v==0){ // if there is a change, and it does not take us off the grid and the point has not been visited
                         this.map[ey][ex][localDirs[d]] = 1; // add the direction change to the directions object of the cell
@@ -396,7 +398,7 @@ Maze.prototype.explore = function(ex, ey){
 			console.log(localDirs[d],"x:"+nx,"y:"+ny,this.modDir[localDirs[d]].x,this.modDir[localDirs[d]].y," - Yes - adding cell");
 			lastDir=localDirs[d];
 			moveCount++;
-                        this.explore(nx, ny); // and repeat, recursively calling this function from the new x and y  co-ordinates
+                        this.explore(nx, ny); // and repeat, recursively calling this function from the new x and y co-ordinates
                 } else {
 			console.error(localDirs[d],"x:"+nx,"y:"+ny,this.modDir[localDirs[d]].x,this.modDir[localDirs[d]].y," - No - returning to last");
 		}
@@ -436,8 +438,8 @@ function randomMaze(){
                 mazeMap.gridMap[i].shift();
         }
 
-        //document.getElementById("sourcear").innerHTML=mazeMap.gridMap.toString();
-	//remove annexed corners
+        // document.getElementById("sourcear").innerHTML=mazeMap.gridMap.toString();
+	// remove annexed corners - we don't want any corners with a 0 in them as the mazes look weird like that
 	if (removeAnnexedCorners){
 		mazeMap.gridMap[1][0]=1;
 		mazeMap.gridMap[0][1]=1;
@@ -445,6 +447,7 @@ function randomMaze(){
 		mazeMap.gridMap[13][18]=1;
 	}
 
+	// we'd like a nice looking maze please, so in order to get some symmetry, copy the first 7 columns...
 	copy0 = mazeMap.gridMap[0].slice();
 	copy1 = mazeMap.gridMap[1].slice();
 	copy2 = mazeMap.gridMap[2].slice();
@@ -453,6 +456,7 @@ function randomMaze(){
 	copy5 = mazeMap.gridMap[5].slice();
 	copy6 = mazeMap.gridMap[6].slice();
 
+	// and then replace the last 7 with the reverse of what we copied - suddenly it looks a bit more professional!
 	mazeMap.gridMap[14]=copy0.reverse();
 	mazeMap.gridMap[13]=copy1.reverse();
 	mazeMap.gridMap[12]=copy2.reverse();
@@ -461,22 +465,24 @@ function randomMaze(){
 	mazeMap.gridMap[9]=copy5.reverse();
 	mazeMap.gridMap[8]=copy6.reverse();
 
-	removeDiagonalBlocks();
+	// Remove diagonals, as not only doesn't it look good when we have cells next to each other on the diagonal, 
+	// it creates dead ends and annexed areas of the maze you can't get through, so just blow them out.
+	removeDiagonalBlocks(); 
 	addPowerPills();
-        addGhostHome();
+        addGhostHome(); // build the ghost home base in the middle of our maze somewhere
 
-	// tunnels
+	// We need to add tunnels to go off-screen left and right to the random maze. These are done at a random point of 6,8 or 10 lines down the array.
 	tPos=[6,8,10];
 	t=shuffleArray(tPos)[0];
 	if(mazeMap.gridMap[t][0]==1 && mazeMap.gridMap[t][18]==1){
-		mazeMap.gridMap[t][0]=4;
+		mazeMap.gridMap[t][0]=4; // a 4 in our data represents a tunnel. These go in at x=0 and x=18 (line below).
 		mazeMap.gridMap[t][18]=4;
-		mazeMap.gridMap[t][1]=1;
+		mazeMap.gridMap[t][1]=1; // next 4 lines because we need to build a tunnel wall out to identify the tunnel
 		mazeMap.gridMap[t][17]=1;
 		mazeMap.gridMap[t][2]=1;
 		mazeMap.gridMap[t][16]=1;
 
-		mazeMap.gridMap[t-1][0]=0;
+		mazeMap.gridMap[t-1][0]=0; // if we've got a tunnel going out, we need to ensure there are walls either side of it top and bottom (next few sections)
 		mazeMap.gridMap[t+1][0]=0;
 		mazeMap.gridMap[t-1][18]=0;
 		mazeMap.gridMap[t+1][18]=0;
@@ -491,7 +497,6 @@ function randomMaze(){
 
 		mazeMap.gridMap[t-2][17]=1;
 		mazeMap.gridMap[t+2][17]=1;
-
 
 	}
 
@@ -595,11 +600,12 @@ function addPowerPills(){
 }
 
 function removeDiagonalBlocks(){
-// anywhere there is 0 in the map bounded by 0 on a diagonal corner - change the diagonal corner to a 1 
-// we need to scan  all diagonals so start second row down and finish one row up.
+// This is worth explaining.
+// Anywhere there is 0 in the map bounded by 0 on a diagonal corner - change the diagonal corner to a 1 
+// we need to scan all diagonals and start second row down which grabs the upper ones, and finish one row up which grabs the lower.
 
 // example data:
-// here second row down second value in is a 0. See diagonal top right is also 0 - this 0 should become a 1
+// here second row down second value in is a 0. See diagonal top right is also 0 - it is this second 0 which we turn to a 1
 //
 //
 //	2,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,2,
@@ -640,6 +646,8 @@ interim= mazeMap.gridMap;
 	mazeMap.gridMap=interim;
 }
 
+// I've left this function in as it's interesting to play with and see the code.
+// testmaze is defined below. This calls the convert function on it to turn it into a 2d array
 function removeDiagonalBlocksInTest(){
 
 	interim= convert(testmaze);
