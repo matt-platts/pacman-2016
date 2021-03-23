@@ -3,7 +3,7 @@
  * Meta: functions for creating the maze visual and an array to describe all of the maze cells in terms of possible moves, where pills are etc. 
  *
  * To edit the random maze, render and play on the fly, pause the game then do the following in the console:
- * 1. fromSource=1
+ * 1. fromPredefined=1
  * 2. mazeMap.gridMap - then edit this as you see fit
  * 3. mazedata = renderGrid(); - adjusts the screen and loads the data into the array for playing
  * 4 Unpause game and play
@@ -11,16 +11,16 @@
 */
 
 var pillNumber=0; // count the pills as we add them. This var is used to check if the screen has been completed in the game. 
-var fromSource;
+var fromPredefined;
 var removeAnnexedCorners=1;
 
 /* 
- * Function: convert
+ * Function: convertTo2d
  * Meta: Convert the original maze data which is a 1d array to a 2d array of rows and columns
  *       This 2d array is stored in the var interim_maze, which is later looped in order to build a bigger array containing every possible move available from each cell.
- *       run convert(maze) to see the result in the console
+ *       run convertTo2d(maze) to see the result in the console
  */
-function convert(maze){
+function convertTo2d(maze){
 	maze = maze.join("");
 	var interim_maze = Array();
 	x=0;
@@ -66,15 +66,15 @@ function convert(maze){
 function renderGrid(){
 
 	var interim_maze;
-	if (fromSource){ //  var set to 1 from console only - for testing 
+	if (fromPredefined){ //  var set to 1 from console only - for testing 
 		interim_maze=mazeMap.gridMap;
 	} else if (sessionStorage.mazeSource=="random"){
 		interim_maze=randomMaze();
 	} else {
-		interim_maze = convert(maze);
+		interim_maze = convertTo2d(maze);
 	}
 
-	//interim_maze= convert(testmaze); - only for testing
+	//interim_maze= convertTo2d(testmaze); - only for testing
 	//interim_maze=removeDiagonalBlocksInTest(testmaze); - further testing
 	
 	var bindata = Array();
@@ -647,10 +647,10 @@ interim= mazeMap.gridMap;
 }
 
 // I've left this function in as it's interesting to play with and see the code.
-// testmaze is defined below. This calls the convert function on it to turn it into a 2d array
+// testmaze is defined below. This calls the convertTo2d function on it to turn it into a 2d array
 function removeDiagonalBlocksInTest(){
 
-	interim= convert(testmaze);
+	interim= convertTo2d(testmaze);
 
 		for (i=1;i<interim.length;i++){
 

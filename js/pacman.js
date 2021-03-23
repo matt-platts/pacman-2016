@@ -3,7 +3,7 @@
  * Version: 2.0 beta 2
  *
  * Meta: All game logic is here - only the maze rendering and loading/kicking off the levels are done elsewhere. 
- *       See ../pacman.html for the kickoff js - it calls loadScript() with a param of the maze data file for the first level
+ *       See ../pacman.html for the kickoff js - it calls loadScriptAndCallback (from pacman.html) with a param of the maze data file for the first level
  *       and a callback function (loadLevelOptions). Another callback from here renders the data (maze.js), 
  *       before a third callback calls two fuctions from within this file (pacman.js), which are init() followed by startGame(). 
  *
@@ -41,12 +41,21 @@
  * keyLogic() - translate key press into a direction, storing the previous key press along the way for smooth action
  * ku() - *Deprecated* - fires when a key goes up
 
- * Section 5 - game resets, level loaders and interstetials / messages
+ * Section 5 - game resets, level loaders, lambdas and interstetials / messages
+ *
+ * NB: The order of functions when a level completes is:
+ *     levelEnd-> (recursively calls itself to flash the maze after its completed)
+ *     loadLevel-> (loads the data for the new maze via loadScriptAndCallback function)
+ *     renderNewData (reloads maze.js to initialise or generate a new random - this needs sorting out, it's un-necessary!!!) Just put the var initialisation inline and call the functions..no need to reload this! ->
+ *     startNewLevel (calls renderGrid , WTF?!) -> 
+ *     reset (does timers, positions elements) ->
+ *     start (displays start message, resets a few other things that we don't want in reset, finally kicks off the game loops on a timeout 
+ *     This whole functionality needs to be looked at!
  *
  * reset() - reset the sprites to their start positions before kicking the game off on a timer again. Used after losing a life.
  * reset_level() - this is called from the R key and actually resets a level mid play (used for debugging) 
  * levelEnd() - called when you've completed a level.
- * dynLoader() - function for dynamically loading a new mazedata file.
+ * loadScriptAndCallback() - function for dynamically loading a new mazedata file.
  * startNewLevel() - kicks off a new level you've just loaded for the first time 
  * renderNewData() - render new maze data on screen - ie draw maze, place pills.
  * loadLevel() - load a new level
@@ -59,7 +68,7 @@
  * class_maze (still unused)
  * class_level (still unused)
  * makeGhosts - makes the four ghost objects
- * oo_start - this is called from the init function which itself is called onload, creates the pacman object and the 4 ghost objects and returns the sprites
+ * setup_sprites - this is called from the init function which itself is called onload, creates the pacman object and the 4 ghost objects and returns the sprites
 *
  
  * Section Final - Temporary functions unused in normal play and for debugging. 
@@ -244,13 +253,18 @@ function init(){
 		topG[i] = parseInt(ghostDiv[i].top)
 		ghostDir[i] = 8; // Set to 8 (up) to start the game..
 	}
-	var sprites = oo_start();
+	var sprites = setup_sprites();
 	console.log(sprites[0]);
 	console.log(sprites[1][3]);
 	//alert("ooalert returning sprites");
 	return sprites;
 }
 
+/*
+ * Function: startGate
+ * Meta: This is purely a wrapper around start(), and called the first time from the callback in pacman.html
+ *       There is no different functionality to start() here any longer, but there may be so leaving it in
+ */
 function startGame(sprites){
 	//alert("ooalert and were off");
 	start(sprites); // kick off the game timers. This needs to be called for each level and hence is not part of init()
@@ -840,7 +854,7 @@ function reset_level(){
 
 /*
  * Function: levelEnd
- * Meta: Flash maze at end of level, and call the loadLevel function to load up the next level.
+ * Meta: Flash maze at end of level, by repeatedly calling this function on a timer and call the loadLevel function on the 12th flash to load up the next level.
 */
 function levelEnd(){
 
@@ -853,7 +867,7 @@ function levelEnd(){
 		if (speed>=25){speed=speed-1;}
 	}
 
-	// flash maze
+	// flashing maze effect
 	if (mazeNo==2) mazeNo=0
 	mazeCells = document.getElementsByClassName("wallCell");
 	wallCells = document.getElementsByClassName("mazeCell");
@@ -889,10 +903,11 @@ function levelEnd(){
 }
 
 /* 
- * Function: dynLoader
- * Meta: for dynamically loading another javascript and following up with a callback
+ * Function: loadScriptAndCallbackDuplicate
+ * Meta: for dynamically loading another javascript and following up with a callback. This is a copy of the function in pacman.html
+ *       left here as a reminder to try and get everything into one file
 */
-function dynLoader(url, callback){
+function loadScriptAndCallbackDuplicate(url, callback){
     // Adding the script tag to the head
     var head = document.getElementsByTagName('head')[0];
     var script = document.createElement('script');
@@ -910,7 +925,7 @@ function dynLoader(url, callback){
 
 /* 
  * Lambda function: startNewLevel
- * Called as: Callback
+ * Called as: Callback from renderNewData, itself called from loadLevel
  * Meta: Renders the new maze, resets the timer, resets the sprite positions and calls start (to show the next level message and kick off the timers) 
 */
 var startNewLevel = function (){
@@ -934,7 +949,7 @@ var startNewLevel = function (){
  * Meta: Loads maze.js after the mazedata file has been loaded, and issues a callback to startNewLevel 
 */
 var renderNewData = function() {
-	dynLoader("js/maze.js",startNewLevel);
+	loadScriptAndCallback("js/maze.js",startNewLevel);
 }
 
 /*
@@ -945,7 +960,7 @@ var renderNewData = function() {
 function loadLevel(level){
 	moving = false;
 	dataFile = "js/data/mazedata" + level + ".js";
-	dynLoader(dataFile,renderNewData);
+	loadScriptAndCallback(dataFile,renderNewData);
 }
 
 /*
@@ -1582,7 +1597,7 @@ function makeGhosts(){
 	return all_ghosts;
 }
 
-function oo_start(){
+function setup_sprites(){
 	var pacman = new class_pacman(pacStartLeft,pacStartTop);
 	var all_ghosts = makeGhosts();
 	console.log(all_ghosts);
