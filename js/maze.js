@@ -6,13 +6,12 @@
  * 1. fromPredefined=1
  * 2. mazeMap.gridMap - then edit this as you see fit
  * 3. mazedata = renderGrid(); - adjusts the screen and loads the data into the array for playing
- * 4 Unpause game and play
+ * 4. Unpause game and play
  *
 */
 
-var pillNumber=0; // count the pills as we add them. This var is used to check if the screen has been completed in the game. 
-var fromPredefined;
-var removeAnnexedCorners=1;
+var fromPredefined; // only set for testing
+var removeAnnexedCorners=1; // probably little use of having this in a var any longer, it should just be done now?
 
 /* 
  * Function: convertTo2d
@@ -82,7 +81,7 @@ function renderGrid(){
 	var x=0;
 	var v_offset=25; // start 25px down, this just leaves some space on the page 
 	var innerStr="";
-	pillNumber=0; // global
+	pillNumber=0; // start with 0 pills 
 
 	for (y=0;y<interim_maze.length;y++){
 		var lineMoves = Array();
@@ -274,6 +273,10 @@ function Maze(w, h){
                 'w' : { y : 0, x : 1, o : 'e' }
         };  
 
+	// These two are used by but set outside of the explore function as they mustn't be initialised on successive repeats 
+	this.lastDir="";
+	this.moveCount=0;
+
         this.build(0, 0); 
 }
 
@@ -326,10 +329,6 @@ Maze.prototype.build = function(x, y){
         this.toGrid(); // plots the maze onto a grid allowing for the walls
 };
 
-// globs
-lastDir="";
-moveCount=0;
-
 // Explore function, called recusrively with the current starting point x,y
 Maze.prototype.explore = function(ex, ey){
 	console.warn("exploring from",ex,ey);
@@ -365,14 +364,14 @@ Maze.prototype.explore = function(ex, ey){
         localDirs = shuffleArray(localDirs);
 	console.warn(localDirs);
 	
-	//if (moveCount && lastDir &&  (lastDir == 'w' )){ // push towards horizontals
-	//if (moveCount && lastDir &&  (lastDir == 's' )){ // push towards verticals
-	if (moveCount && lastDir && moveCount%2==1 && (lastDir == 's' || lastDir == 'w' )){ // push towards longer going s and w. Very interesting if set localDirs0,1,2 and 3 to lastDir! 
-		console.log("Last was"+lastDir);
-		localDirs[0]=lastDir;
-		localDirs[1]=lastDir;
-		localDirs[2]=lastDir;
-		localDirs[3]=lastDir;
+	//if (this.moveCount && this.lastDir &&  (this.lastDir == 'w' )){ // push towards horizontals
+	//if (this.moveCount && this.lastDir &&  (this.lastDir == 's' )){ // push towards verticals
+	if (this.moveCount && this.lastDir && this.moveCount%2==1 && (this.lastDir == 's' || this.lastDir == 'w' )){ // push towards longer going s and w. Very interesting if set localDirs0,1,2 and 3 to this.lastDir! 
+		console.log("Last was"+this.lastDir);
+		localDirs[0]=this.lastDir;
+		localDirs[1]=this.lastDir;
+		localDirs[2]=this.lastDir;
+		localDirs[3]=this.lastDir;
 	}
 
 	//IF WE DONT WANT TO ALLOW DEAD ENDS DO A BREADTH FIRST SEARCH FROM THE CORNERS
@@ -396,14 +395,14 @@ Maze.prototype.explore = function(ex, ey){
                         this.map[ey][ex].v = 1; //  set to visited
                         this.map[ny][nx][this.modDir[localDirs[d]].o] = 1; // set the opposite direction to 1 as well
 			console.log(localDirs[d],"x:"+nx,"y:"+ny,this.modDir[localDirs[d]].x,this.modDir[localDirs[d]].y," - Yes - adding cell");
-			lastDir=localDirs[d];
-			moveCount++;
+			this.lastDir=localDirs[d];
+			this.moveCount++;
                         this.explore(nx, ny); // and repeat, recursively calling this function from the new x and y co-ordinates
                 } else {
 			console.error(localDirs[d],"x:"+nx,"y:"+ny,this.modDir[localDirs[d]].x,this.modDir[localDirs[d]].y," - No - returning to last");
 		}
         }
-};
+}
 
 // shuffle an array randomly
 function shuffleArray(arrayIn){

@@ -46,18 +46,16 @@
  * NB: The order of functions when a level completes is:
  *     levelEnd-> (recursively calls itself to flash the maze after its completed)
  *     loadLevel-> (loads the data for the new maze via loadScriptAndCallback function)
- *     renderNewData (reloads maze.js to initialise or generate a new random - this needs sorting out, it's un-necessary!!!) Just put the var initialisation inline and call the functions..no need to reload this! ->
  *     startNewLevel (calls renderGrid , WTF?!) -> 
  *     reset (does timers, positions elements) ->
  *     start (displays start message, resets a few other things that we don't want in reset, finally kicks off the game loops on a timeout 
  *     This whole functionality needs to be looked at!
  *
  * reset() - reset the sprites to their start positions before kicking the game off on a timer again. Used after losing a life.
- * reset_level() - this is called from the R key and actually resets a level mid play (used for debugging) 
+ * resetLevel() - this is called from the R key and actually resets a level mid play (used for debugging) 
  * levelEnd() - called when you've completed a level.
  * loadScriptAndCallback() - function for dynamically loading a new mazedata file.
  * startNewLevel() - kicks off a new level you've just loaded for the first time 
- * renderNewData() - render new maze data on screen - ie draw maze, place pills.
  * loadLevel() - load a new level
  * start() - kick off the game or a new level 
 
@@ -73,7 +71,7 @@
  
  * Section Final - Temporary functions unused in normal play and for debugging. 
  *
- * binary_lookup
+ * binaryLookup
  * wallColour
  * showmode()
  */
@@ -114,16 +112,16 @@ var exlife6 = sessionStorage.exlife6;
 var speed = sessionStorage.speed;
 var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
-var fx = sessionStorage.fx; // standard effects include spin in sprites if pacman is eaten, and maze spin between levels
-var extras = sessionStorage.extras; // experimental extra features 
+var fx = sessionStorage.fx // standard effects include spin in sprites if pacman is eaten, and maze spin between levels
+var extras = sessionStorage.extras // experimental extra features 
 
 // Define timers
-var pacTimer; // for the move() loop
-var ghostsTimer; // for the gameLoop() loop
+var pacTimer // for the move() loop
+var ghostsTimer // for the gameLoop() loop
 
 // define vars for flashing the maze as part of the game end routine 
-var mazecount=0;
-var mazeNo=0;
+var mazecount=0
+var mazeNo=0
 
 // scores
 var ghostscore=50
@@ -749,7 +747,7 @@ function keyLogic(keyIn){
 	else if (keyIn=="77" || keyIn=="109" || keyIn == "39") {key=1} // right
 
 	// game reset key (r)
-	else if (keyIn=="82" || keyIn=="114"){ reset_level();}
+	else if (keyIn=="82" || keyIn=="114"){ resetLevel();}
 
 	// quit (q)
 	else if (keyIn=="81" || keyIn=="113"){ top.location.reload();}
@@ -826,10 +824,10 @@ function reset(){
 }
 
 /* 
- * Function reset_level 
+ * Function resetLevel 
  * Meta: called to regenerate a random maaze from the R key
  */
-function reset_level(){
+function resetLevel(){
 
 	if (sessionStorage.mazeSource=="random"){
 		mazedata=renderGrid();
@@ -925,7 +923,7 @@ function loadScriptAndCallbackDuplicate(url, callback){
 
 /* 
  * Lambda function: startNewLevel
- * Called as: Callback from renderNewData, itself called from loadLevel
+ * Called as: Callback from loadLevel or resetLevel, itself called from loadLevel
  * Meta: Renders the new maze, resets the timer, resets the sprite positions and calls start (to show the next level message and kick off the timers) 
 */
 var startNewLevel = function (){
@@ -944,23 +942,15 @@ var startNewLevel = function (){
 	start();
 }
 
-/* Lambda function: renderNewData
- * Called as: Callback
- * Meta: Loads maze.js after the mazedata file has been loaded, and issues a callback to startNewLevel 
-*/
-var renderNewData = function() {
-	loadScriptAndCallback("js/maze.js",startNewLevel);
-}
-
 /*
  * Function: loadLevel
  * Param: level (int) - the number of the level being loaded
- * Meta: Loads the mazedata file from the server, and calls renderNewData as a callback
+ * Meta: Loads the mazedata file from the server, and calls startNewLevel as a callback
 */
 function loadLevel(level){
 	moving = false;
 	dataFile = "js/data/mazedata" + level + ".js";
-	loadScriptAndCallback(dataFile,renderNewData);
+	loadScriptAndCallback(dataFile,startNewLevel);
 }
 
 /*
@@ -1611,10 +1601,10 @@ function setup_sprites(){
 }
 
 /*
- * Function binary_lookup
+ * Function binaryLookup
  * Meta; just experimenting
 */
-function binary_lookup(direction,data) {
+function binaryLookup(direction,data) {
 
 	// assume our movements UDLR are 8,4,2,1 
 	// would give us the foolowing
