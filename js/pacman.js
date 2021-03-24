@@ -167,6 +167,7 @@ var resetModeTime=gameTime; // the time the mode was last reset to the default (
 var effect;
 var effectTimer=0;
 var invincibility = 0;// new feature
+var speedball = 0; // new feature
 
 // start positions - still needs to be calculated from the maze data in time 
 if (!pacStartTop){
@@ -762,7 +763,7 @@ function keyLogic(keyIn){
 
 	if (key && movekey != key) {
 		newkey = key; 
-		if (!moving) {sprite_pacman.move();} 
+		if ((!moving && divStart.visibility=="hidden") || (!moving && speedball)) {sprite_pacman.move();} 
 		keycount++
 	}
 
@@ -976,7 +977,6 @@ function start(sprites){
 	onPause=0;
 	document.getElementById("levelIndicator").innerHTML = "Level " + sessionStorage.level;
 	divStart.visibility="visible";
-	//gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); gameLoop();',messageLifetime) 
 	gameTimer = setTimeout('document.getElementById("maze").classList.remove("spin"); divStart.visibility=\'hidden\'; sprite_pacman.move(); gameLoop();',messageLifetime) 
 }
 
@@ -1596,7 +1596,7 @@ function setup_sprites(){
 
 	return Array(pacman,all_ghosts);
 
-	pacman.move();
+	//pacman.move();
 	
 }
 
