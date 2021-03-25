@@ -1,9 +1,11 @@
 function getSpeed(){
+	alert(sessionStorage.speed);
 	document.forms[0].elements[0].value=sessionStorage.speed
 }
 
 function setSpeed(to){
 	sessionStorage.speed = to; 
+	alert("Set speed to " + sessionStorage.speed);
 }
 
 function kd(e){

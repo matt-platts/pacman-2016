@@ -325,7 +325,7 @@ Maze.prototype.toGrid = function(){
 
 
 
-Maze.prototype.build = function(x, y){ 
+Maze.prototype.build = function(x, y){
 
 	// does not need params, just set x and y to 0 to start. Can experiment with this later.
         var x = 0;
@@ -383,7 +383,7 @@ Maze.prototype.explore = function(ex, ey){
 		localDirs[3]=this.lastDir;
 	}
 
-	//IF WE DONT WANT TO ALLOW DEAD ENDS DO A BREADTH FIRST SEARCH FROM THE CORNERS
+	// IF WE DONT WANT TO ALLOW DEAD ENDS DO A BREADTH FIRST SEARCH FROM THE CORNERS?
 	
 
         for(d in localDirs){ //each direction is tested in the random order. Note that the recusrion from within this loop may mean that this loop is not completed until substantial portions of the maze are already mapped out by further calls to the explore function
@@ -432,7 +432,10 @@ function shuffleArray(arrayIn){
         return arrayOut;
 }
 
-// Create a random maze using the maze object
+/* 
+ * Function: randomMaze
+ * Meta: Create a random maze using the maze object
+ */
 function randomMaze(){
 
         mazeMap = new Maze(10,8);
@@ -512,7 +515,6 @@ function randomMaze(){
 	mazeMap.gridMap=joinSingleBlocks(mazeMap.gridMap);
 
         return mazeMap.gridMap;
-
 }
 
 /*
