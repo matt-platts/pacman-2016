@@ -248,7 +248,10 @@ function renderGrid(){
 	return bindata;
 }
 
-// Randomly generated mazes
+/*
+ * Function: Maze
+ * Meta: This is the maze class, for creating the randomly generated mazes
+ */ 
 function Maze(w, h){
 
         this.w = (isNaN(w) || w < 5 || w > 999 ? 20 : w); 
@@ -319,6 +322,9 @@ Maze.prototype.toGrid = function(){
         this.gridH      = grid[0].length;
 };
 
+
+
+
 Maze.prototype.build = function(x, y){ 
 
 	// does not need params, just set x and y to 0 to start. Can experiment with this later.
@@ -328,6 +334,9 @@ Maze.prototype.build = function(x, y){
         this.explore(x, y); // function called recusrively  - this is the recursive backtracker 
         this.toGrid(); // plots the maze onto a grid allowing for the walls
 };
+
+
+
 
 // Explore function, called recusrively with the current starting point x,y
 Maze.prototype.explore = function(ex, ey){
@@ -499,12 +508,42 @@ function randomMaze(){
 
 	}
 
-	//  swap out 1,0,1,0,1 for 1,0,0,0,1
+	// swap out 1,0,1,0,1 for 1,0,0,0,1
+	mazeMap.gridMap=joinSingleBlocks(mazeMap.gridMap);
 
         return mazeMap.gridMap;
 
 }
 
+/*
+ * Function: joinSingleBlocks
+ * Meta: The random generation can sometimes make lots of single squares of wall. These don't look too great, but this function joins two isolated squares on the horizontal only and solves that nicely :) 
+ *       Would be worth doing it on the vertical as well perhaps?
+ *       Would like to find a better way of looking this data up first however, thats 15 conditions to identify this below!
+ */
+function joinSingleBlocks(data){
+
+	console.log(data);
+	for (y=1;y<data.length;y++){
+		for (x=0;x<data[x].length-5;x++){
+			if (data[y][x]==1 && data[y][x+1]==0 && data[y][x+2]==1 && data[y][x+3]==0 && data[y][x+4]==1){
+				if (data[y+1][x]==1 && data[y+1][x+1]==1 && data[y+1][x+2]==1 && data[y+1][x+3]==1 && data[y+1][x+4]==1 && 
+				    data[y-1][x]==1 && data[y-1][x+1]==1 && data[y-1][x+2]==1 && data[y-1][x+3]==1 && data[y-1][x+4]==1 ){
+					console.log("GOT ONE AT " , y , x);
+					data[y][x+2]=0;			
+				}
+			}
+		}
+	}
+	console.log("Done");
+	return data;
+}
+
+
+/*
+ * Function: addGhostHome
+ * Meta: Draw the ghost's home base into the maze data grid
+ */
 function addGhostHome(){
 
 	var ghost_home_y = Array(2,4,8,10); // possible start positions for ghost home. Need to adjust where fruit appear (underneath), where the ghosts start and where pacman starts for anything other than 4
@@ -589,7 +628,11 @@ function addGhostHome(){
 	mazeMap.gridMap[y][11]=1;
 	mazeMap.gridMap[y][12]=1;
 }
-	
+
+/*
+ * Function: addPowerPills
+ * Meta: Draw the powerpills into the maze data grid
+ */
 function addPowerPills(){
 	mazeMap.gridMap[0][0]=2;
 	mazeMap.gridMap[14][0]=2;

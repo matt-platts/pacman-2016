@@ -8,7 +8,7 @@
  *       before a third callback calls two fuctions from within this file (pacman.js), which are init() followed by startGame(). 
  *
  * Author: Matt Platts, mattplatts@gmail.com
- * History: Written 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated massively in 2016, and remains in progress.. 
+ * History: Written 1999-2000. Updated for Netscape 6, June 2001. Tweaks for Google Chrome and Firefox around 2009. Updated to version 2.0 in 2016, and remains in progress.. 
 */
 
 /* Index of functions
@@ -1695,7 +1695,7 @@ function wallColour(col){
  /* FINAL SECTION 8? */
  
 /* Temnporary function for debugging and adjusting mode timers  
- * -  lots of console logs seems to slow things down so I can turn it on and off here
+ * -  lots of console logs seems to slow things down, at least if the console is open so I can turn it on and off here
 */
 function showmode(input){
 	return;
