@@ -10,11 +10,18 @@
 			position:relative;
 			top:-15px;
 		}
+		input[type='text'] {
+			color:white;
+			background-color:black;
+		}
 		.speedinput {
 			display:block;
 			width:150px;
 			border-radius:5px;
 			padding:3px;
+		}
+		.settings, .settings label {
+			width:250px !important;
 		}
 
 	</style>
@@ -43,15 +50,32 @@
 	}
 
 	function setMover(){
+
+		var controls = document.getElementsByClassName("settingcontrol");
+		for (i in controls){
+			if (controls[i].id){
+				console.log(controls[i].id);
+				controls[i].addEventListener("change", function(){
+					//alert("yo");
+				});
+			}
+		};
+
 		var el = document.getElementsByClassName("speedinput");
 		for (i in el){
-			el[i].addEventListener("mouseover", function(){
-				this.style.backgroundColor="#6600ff";
-			});
-			el[i].addEventListener("mouseout", function(){
-				this.style.backgroundColor="transparent";
-			});
+			//if (el[i].id){
+				el[i].addEventListener("mouseover", function(){
+					this.style.backgroundColor="#6600ff";
+				});
+				el[i].addEventListener("mouseout", function(){
+					this.style.backgroundColor="transparent";
+					this.style.color="#fff";
+				});
+			//}
 		}
+	
+
+
 	}
 	</script>
 </head>
@@ -95,9 +119,42 @@
 <span class="speedinput">
 	<label>Crazy</label>
 	 <input type="radio" class="speedinput" name="speed" value="6" id="ridiculous" onClick="setSpeed(this.value)" /> </span> <br />
+
+
+<br clear="all" />
+<a href="intropage.html?noset" style='text-decoration:none; border:1px yellow solid; padding:5px; border-radius:5px;'>&#8592; Return to game</a>
+
+<br />
+<br />
+<br />
+
 <hr />
-<p style="font-weight:bold">Advanced Settings:</p>
-<p>Coming soon..</p>
+<p style="font-weight:bold">Bonus Modes:</p>
+
+<span class="speedinput settings">
+	<label>Experimental Features:</label>
+	 <input type="checkbox" class="settinginput settingcontrol" name="experimental" id="experimental" />
+</span> <br />
+<span class="speedinput settings">
+	<label>Speedball:</label>
+	 <input type="checkbox" class="settinginput settingcontrol" name="speedball" id="speedball" />
+</span> <br />
+<hr />
+<p style="font-weight:bold">General Gameplay Settings:</p>
+<span class="speedinput settings">
+	<label>Fruit Lifetime:</label>
+	 <input type="text" class="settinginput" name="fruitlife" value="600" id="fruitlife" />
+</span> <br />
+<span class="speedinput settings">
+	<label>Powerpill Lifetime:</label>
+	 <input type="text" class="settinginput" name="pplife" value="600" id="pplife" />
+</span> <br />
+<span class="speedinput settings">
+	<label>Powerpill timeout warning duration:</label>
+	 <input type="text" class="settinginput" name="pptimeout" value="600" id="pptimeout" />
+</span> <br />
+
+
 </div>
 </form>
 <br clear="all" />
