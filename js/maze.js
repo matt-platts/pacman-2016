@@ -524,7 +524,7 @@ function randomMaze(){
 function joinSingleBlocks(data){
 
 	console.log(data);
-	for (y=1;y<data.length;y++){
+	for (y=1;y<data.length-1;y++){
 		for (x=0;x<data[x].length-5;x++){
 			if (data[y][x]==1 && data[y][x+1]==0 && data[y][x+2]==1 && data[y][x+3]==0 && data[y][x+4]==1){
 				if (data[y+1][x]==1 && data[y+1][x+1]==1 && data[y+1][x+2]==1 && data[y+1][x+3]==1 && data[y+1][x+4]==1 && 
