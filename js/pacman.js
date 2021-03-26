@@ -354,10 +354,10 @@ function gameLoop(){
 
 	// Check to see if a ghost has gone through the channel to the other side of the screen
 	for (i=0;i<total_ghosts;i++){
-		if (document.getElementById('cell-' + sprites_ghosts[i].posLeft+ '-' + sprites_ghosts[i].posTop)){
-			if (document.getElementById('cell-' + sprites_ghosts[i].posLeft + '-' + sprites_ghosts[i].posTop).classList.contains('mazeTunnel')){
-				if (sprites_ghosts[i].posLeft==35){ sprites_ghosts[i].posLeft = 565;}
-				if (sprites_ghosts[i].posLeft==575){ sprites_ghosts[i].posLeft = 35;}
+		if (document.getElementById('cell-' + sprites_ghosts[i].posLeft+ '-' + parseInt(sprites_ghosts[i].posTop))){
+			if (document.getElementById('cell-' + parseInt(sprites_ghosts[i].posLeft) + '-' + parseInt(sprites_ghosts[i].posTop)).classList.contains('mazeTunnel')){
+				if (sprites_ghosts[i].posLeft==35){ sprites_ghosts[i].posLeft = 565+"px";}
+				if (sprites_ghosts[i].posLeft==575){ sprites_ghosts[i].posLeft = 35+"px";}
 			}
 		}
 	}
@@ -793,8 +793,8 @@ function reset(){
 	if (ghostsTimer){ clearTimeout(ghostsTimer);}
 	if (gameTimer){ clearTimeout(gameTimer);}
 
-	divPacman.top=pacStartTop;
-	divPacman.left=pacStartLeft;
+	divPacman.top=pacStartTop+"px";
+	divPacman.left=pacStartLeft+"px";
 
 	document.getElementById("pacman").style.display="block";
 	document.getElementById("pacman").classList.remove("pacman_8");
@@ -807,12 +807,12 @@ function reset(){
 	sprite_pacman.posTop = parseInt(divPacman.top);
 
 	for (i=0;i<total_ghosts;i++){
-		ghostDiv[i].top = ghostStartTop;
-		ghostDiv[i].left = ghostStartLeft;
-		leftG[i] = ghostStartLeft;
-		topG[i] = ghostStartTop; 
-		sprites_ghosts[i].posTop=ghostStartTop;
-		sprites_ghosts[i].posLeft=ghostStartLeft;
+		ghostDiv[i].top = ghostStartTop+"px";
+		ghostDiv[i].left = ghostStartLeft+"px";
+		leftG[i] = ghostStartLeft+"px";
+		topG[i] = ghostStartTop+"px"; 
+		sprites_ghosts[i].posTop=ghostStartTop+"px";
+		sprites_ghosts[i].posLeft=ghostStartLeft+"px";
 		sprites_ghosts[i].vulnerable=true;
 		vulnerable[i] = true;
 		ghostSrc[i].src=ghostImgs[i].src;
@@ -995,8 +995,8 @@ var class_pacman = function(startLeft,startTop){
 	this.move = function(){
 
 		// 1. Look up the possible moves from the current position
-		if (mazedata[this.posTop] && mazedata[this.posTop][this.posLeft]){ //' queried as part of moveInc
-			pac_possibilities = mazedata[this.posTop][this.posLeft];
+		if (mazedata[this.posTop] && mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]){ // queried as part of moveInc
+			pac_possibilities = mazedata[parseInt(this.posTop)][parseInt(this.posLeft)];
 		} else {
 			pac_possibilities = ""; // set as part of moveInc
 		}
@@ -1034,10 +1034,10 @@ var class_pacman = function(startLeft,startTop){
 			}
 
 			// 5. Move the sprite on screen to correspond to the direction
-			if (movekey==8) {divPacman.top=(this.posTop-moveInc);  this.posTop=this.posTop-moveInc;}
-			if (movekey==4) {divPacman.top=(this.posTop+moveInc);  this.posTop=this.posTop+moveInc;}
-			if (movekey==2) {divPacman.left=(this.posLeft-moveInc); this.posLeft=this.posLeft-moveInc;}
-			if (movekey==1) {divPacman.left=(this.posLeft+moveInc); this.posLeft=this.posLeft+moveInc;}
+			if (movekey==8) {divPacman.top=(parseInt(this.posTop)-moveInc)+"px";  this.posTop=parseInt(this.posTop)-moveInc;}
+			if (movekey==4) {divPacman.top=(parseInt(this.posTop)+moveInc)+"px";  this.posTop=parseInt(this.posTop)+moveInc;}
+			if (movekey==2) {divPacman.left=(parseInt(this.posLeft)-moveInc)+"px"; this.posLeft=parseInt(this.posLeft)-moveInc;}
+			if (movekey==1) {divPacman.left=(parseInt(this.posLeft)+moveInc)+"px"; this.posLeft=parseInt(this.posLeft)+moveInc;}
 			//alert("ooalert Its engaged - just moved");
 
 
@@ -1217,8 +1217,9 @@ var class_ghost = function(name,number){
 
 
 	// Below not yet working. Move graphic??
+	console.log(levelOptions);
 	if (levelOptions.ghostStartTop){
-		this.posTop=levelOptions.ghostStartTop;
+		this.posTop=parseInt(levelOptions.ghostStartTop);
 	}
 	this.possibleMoves = "";
 
@@ -1282,7 +1283,7 @@ var class_ghost = function(name,number){
 		} else if (this.mode=="random") { // random
 
 				//possibilities=possibilities.replace(/X/g,"");
-				if (mazedata[this.posTop][this.posLeft] == "3" && !this.onPath){// ghosts can only re-enter the home base when on a path to regenerate 
+				if (mazedata[parseInt(this.posTop)][parseInt(this.posLeft)] == "3" && !this.onPath){// ghosts can only re-enter the home base when on a path to regenerate 
 					ghost_possibilities=ghost_possibilities.replace(/5/g,"");
 				}
 				if (howMany>2){ // NB: having howmany>2 gives more chances for the ghosts to backtrack on themsleves, making them easier to catch.
@@ -1307,8 +1308,8 @@ var class_ghost = function(name,number){
 			//if (sit_rand_direction==0){ sit_rand_direction==2;}
 			//if (ghost_possibilities & sit_rand_direction){ ghostDir[who]=sit_rand_direction; } 
 			//ghostDir[who] = headFor(who,ghostHomeBase);
-			if (this.posTop==ghostStartTop && this.posLeft==ghostStartLeft) { this.direction=8; }
-			else if (this.posTop==ghostStartTop-60 && this.posLeft==ghostStartLeft) { this.direction=4; }
+			if (parseInt(this.posTop)==ghostStartTop && parseInt(this.posLeft)==ghostStartLeft) { this.direction=8; }
+			else if (parseInt(this.posTop)==ghostStartTop-60 && parseInt(this.posLeft)==ghostStartLeft) { this.direction=4; }
 			else { this.direction = this.headFor(who,ghostHomeBase); }
 		}
 
@@ -1330,16 +1331,16 @@ var class_ghost = function(name,number){
 
 		// simple rules first where the opposite direction to where you want to go does not exist
 		// note that if there is an U/D it will always superseed a L/R direciton!! This was originally written as when ghoss head for home the last move they need to make is down so /L/R cannot take precedence!
-		if (this.posLeft > where[0] && (currentCell & 2) && !(this.direction & 1) && this.direction != null){ // if you should go left and can go left and can't go right
+		if (parseInt(this.posLeft) > where[0] && (currentCell & 2) && !(this.direction & 1) && this.direction != null){ // if you should go left and can go left and can't go right
 			dir = 2;
-		} else if (this.posLeft <= where[0] && (currentCell & 1) && !(this.direction & 2) && this.direction != null){  // if you should go right and can go right and can't go left
+		} else if (parseInt(this.posLeft) <= where[0] && (currentCell & 1) && !(this.direction & 2) && this.direction != null){  // if you should go right and can go right and can't go left
 			dir= 1;
 		}
 
-		if (this.posTop > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){ // if you should go up and can go up and can't go down
+		if (parseInt(this.posTop) > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){ // if you should go up and can go up and can't go down
 			dir=8;
-		} else if (this.posTop <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){ // if you should go down and can go down and can't go up
-			if (this.posTop==145 && this.posLeft==305 && !this.onPath){ // This code and comment looks questionable: 
+		} else if (parseInt(this.posTop) <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){ // if you should go down and can go down and can't go up
+			if (parseInt(this.posTop)==145 && parseInt(this.posLeft==305) && !this.onPath){ // This code and comment looks questionable: 
 				// cant go back to ghost house - just send them right, whatever..
 				dir=1;
 			} else {
@@ -1401,7 +1402,7 @@ var class_ghost = function(name,number){
 		// Loopbreaker
 		if (this.mode=="homing" && this.homing_stack.length>1){
 			for (pastMove in this.homing_stack){
-				if (this.posLeft==this.homing_stack[pastMove]['x'] && this.posTop==this.homing_stack[pastMove]['y'] && dir == this.homing_stack[pastMove]['d']){
+				if (parseInt(this.posLeft)==this.homing_stack[pastMove]['x'] && parseInt(this.posTop)==this.homing_stack[pastMove]['y'] && dir == this.homing_stack[pastMove]['d']){
 					this.homing_loop=1;
 					console.error("Stuck in a loop!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 					console.log(this.homing_stack);
@@ -1421,7 +1422,7 @@ var class_ghost = function(name,number){
 		var legal = currentCell & dir;
 
 		if (!legal){
-			console.log("PROGRAM GENERATED AN ILLEGAL MOVE"); // one very useful error message when developing!
+			console.log("PROGRAM GENERATED AN ILLEGAL MOVE ",currentCell,dir); // one very useful error message when developing!
 			onPause=1;	
 		}
 		return dir;
@@ -1457,15 +1458,15 @@ var class_ghost = function(name,number){
 
 		// update position variable, and then position
 		myDir=this.direction;
-		if (myDir == 8) {this.posTop=(this.posTop-moveInc); 	topG[wg] = (topG[wg]-moveInc); 	 ghostDiv[wg].top = this.posTop; } 
-		if (myDir == 4) {this.posTop=(this.posTop+moveInc); 	topG[wg] = (topG[wg]+moveInc); 	 ghostDiv[wg].top = this.posTop; } 
-		if (myDir == 2) {this.posLeft=(this.posLeft-moveInc); 	leftG[wg] = (leftG[wg]-moveInc); ghostDiv[wg].left = this.posLeft; } 
-		if (myDir == 1) {this.posLeft=(this.posLeft+moveInc);	leftG[wg] = (leftG[wg]+moveInc); ghostDiv[wg].left = this.posLeft; }
+		if (myDir == 8) {this.posTop=(parseInt(this.posTop)-moveInc)+"px"; 	topG[wg] = (topG[wg]-moveInc); 	 ghostDiv[wg].top = this.posTop; } 
+		if (myDir == 4) {this.posTop=(parseInt(this.posTop)+moveInc)+"px"; 	topG[wg] = (topG[wg]+moveInc); 	 ghostDiv[wg].top = this.posTop; } 
+		if (myDir == 2) {this.posLeft=(parseInt(this.posLeft)-moveInc)+"px"; 	leftG[wg] = (leftG[wg]-moveInc); ghostDiv[wg].left = this.posLeft; } 
+		if (myDir == 1) {this.posLeft=(parseInt(this.posLeft)+moveInc)+"px";	leftG[wg] = (leftG[wg]+moveInc); ghostDiv[wg].left = this.posLeft; }
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
 		if (this.onPath){
 			// if it's home, reset it to not vulnerable and back to correct image
-			if (this.posLeft == ghostHomeBase[0] && this.posTop == ghostHomeBase[1]){
+			if (parseInt(this.posLeft) == ghostHomeBase[0] && parseInt(this.posTop) == ghostHomeBase[1]){
 				if (!won){ this.onPath = false; }
 				this.vulnerable = false;
 				ghostSrc[wg].src=ghostImgs[wg].src;
@@ -1484,8 +1485,8 @@ var class_ghost = function(name,number){
 		}
 
 		// detect collision
-		if (sprite_pacman.posLeft > this.posLeft-closeness && sprite_pacman.posLeft < this.posLeft+closeness && sprite_pacman.posTop > this.posTop-closeness && sprite_pacman.posTop < this.posTop+closeness && 
-			(sprite_pacman.posLeft == this.posLeft || sprite_pacman.posTop == this.posTop || this.vulnerable)) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. If the ghost is vulnerable, i've decided to let this through though.. 
+		if (parseInt(sprite_pacman.posLeft) > parseInt(this.posLeft)-closeness && parseInt(sprite_pacman.posLeft) < parseInt(this.posLeft)+closeness && parseInt(sprite_pacman.posTop) > parseInt(this.posTop)-closeness && parseInt(sprite_pacman.posTop) < parseInt(this.posTop)+closeness && 
+			(parseInt(sprite_pacman.posLeft) == parseInt(this.posLeft) || parseInt(sprite_pacman.posTop) == parseInt(this.posTop) || this.vulnerable)) // this ensures not on a corner, as the closeness is not correct - pacman makes a move down and the ghost goes accross and therefore matches with the rest of the equation - which we don't want - it means you can't get away. If the ghost is vulnerable, i've decided to let this through though.. 
 			{
 
 			// if no Powerpill and game not won and ghost not on path, you've lost a life
@@ -1538,12 +1539,12 @@ var class_ghost = function(name,number){
 				this.vulnerable = false;
 				this.onPath = true;
 				
-				document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghost" + wg).style.top));
-				document.getElementById("ghostscore" + wg).style.left=(parseInt(document.getElementById("ghost" + wg).style.left));
+				document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghost" + wg).style.top))+"px";
+				document.getElementById("ghostscore" + wg).style.left=(parseInt(document.getElementById("ghost" + wg).style.left))+"px";
 				document.getElementById("ghostscore" + wg).innerHTML=ghostscore;
 				document.getElementById("ghostscore" + wg).classList.add("trans"); 
 				document.getElementById("ghostscore" + wg).style.opacity=0;
-				document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghostscore" + wg).style.top-30));
+				document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghostscore" + wg).style.top-30))+"px";
 
 				score += ghostscore;
 				ghostscore+=50;
