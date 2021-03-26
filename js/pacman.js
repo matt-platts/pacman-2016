@@ -838,7 +838,7 @@ function resetLevel(){
 		reset();
 		startNewLevel();
 	} else {
-		location="intropage.html";
+		top.location.reload();
 	}
 }
 
