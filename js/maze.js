@@ -521,7 +521,7 @@ function randomMaze(){
  * Function: joinSingleBlocks
  * Meta: The random generation can sometimes make lots of single squares of wall. These don't look too great, but this function joins two isolated squares on the horizontal only and solves that nicely :) 
  *       Would be worth doing it on the vertical as well perhaps?
- *       Would like to find a better way of looking this data up first however, thats 15 conditions to identify this below!
+ *       Would like to find a better way of looking this data up first however, thats 15 conditions to identify this below! This will be a fun project on it's own!
  */
 function joinSingleBlocks(data){
 
