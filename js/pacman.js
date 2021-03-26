@@ -168,6 +168,7 @@ var effect;
 var effectTimer=0;
 var invincibility = 0;// new feature
 var speedball = 0; // new feature
+var constrainMovesToCells = 0;
 
 // start positions - still needs to be calculated from the maze data in time 
 if (!pacStartTop){
@@ -994,15 +995,24 @@ var class_pacman = function(startLeft,startTop){
 
 	this.move = function(){
 
+		//Note: For binary lookup, 1=right, 2=left, 4=down, 8=up
 		// 1. Look up the possible moves from the current position
-		if (mazedata[this.posTop] && mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]){ // queried as part of moveInc
+		if (mazedata[this.posTop] && mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]){ // queried as s.part of moveInc
 			pac_possibilities = mazedata[parseInt(this.posTop)][parseInt(this.posLeft)];
 		} else {
-			pac_possibilities = ""; // set as part of implementing moveInc var as pacman now moves in increments less than 10 so there may be no data
-						// however, we should always be able to go in the opposite direction if this condition is true, 
-						// and we should allow this in the code - TO DO!
+			pac_possibilities = ""; 
+			
+			if (!constrainMovesToCells){
+				if (this.direction==1 || this.direction==2){
+					pac_possibilities = 3; // allow opposites of L & R if no cell data 
+				} else if (this.direction== 4 || this.direction == 8){
+					pac_possibilities = 12; // allow opposites of D and U if no cell data 
+				}
+			}
 		}
-
+		//console.log(pac_possibilities);
+		
+		
 		// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
 		if (pac_possibilities && (pac_possibilities & newkey)) {
 
@@ -1040,7 +1050,8 @@ var class_pacman = function(startLeft,startTop){
 			if (movekey==4) {divPacman.top=(parseInt(this.posTop)+moveInc)+"px";  this.posTop=parseInt(this.posTop)+moveInc;}
 			if (movekey==2) {divPacman.left=(parseInt(this.posLeft)-moveInc)+"px"; this.posLeft=parseInt(this.posLeft)-moveInc;}
 			if (movekey==1) {divPacman.left=(parseInt(this.posLeft)+moveInc)+"px"; this.posLeft=parseInt(this.posLeft)+moveInc;}
-			//alert("ooalert Its engaged - just moved");
+			this.direction=movekey;
+			//alert("Its engaged - just moved");
 
 
 			//console.log("Top: " + this.posTop + " Left: " + this.posLeft);
