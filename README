@@ -1,19 +1,25 @@
 2016 update of my Javascript Pacman game from 1999 (also on github).
 
-See www.mattplatts.com/pacman/, or www.mattplatts.com/pacman-original for the 1999 original.
+See www.mattplatts.com/pacman/
 
 The original version was built for IE4 and Netscape 4, and was updated to support Netscape 6 in 2001, Chrome and Firefox in 2009, and I decided to look at it again in 2016 to see how it could be improved.
 
-Improvements so far have been:
+Improvements so far have been numerous:
 
-1. Generate the mazes from far simpler data - mainly 0s and 1s - and use this data to draw the maze in css as opposed to a graphic, as well as use it for the basis of game calculations. 
-2. CSS animated pacman - the original gif did not play when it moved across the screen.
-3. Removal of frameset (in order to store data between different levels in a hidden frame - how very 1999!), and removeal of hard coded html pages for each level, in favour of local storage and dynamic loading and rendering of maze data between levels.
-4. Re-implementation of ghost algorithms. The original version had randomly moving ghosts which could only detect if you were in their direct line of sight and act accordingly. New implementation features scatter, chase and random modes which can be switched depending on various variables. They can now home in on you from afar if they so choose. I am still working on the exact timings of these modes and intend to implement some selectable options for game play. 
-5. New logic allowing modifications to the speed of pacman on the fly, consequently better collision detection too. Previously there was an issue when going round corners anyway as the change in direction of pacman compared to a ghost moving towards you ended up generating collosions when it should not..
-6. Delay ghosts leaving home base incrementally (as per original NAMCO game).
-7. Conversion of maze junction data from 'expensive' to work with data to binary, in order to employ much leaner bitwise maths. Has meant changing direction conversion from UDLR to 1248 as well.
-8. Tidying up of code and commenting (ongoing, I am getting onto those eval's which are still left). 
+1. Generate the mazes from far simpler data than the huge data array of possible directions - now it is mainly 0s and 1s - and use this data to draw the maze in css as opposed to using a background graphic, as well as using it for the basis of game calculations. 
+2. CSS animated pacman rather than a gif 
+3. Removal of <frameset> (in order to store data between different levels in a hidden frame - how very 1999!), and removal of hard coded html pages for each level, in favour of local storage and dynamic loading and rendering of maze data between levels.
+4. Re-implementation of ghost algorithms. The original version had randomly moving ghosts which could only detect if you were in their direct line of sight and act accordingly. New implementation features scatter, chase and random modes similar to that of the original game, which can be switched as required. They can now home in on you from afar if they so choose.
+5. New logic allowing modifications to the speed of pacman outside of the game loop
+6. Better collision detection. 
+6. Delay ghosts leaving home base incrementally rather than them all exiting at once (as per original NAMCO game).
+7. Conversion of maze junction data from 'expensive' to work with data to binary data, in order to employ leaner bitwise maths and less storage required.
+8. Tidying up of code and commenting. 
+
+2019
+
+9. Implemented a random maze generation feature using a recursive backtracker algorithm, tweaked again in 2021. Just this in itself is an entire project! Anyhow, you can now play the originally designed 10 levels, or randomly generated levels. 
+10. Began implemented a proper OO architecture to the code. At least, managed to create classes for pacman and the ghosts and have these run as objects in the game. Plenty still to be done here.
 
 Future improvements will be
 
@@ -27,4 +33,4 @@ Future improvements will be
 Currently known bugs / issues / thoughts
 1. Firefox testing didn't go well (Chrome and IE seemed fine)
 2. Not tested in Safari, Opera or any other browser.
-
+3. There is some weird issue with the DOCTYPE declaration on pacman.html - it won't work with any known doctype (Chrome), but runs fine with no doctype. There's a rabbit hole to go down here, I may be some time...
