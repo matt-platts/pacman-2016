@@ -186,7 +186,7 @@ if (sessionStorage && sessionStorage.level==2) {
 }
 var thisfruit=0;
 var fruitArray = new Array(true,true,true);
-var qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4); // how many directions are there for each junction? Quick lokup table to avoid calculating number of possible directions at a junction
+var qty_bits_lookup=Array(0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4); // how many directions are there for each junction? Quick lokup table to avoid calculating number of possible directions at every junction
 
 /* Function: init
  * Meta: init() was originally called from the body onLoad attribute, now it is called after the dynamically loaded javascript maze for the first level. 
@@ -235,7 +235,7 @@ function init(){
 	ghostData = new Array (6,7,9,10); // used later to test for if opposite directions are present
 	leftG = new Array; topG = new Array; possG = new Array;
 	vulnerable = new Array (true, true, true, true); // are the ghosts vulnerable at this point in time? Set to false when eaten and homing..
-	onPath = new Array (false, false, false, false); // array showing if ghost is on a path (onPath means a path to the home base after being eaten)
+	onPathHome = new Array (false, false, false, false); // array showing if ghost is on a path (onPathHome means a path to the home base after being eaten)
 
 	if (sessionStorage){
 		if (sessionStorage.level>1){
@@ -262,20 +262,19 @@ function init(){
 /*
  * Function: startGate
  * Meta: This is purely a wrapper around start(), and called the first time from the callback in pacman.html
- *       There is no different functionality to start() here any longer, but there may be so leaving it in
+ *       There is no different functionality to start() here any longer, but leaving it in as I may want some in the future
  */
 function startGame(sprites){
-	//alert("ooalert and were off");
 	start(sprites); // kick off the game timers. This needs to be called for each level and hence is not part of init()
 }
 
 /* 
  * SECTION 2 - Originally the two main loop functions - ghosts (for running the ghosts) and move (for dealing with all the keypresses etc and moving pacman)
- * 	     - now only contains the gameLoop() function - which should arguably be renamed now.
+ * 	     - now only contains the gameLoop() function 
 */
 
 /* 
- * Function: ghosts
+ * Function: gameLoop
  * Meta: Deals with the ghosts movements on a recurring timer as one of the main game loops. 
  *       Collision detection is also a part of this loop and not a part of the 'move' loop..
  * 
@@ -320,7 +319,7 @@ function gameLoop(){
 
 	if (ppTimer == ghostBlinkLifetime) {
 		for(i=0;i<total_ghosts;i++){
-			if (!sprites_ghosts[i].onPath) {
+			if (!sprites_ghosts[i].onPathHome) {
 				if (sprites_ghosts[i].vulnerable) { ghostSrc[i].src=ghostImgs[5].src;}
 				if (fx){
 					divName = "ghost" + i;
@@ -339,10 +338,10 @@ function gameLoop(){
 		sprite_pacman.speed=speed; // set pacman speed back to normal
 		document.getElementById("maze").classList.remove("spin");
 		for(i=0;i<total_ghosts;i++){
-			if (!sprites_ghosts[i].onPath) {
+			if (!sprites_ghosts[i].onPathHome) {
 				ghostSrc[i].src = ghostImgs[i].src;
-				onPath[i]=false
-				sprites_ghosts[i].onPath=false;
+				onPathHome[i]=false
+				sprites_ghosts[i].onPathHome=false;
 				divName = "ghost" + i;
 				document.getElementById(divName).classList.remove('spin');
 				vulnerable[i] = true;
@@ -365,7 +364,7 @@ function gameLoop(){
 // binary lookup of the above (not yet working)
 //for (i=0;i<total_ghosts;i++){
 //		if ( mazedata[topG[i]] && mazedata[topG[i]][parseInt(leftG[i])]){ 
-//			ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // somehow need to get this from the binary lookup
+//			ghostPos = mazedata[topG[i]][parseInt(leftG[i])]; // ideally, somehow need to get this from the binary grid 
 //			if (ghostPos && (ghostPos == "4")){
 //			alert("it is four");
 //				if (ghostDir[i] ==2) {leftG[i] = 555; }
@@ -406,6 +405,7 @@ function gameLoop(){
 /* 
  * Function gameModes
  * Meta: This is run at the beginning of the ghosts function to both get, and set, the game mode on a timer.
+ *       The modes control the movement of the ghosts, which are scatter, chase and random
 */
 function gameModes(){
 
@@ -536,7 +536,7 @@ function headFor(who,where){
 	if (topG[who] > where[1] && (currentCell & 8) && !(ghostDir[who] & 4) && ghostDir[who] != null){
 		dir=8;
 	} else if (topG[who] <= where[1] && (currentCell & 4) && !(ghostDir[who] & 8) && ghostDir[who] != null){
-		if (topG[who]==145 && leftG[who]==305 && !onPath[who]){
+		if (topG[who]==145 && leftG[who]==305 && !onPathHome[who]){
 			// cant go back to ghost house - just send them right, whatever..
 			dir=1;
 		} else {
@@ -751,7 +751,7 @@ function keyLogic(keyIn){
 	else if (keyIn=="82" || keyIn=="114"){ resetLevel();}
 
 	// quit (q)
-	else if (keyIn=="81" || keyIn=="113"){ top.location.reload();}
+	else if (keyIn=="81" || keyIn=="113"){ location="intropage.html";}
 
 	// game pause key (p)
 	else if (keyIn=="80" || keyIn=="112"){
@@ -838,7 +838,7 @@ function resetLevel(){
 		reset();
 		startNewLevel();
 	} else {
-		top.location.reload();
+		location="intropage.html";
 	}
 }
 
@@ -998,7 +998,9 @@ var class_pacman = function(startLeft,startTop){
 		if (mazedata[this.posTop] && mazedata[parseInt(this.posTop)][parseInt(this.posLeft)]){ // queried as part of moveInc
 			pac_possibilities = mazedata[parseInt(this.posTop)][parseInt(this.posLeft)];
 		} else {
-			pac_possibilities = ""; // set as part of moveInc
+			pac_possibilities = ""; // set as part of implementing moveInc var as pacman now moves in increments less than 10 so there may be no data
+						// however, we should always be able to go in the opposite direction if this condition is true, 
+						// and we should allow this in the code - TO DO!
 		}
 
 		// 2. If the latest key press has generated a character in the possible moves array, set 'engage', set the movekey var to this key, and also the lastkey var
@@ -1053,7 +1055,7 @@ var class_pacman = function(startLeft,startTop){
 				this.eatPill();
 			}
 
-			// Give extra lives at 5000 and 1000 points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is set. 
+			// Give extra lives at various points. As points may increment considerably on a single cell (although rare) 1000 points leeway for checking is set. 
 			if (score>=5000 && score <6000 && exlife1) {
 				exlife1=0; sessionStorage.exlife1 = 0;
 				lives++; sessionStorage.lives = lives; lifeform.value = lives;
@@ -1138,7 +1140,7 @@ var class_pacman = function(startLeft,startTop){
 		// check if game won
 		if (pilcount >= pillNumber) {
 			won = true
-			onPath[0]=true; onPath[1]=true; onPath[2]=true;onPath[3]=true;
+			onPathHome[0]=true; onPathHome[1]=true; onPathHome[2]=true;onPathHome[3]=true;
 			document.getElementById("pacman").style.display="none";
 			levelEnd();
 		}
@@ -1183,7 +1185,7 @@ var class_pacman = function(startLeft,startTop){
 		powerpilon = true;
 		//document.getElementById("maze").classList.add("spin"); // mushrooms 
 		for(i=0;i<total_ghosts;i++){
-			if (!sprites_ghosts[i].onPath){
+			if (!sprites_ghosts[i].onPathHome){
 				ghostSrc[i].src = ghostImgs[4].src;
 				vulnerable[i]=true;
 				sprites_ghosts[i].vulnerable=true;
@@ -1206,7 +1208,7 @@ var class_ghost = function(name,number){
 	this.posLeft 	= parseInt(document.getElementById(this.elementId).style.left);
 	this.posTop 	= parseInt(document.getElementById(this.elementId).style.top);
 	this.vulnerable = false;
-	this.alive	= 1; // gets rid of the onPath global
+	this.alive	= 1; // gets rid of the onPathHome global
 	this.mode	="scatter"; // mode (chase, scatter, frightened, sit, homing)
 	this.leftBase	= 0; // bool for has left home base
 	this.direction 	= 8; //  one of the ghosts starts in a position with no moves,it needs to move up to get an 'official' position otherwise it never starts
@@ -1239,7 +1241,7 @@ var class_ghost = function(name,number){
 	this.generateGhostDir= function(who,howMany,ghost_possibilities) {
 
 		currentTime = timeform.value;
-		if (this.onPath){
+		if (this.onPathHome){
 			this.mode="homing";
 		} else if (this.releaseDelay < currentTime){
 			this.mode="sit";
@@ -1255,7 +1257,7 @@ var class_ghost = function(name,number){
 
 		if (this.mode=="scatter" && dice < 7){
 
-			if (!this.onPath){
+			if (!this.onPathHome){
 				     if (who==0){ headLeft = 535; headUp=435;} // red
 				else if (who==1){ headLeft = 35; headUp=35;} // blue
 				else if (who==2){ headLeft = 535; headUp=35;} // pink
@@ -1265,7 +1267,7 @@ var class_ghost = function(name,number){
 
 		} else if (this.mode=="chase" && dice < 7){
 
-			if (!this.onPath){
+			if (!this.onPathHome){
 				headLeft = parseInt(divPacman.left);
 				headUp= parseInt(divPacman.top);
 				this.direction = this.headFor(who,Array(headLeft,headUp));
@@ -1283,14 +1285,14 @@ var class_ghost = function(name,number){
 		} else if (this.mode=="random") { // random
 
 				//possibilities=possibilities.replace(/X/g,"");
-				if (mazedata[parseInt(this.posTop)][parseInt(this.posLeft)] == "3" && !this.onPath){// ghosts can only re-enter the home base when on a path to regenerate 
+				if (mazedata[parseInt(this.posTop)][parseInt(this.posLeft)] == "3" && !this.onPathHome){// ghosts can only re-enter the home base when on a path to regenerate 
 					ghost_possibilities=ghost_possibilities.replace(/5/g,"");
 				}
 				if (howMany>2){ // NB: having howmany>2 gives more chances for the ghosts to backtrack on themsleves, making them easier to catch.
 					ghost_possibilities=this.excludeOppositeDirection(who,ghost_possibilities);
 					howMany--;
 				}
-				if (!this.onPath){
+				if (!this.onPathHome){
 
 					random_direction = Math.floor(Math.random() *(howMany)) + 1;
 					this.direction=randomDir(ghost_possibilities,random_direction);	
@@ -1340,7 +1342,7 @@ var class_ghost = function(name,number){
 		if (parseInt(this.posTop) > where[1] && (currentCell & 8) && !(this.direction & 4) && this.direction != null){ // if you should go up and can go up and can't go down
 			dir=8;
 		} else if (parseInt(this.posTop) <= where[1] && (currentCell & 4) && !(this.direction & 8) && this.direction != null){ // if you should go down and can go down and can't go up
-			if (parseInt(this.posTop)==145 && parseInt(this.posLeft==305) && !this.onPath){ // This code and comment looks questionable: 
+			if (parseInt(this.posTop)==145 && parseInt(this.posLeft==305) && !this.onPathHome){ // This code and comment looks questionable: 
 				// cant go back to ghost house - just send them right, whatever..
 				dir=1;
 			} else {
@@ -1453,8 +1455,8 @@ var class_ghost = function(name,number){
 			}
 		}
 
-		// 4. if basicVision is set, and ghost is not onPath to home, compare ghost positions to your position & if it can see you, adjust direction.
-		if (!this.onPath && basicVision === true) { checkBasicVision(wg) }
+		// 4. if basicVision is set, and ghost is not onPathHome to home, compare ghost positions to your position & if it can see you, adjust direction.
+		if (!this.onPathHome && basicVision === true) { checkBasicVision(wg) }
 
 		// update position variable, and then position
 		myDir=this.direction;
@@ -1464,10 +1466,10 @@ var class_ghost = function(name,number){
 		if (myDir == 1) {this.posLeft=(parseInt(this.posLeft)+moveInc)+"px";	leftG[wg] = (leftG[wg]+moveInc); ghostDiv[wg].left = this.posLeft; }
 
 		// For the path stuff... if it goes off the maze (er.. this means there is an error somehow int the mazedata array!), then immediately return to home.
-		if (this.onPath){
+		if (this.onPathHome){
 			// if it's home, reset it to not vulnerable and back to correct image
 			if (parseInt(this.posLeft) == ghostHomeBase[0] && parseInt(this.posTop) == ghostHomeBase[1]){
-				if (!won){ this.onPath = false; }
+				if (!won){ this.onPathHome = false; }
 				this.vulnerable = false;
 				ghostSrc[wg].src=ghostImgs[wg].src;
 				ghostDir[wg] = 8;
@@ -1491,7 +1493,7 @@ var class_ghost = function(name,number){
 
 			// if no Powerpill and game not won and ghost not on path, you've lost a life
 			// or pill is on but ghost is not vulnerable then same
-			if ((ppTimer=="0" && !won && !this.onPath && !invincibility) || (ppTimer>="1" && !this.vulnerable && !this.onPath && !invincibility)) {
+			if ((ppTimer=="0" && !won && !this.onPathHome && !invincibility) || (ppTimer>="1" && !this.vulnerable && !this.onPathHome && !invincibility)) {
 				lives = (lives-1);
 				score -= 50;
 				scoreform.value = score;
@@ -1537,7 +1539,7 @@ var class_ghost = function(name,number){
 			} else if (ppTimer>="1" && this.vulnerable) {
 				ghostSrc[wg].src=eyes.src;
 				this.vulnerable = false;
-				this.onPath = true;
+				this.onPathHome = true;
 				
 				document.getElementById("ghostscore" + wg).style.top=(parseInt(document.getElementById("ghost" + wg).style.top))+"px";
 				document.getElementById("ghostscore" + wg).style.left=(parseInt(document.getElementById("ghost" + wg).style.left))+"px";
