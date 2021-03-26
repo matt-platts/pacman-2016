@@ -85,20 +85,36 @@ var sprite_pacman;
 var sprites_ghosts;
 
 // initial settings. these should be increased at around 10000 points?
+var moveInc = parseInt(sessionStorage.moveInc); 
+
+// time dependent vars
 var powerPillLifetime=400; // how many iterations the powerpill lasts for - hard is 120. 200 for moveInc 5, 400 for moveInc 2
 var ghostBlinkLifetime=65; // how long the ghosts blink for within the power pill. Hard is 15.
 var fruitLifetime=345; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2, then 395 in 2021 as its too hard)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
-var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you in ALL modes or not. 
-var scatterTime = 600; // how long ghosts remain in scatter mode before switching to chase mode
+var scatterTime = 600; // how long ghosts remain in scatter mode before switching to chase mode to start (this decrements as the game goes on)
 var chaseTime = 50; // how long the ghosts remain in chase mode
+var speed = sessionStorage.speed;
+var gameTime = sessionStorage.gameTime;
+
+if (moveInc==1) { // double these for movement in single pixels, however pacmans speed won't make much difference at moveInc 1, it's already as fast as the processor can manage!  
+	powerPillLifetime=800;
+	ghostBlinkLifetime=130;
+	fruitLifetime=690;
+	messageLifetime=3000;
+	scatterTime = 1200;
+	chaseTime = 100;
+	gameTime = gameTime*2;
+	speed = speed; // IT WON'T GO FAST ENOUGH!!!! LET ALONE WHEN THE POWERUP FUNCTION INCREASES THE SPEED!
+}
+
+var basicVision = sessionStorage.basicVision; // turns on whether ghosts move towards you if they can see you in ALL modes or not. 
 var mode = "scatter" // the initial mode for starting the game
 var previousMode = "scatter"; // simply ensures it is set to avoid error if there is no previous mode yet..
 var levelOptions; // may contain an array set in each mazedata js file, or may be undefined. This ensures it exists..
 var ghosts_names = new Array("Blinky","Pinky","Inky","Clyde");
 var ghostSrc = new Array(document.images.gst0,document.images.gst1,document.images.gst2,document.images.gst3);
 var total_ghosts=ghosts_names.length; // editable and only really used for debugging - ie set to 1 and read the console logs for one ghost as its easier than deciphering 4..
-var moveInc = parseInt(sessionStorage.moveInc); 
 
 // pull in session storage vars - these are (to be) all settable from the settins page - the game will be entirely configurable and come in 'flavours' eventually...
 var lives = parseInt(sessionStorage.lives);
@@ -109,8 +125,6 @@ var exlife3 = sessionStorage.exlife3;
 var exlife4 = sessionStorage.exlife4;
 var exlife5 = sessionStorage.exlife5;
 var exlife6 = sessionStorage.exlife6;
-var speed = sessionStorage.speed;
-var gameTime = sessionStorage.gameTime;
 var level = sessionStorage.level;
 var fx = sessionStorage.fx; // standard effects include spin in sprites if pacman is eaten, and maze spin between levels
 var extras = sessionStorage.extras; // experimental extra features 
@@ -127,7 +141,7 @@ var mazeNo=0;
 var ghostscore=50;
 var nextfruitscore=score+600;
 
-// set up images sources - note ghost imgs 1-4 have meen moved to an array based architecture
+// set up images sources
 ghostImgs = new Array(new Image,new Image,new Image, new Image, new Image, new Image);
 ghostImgs[0].src = 'graphics/ghost_red.gif';
 ghostImgs[1].src = 'graphics/ghost_pink.gif';
@@ -139,7 +153,7 @@ ghostImgs[5].src = 'graphics/ghost6.gif';
 eyes = new Image;
 eyes.src = 'graphics/eyes.gif';
 blank = new Image;
-blank.src = 'graphics/blank.gif';
+blank.src = 'graphics/blank.gif'; // for replacing an eaten pill with a blank image. How very 1998!
 
 fruitImgs = new Array(new Image, new Image, new Image);
 fruitImgs[0].src='graphics/cherry.gif';
@@ -263,7 +277,7 @@ function init(){
 /*
  * Function: startGate
  * Meta: This is purely a wrapper around start(), and called the first time from the callback in pacman.html
- *       There is no different functionality to start() here any longer, but leaving it in as I may want some in the future
+ *       There is no different functionality to start() here any longer, but leaving it in as I feel that I may want some in the future
  */
 function startGame(sprites){
 	start(sprites); // kick off the game timers. This needs to be called for each level and hence is not part of init()
