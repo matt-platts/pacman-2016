@@ -90,7 +90,7 @@ var moveInc = parseInt(sessionStorage.moveInc);
 // time dependent vars
 var powerPillLifetime=400; // how many iterations the powerpill lasts for - hard is 120. 200 for moveInc 5, 400 for moveInc 2
 var ghostBlinkLifetime=65; // how long the ghosts blink for within the power pill. Hard is 15.
-var fruitLifetime=345; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2, then 395 in 2021 as its too hard)
+var fruitLifetime=400; // how many iterations a piece of fruit stays on screen - hard is 80 (moved from 95 to 195 as part of moveInc 5, or 295 for moveInc 2, then 395 in 2021 as its too hard)
 var messageLifetime=1500; // millisecons for the duration of a message (life lost, get ready etc)
 var scatterTime = 600; // how long ghosts remain in scatter mode before switching to chase mode to start (this decrements as the game goes on)
 var chaseTime = 50; // how long the ghosts remain in chase mode
@@ -100,7 +100,7 @@ var gameTime = sessionStorage.gameTime;
 if (moveInc==1) { // double these for movement in single pixels, however pacmans speed won't make much difference at moveInc 1, it's already as fast as the processor can manage!  
 	powerPillLifetime=800;
 	ghostBlinkLifetime=130;
-	fruitLifetime=690;
+	fruitLifetime=800;
 	messageLifetime=3000;
 	scatterTime = 1200;
 	chaseTime = 100;
@@ -709,6 +709,8 @@ function kd(e){
 			onPause=0;
 			sprite_pacman.move(); gameLoop();
 		}
+		// quit is allowed if the game is paused (q)
+		else if (key=="81" || key=="113"){ location="intropage.html";}
 
 	} else {
 		if (keycount>=2) {keycount=0; movekey="Q"; if (!moving) sprite_pacman.move();}
@@ -1205,8 +1207,8 @@ var class_pacman = function(startLeft,startTop){
 		createGhostScores();
 		ppTimer = powerPillLifetime;
 		ghostscore=50;
-		movespeed = speed-5; // moving to this.speed
-		this.speed = this.speed-5;
+		movespeed = speed-4; // moving to this.speed
+		this.speed = this.speed-4;
 		powerpilon = true;
 		//document.getElementById("maze").classList.add("spin"); // mushrooms 
 		for(i=0;i<total_ghosts;i++){

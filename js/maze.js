@@ -268,7 +268,7 @@ function Maze(w, h){
 	// store the directions in an array
         this.dirs = ['n', 's', 'e', 'w'];
 
-	// store the x/y shifts for each direction in an array. each direction has a change in either the x or y axis (not both) and an opposite o
+	// Store the x/y shifts for each direction in an array. Each direction has a change in either the x or y axis (not both) and an opposite o
         this.modDir = { 
                 'n' : { y : -1, x : 0, o : 's' },
                 's' : { y : 1, x : 0, o : 'n' },
@@ -373,9 +373,10 @@ Maze.prototype.explore = function(ex, ey){
         localDirs = shuffleArray(localDirs);
 	console.warn(localDirs);
 	
-	//if (this.moveCount && this.lastDir &&  (this.lastDir == 'w' )){ // push towards horizontals
-	//if (this.moveCount && this.lastDir &&  (this.lastDir == 's' )){ // push towards verticals
-	if (this.moveCount && this.lastDir && this.moveCount%2==1 && (this.lastDir == 's' || this.lastDir == 'w' )){ // push towards longer going s and w. Very interesting if set localDirs0,1,2 and 3 to this.lastDir! 
+	// if (this.moveCount && this.lastDir &&  (this.lastDir == 'w' )){ // push towards horizontals
+	// if (this.moveCount && this.lastDir &&  (this.lastDir == 's' )){ // push towards verticals
+	// The below pushes towards longer going s and w. Very interesting if set localDirs0,1,2 and 3 to this.lastDir! 
+	if (this.moveCount && this.lastDir && this.moveCount%2==1 && (this.lastDir == 's' || this.lastDir == 'w' )){ 
 		console.log("Last was"+this.lastDir);
 		localDirs[0]=this.lastDir;
 		localDirs[1]=this.lastDir;
